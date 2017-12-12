@@ -6,6 +6,7 @@ asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 app = sanic.Sanic(__name__)
 
 app.static('/favicon.ico', './favicon.ico')
+app.static('/icons', './icons')
 
 @app.route('/')
 async def test(request):
