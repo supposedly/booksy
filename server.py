@@ -5,6 +5,8 @@ from sanic import response
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 app = sanic.Sanic(__name__)
 
+app.static('/favicon.ico', './favicon.ico')
+
 @app.route('/')
 async def test(request):
     return response.html('''<link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch-icon.png">
