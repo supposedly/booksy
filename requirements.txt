@@ -1,2 +1,7 @@
 sanic
+sanic_auth
+sanic_session
+asyncio_redis
 aiohttp
+asyncpg
+bcrypt

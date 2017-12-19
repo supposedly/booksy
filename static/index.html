@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html ng-app="booksy">
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.7/angular.min.js"></script>
+        <script src="./main.js"></script>
+        <ng-include src="'/head'"></ng-include>
+        <title>BooksyDB</title>
+    </head>
+    <body>
+        <div id="main" ng-app="booksy" ng-init="{model: undefined}" ng-controller="LinkCtrl as vm">
+            <!-- preventDefault() stops the page from changing on link click -->
+            <nav class="header" ng-click="$event.preventDefault()">
+                <img class="logo" src="../icons/favicon-16x16.png">
+                <a href="#" name="'Home'" on-click="vm.show(nameFromDir)" link-toggle>Home</a>
+                <a href="#" name="'Help'" on-click="vm.show(nameFromDir)" link-toggle>Help</a>
+                <a href="#" name="'About'" on-click="vm.show(nameFromDir)" link-toggle>About</a>
+            </nav>
+            
+            <p ng-hide="active">You chose <b>{{active?active:"nothing yet"}}</b></p>
+            <p ng-show="active">You chose <b>{{active?active:"nothing yet"}}</b></p>
+        </div>
+    </body>
+</html>
