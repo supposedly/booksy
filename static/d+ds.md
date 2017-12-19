@@ -51,33 +51,33 @@ __[CONCEPTS]__
    > locations:
       Every single library currently registered with Booksy, with record of their
       IP address and/or subnet (whichever applicable).
-         ╔══════════════════════╦═══════════╦══════╦══════════════════╦═══════════╗
-         ║ lid (PRIMARY KEY)    ║ name      ║ ip   ║ username         ║ pwhash    ║
-         ╠══════════════════════╬═══════════╬══════╬══════════════════╬═══════════╣
-         ║ BIGINT               ║ TEXT      ║ TEXT ║ TEXT             ║ TEXT      ║
-         ║ (unique location ID) ║ (location ║      ║ (self-checkout   ║ (bcrypted ║
-         ║                      ║ name)     ║      ║ acct's username) ║ password) ║
-         ╚══════════════════════╩═══════════╩══════╩══════════════════╩═══════════╝
+         ╔══════════════════════╦═══════════╦══════╦══════════════════╦═══════════╦══════════╦═══════════════════╗
+         ║ lid (PRIMARY KEY)    ║ name      ║ ip   ║ username         ║ pwhash    ║ fine_amt ║ fine_interval     ║
+         ╠══════════════════════╬═══════════╬══════╬══════════════════╬═══════════╬══════════╬═══════════════════╣
+         ║ BIGSERIAL            ║ TEXT      ║ TEXT ║ TEXT             ║ TEXT      ║ MONEY    ║ INT               ║
+         ║ (unique location ID) ║ (location ║      ║ (self-checkout   ║ (bcrypted ║ (amt to+ ║ (wait X many days ║
+         ║                      ║ name)     ║      ║ acct's username) ║ password) ║ fine by) ║ to increase fine) ║
+         ╚══════════════════════╩═══════════╩══════╩══════════════════╩═══════════╩══════════╩═══════════════════╝
    > members:
       Data for every single patron across libraries.
          ╔════════════════════╦══════════╦═════════════╦══════════╦══════════╦════════════╦══════════════════╦════════════════╦═══════════╦════════════╗
          ║ uid (PRIMARY KEY)  ║ username ║ fullname    ║ email    ║ phone    ║ lid        ║ manages          ║ rid            ║ pwhash    ║ extra      ║
          ╠════════════════════╬══════════╬═════════════╬══════════╬══════════╬════════════╬══════════════════╬════════════════╬═══════════╬════════════╣
-         ║ BIGINT             ║ TEXT     ║ TEXT        ║ TEXT     ║ TEXT     ║ BIGINT     ║ BOOL             ║ BIGINT         ║ TEXT      ║ TEXT       ║
+         ║ BIGSERIAL          ║ TEXT     ║ TEXT        ║ TEXT     ║ TEXT     ║ BIGINT     ║ BOOL             ║ BIGINT         ║ TEXT      ║ TEXT       ║
          ║ (unique member ID) ║          ║ (full name) ║ (email   ║ (phone # ║ (location) ║ (can they manage ║ (ID of this    ║ (bcrypted ║ (anything) ║
          ║                    ║          ║             ║ or null) ║ or null) ║            ║ this location?)  ║ member's role) ║ password) ║            ║
          ╚════════════════════╩══════════╩═════════════╩══════════╩══════════╩════════════╩══════════════════╩════════════════╩═══════════╩════════════╝
    > items:
       Every single item in every registered library, with records of their
       location and checkout data if applicable (else NULL).
-         ╔═══════════════════════╦════════════╦════════════════════╦══════════════╦═══════╦════════╦═══════════╦══════════════╦════════════╦════════════╦═════════════════╦════════════╗
-         ║ mid (PRIMARY KEY)     ║ type       ║ isbn               ║ lid          ║ title ║ author ║ published ║ issuedto     ║ due        ║ fines      ║ acquired        ║ extra      ║
-         ╠═══════════════════════╬════════════╬════════════════════╬══════════════╬═══════╬════════╬═══════════╬══════════════╬════════════╬════════════╬═════════════════╬════════════╣
-         ║ BIGINT                ║ TEXT       ║ TEXT               ║ BIGINT       ║ TEXT  ║ TEXT   ║ DATE      ║ BIGINT       ║ TIMESTAMP  ║ MONEY      ║ TIMESTAMP       ║ TEXT       ║
-         ║ (internal ID of item) ║ ('book' or ║ (maybe bigint)     ║ (internal id ║       ║        ║           ║ (user ID, or ║ (when this ║ (overdue   ║ (when this copy ║ (anything) ║
-         ║                       ║ whatever)  ║ (null if not book) ║ of location) ║       ║        ║           ║ NULL if not  ║ should be  ║ fines on   ║ was added to    ║            ║
-         ║                       ║            ║                    ║              ║       ║        ║           ║ checked out) ║ returned)  ║ this item) ║ the location)   ║            ║
-         ╚═══════════════════════╩════════════╩════════════════════╩══════════════╩═══════╩════════╩═══════════╩══════════════╩════════════╩════════════╩═════════════════╩════════════╝
+         ╔═══════════════════════╦════════════╦════════════════════╦══════════════╦═══════╦════════╦═══════════╦══════════════╦═════════════════╦════════════╦═════════════════╦════════════╗
+         ║ mid (PRIMARY KEY)     ║ type       ║ isbn               ║ lid          ║ title ║ author ║ published ║ issuedto     ║ days_overdue    ║ fines      ║ acquired        ║ genre      ║
+         ╠═══════════════════════╬════════════╬════════════════════╬══════════════╬═══════╬════════╬═══════════╬══════════════╬═════════════════╬════════════╬═════════════════╬════════════╣
+         ║ BIGSERIAL             ║ TEXT       ║ TEXT               ║ BIGINT       ║ TEXT  ║ TEXT   ║ DATE      ║ BIGINT       ║ BIGINT          ║ MONEY      ║ TIMESTAMP       ║ TEXT       ║
+         ║ (internal ID of item) ║ ('book' or ║ (maybe bigint)     ║ (internal id ║       ║        ║           ║ (user ID, or ║ (days passed    ║ (overdue   ║ (when this copy ║ (app sorts ║
+         ║                       ║ whatever)  ║ (null if not book) ║ of location) ║       ║        ║           ║ NULL if not  ║ since due date; ║ fines on   ║ was added to    ║ by type &  ║
+         ║                       ║            ║                    ║              ║       ║        ║           ║ checked out) ║ initially <0)   ║ this item) ║ the location)   ║ genre)     ║
+         ╚═══════════════════════╩════════════╩════════════════════╩══════════════╩═══════╩════════╩═══════════╩══════════════╩═════════════════╩════════════╩═════════════════╩════════════╝
    > holds:
       Holds on every item, with just the item's ID and ID of the user placing it on hold.
       Pairs form composite primary key.
@@ -89,33 +89,38 @@ __[CONCEPTS]__
          ╚═══════════╩═════════════╝
    > roles:
       Every role registered, with record of its perms and name.
-      NOTE: Though not in the table yet, an lid BIGINT is also used.
-         ╔═══════════════════╦═════════════╦════════════════╦═══════════════╦═══════════════╗
-         ║ rid (PRIMARY KEY) ║ name        ║ permissions    ║ maxes         ║ locks         ║
-         ╠═══════════════════╬═════════════╬════════════════╬═══════════════╬═══════════════╣
-         ║ BIGINT            ║ TEXT        ║ SMALLINT       ║ BIGINT        ║ BIGINT        ║
-         ║ (role ID)         ║ (role name) ║ (packed field; ║ (four 1-byte  ║ (two 1-byte   ║
-         ║                   ║             ║ binary perms)  ║ numbers; more ║ numbers; more ║
-         ║                   ║             ║                ║ reserved)     ║ reserved)     ║
-         ╚═══════════════════╩═════════════╩════════════════╩═══════════════╩═══════════════╝
+         ╔═══════════════════╦═════════════╦═════════════╦════════════════╦═══════════════╦═══════════════╗
+         ║ rid (PRIMARY KEY) ║ lid         ║ name        ║ permissions    ║ maxes         ║ locks         ║
+         ╠═══════════════════╬═════════════╬═════════════╬════════════════╬═══════════════╬═══════════════╣
+         ║ BIGSERIAL         ║ BIGINT      ║ TEXT        ║ SMALLINT       ║ BIGINT        ║ BIGINT        ║
+         ║ (role ID)         ║ (location   ║ (role name) ║ (packed field; ║ (four 1-byte  ║ (two 1-byte   ║
+         ║                   ║ id)         ║             ║ binary perms)  ║ numbers; more ║ numbers; more ║
+         ║                   ║             ║             ║                ║ reserved)     ║ reserved)     ║
+         ╚═══════════════════╩═════════════╩═════════════╩════════════════╩═══════════════╩═══════════════╝
    >>The "permissions" packed field is as follows.
       1st bit: Manage location info
          Change things like the location's name, color scheme, and picture.
-      2nd bit: Create & delete accounts
+      2nd bit: Manage accounts
          Self-explanatory.
-      3rd bit: Create & delete roles
+      3rd bit: Manage roles
          Self-explanatory.
-      4th bit: Manage roles & permissions
-         Change info relating to existing roles.
+      4th bit: Create administrative roles
+         Allow user to give roles this same permission.
       5th bit: Manage media
          Add and remove books from the system as well as changing titles & metadata.
+      6th bit: Generate reports
+         View & generate various status reports
+       7th bit: Return items
+         Check issued media back into the system
       *__Further bits are reserved for future use.__*
-      __Ergo:__ A value of 22, binary [10111], in the first five bytes would mean that:
-         This role can manage location info.
-         This role cannot create & delete accounts.
-         This role can create & delete other roles.
-         This role can manage roles & permissions.
-         This role can manage media.
+      __Ergo:__ A value of 91, binary [1011011], in the first five bytes would mean that:
+         This role CAN manage location info.
+         This role CANNOT create & delete accounts.
+         This role CAN create & delete other roles.
+         This role CAN manage roles & permissions.
+         This role CANNOT manage media.
+         This role CAN view & generate reports.
+         This role CAN return items.
    >>The "maxes" packed integer field is as follows.
      NOTE that a value of 255, binary [11111111], in any one byte field is interpreted
      as *infinity* -- i.e. no limit.
@@ -144,14 +149,21 @@ __[CONCEPTS]__
       1st byte: MAX FINES (USD)
          Maximum amount of USD in fines allowed before an account with
          this role is barred from checking out new media.
-      2nd byte: MAX CHECKOUTS (USD)
+      2nd byte: MAX CHECKOUTS
          Maximum amount of items this role may check out before being
          barred from further borrowing of media.
       *__Further bytes are reserved for future use.__*
-       __Ergo:__ A value of 
-         
+       __Ergo:__ A value of 3870, binary [00001111 00011110], in the first
+       two bytes would mean that:
+          This role can incur a maximum of $15 at a time in overdue fines.
+          This role can check out a maximum of 30 items at a time.
+### [OVERDUE ITEMS] ###
+   Each time an item is accessed by a user wiht 
 ### [ACCOUNT CREATION] ###
-   When accounts are created, 
+   Accounts can be created either by a user themself or by an administrator.
+   If a user makes their own account (which will probably be disabled for the
+   FBLA demo) they will have to register with a school in order to use it
+   to check out, the logistics of which I haven't figured out entirely yet...
 
 __[LOGIN]__
 > Users, if in a registered IP or subnet, will be presented with their
@@ -164,6 +176,13 @@ their credentials (usually consisting of an ID or username and a password).
       page. On entry and afterward, their user experience will be identical to that
       of somebody logging in from their library's Booksy page.
       (THIS IS THE OPTION GIVEN FOR THE FBLA DEMO)
+
+When the user logs in, they will be given a session token and login info, passed around
+by Sanic at the backend. The Angular service that generates the sidebar buttons will then
+(depending on the user's login credentials) fetch the appropriate sidebar buttons and
+in turn allow access to the appropriate pages.
+This is probably a bit of a better solution than presenting an entirely different app
+to every "level" of user!
 
 **HOME**
 ![!][NOTE:] The following text makes a distinction between a *chieftain* and an *operator*.
@@ -232,9 +251,12 @@ other pages being shown in the sidebar. Depending on the user's permissions, cer
    > ![PERMISSIONS][N/A]
    >> This page facilitates the modification of account settings, such as
       name, email/phone number
-### [DASHBOARD] ###
+### [MY ITEMS] ###
    > ![PERMISSIONS][N/A]
-   >> The dashboard.
+   >> The dashboard. Shows info about all a user's checked-out items; may
+      expand in the future to include favorites or whatever.
+   ----
+   1. 
 ### [REPORTS] ###
    > ![PERMISSIONS][CHIEFTAIN]
    >> Generate reports of checkouts and missing books and the like.

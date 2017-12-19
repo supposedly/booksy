@@ -19,7 +19,6 @@ CHECKOUT DURATION:
   The maximum amount of time this role may check out an item for.
   Can also customize per media category.
 
-
 ACCOUNT LOCK THRESHOLD:
    Maximum amount of (fines, checkouts, ...) allowed before an account with
    this role is barred from checking out new media.
