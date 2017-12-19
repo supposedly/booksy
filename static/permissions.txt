@@ -1,0 +1,28 @@
+Manage location info:
+   Change things like the location's name, color scheme, and picture.
+Create & delete accounts:
+  Self-explanatory.
+Create & delete roles:
+  Self-explanatory.
+Manage roles & permissions:
+  Change info relating to existing roles.
+Manage media:
+  Add and remove books from the system as well as changing titles & metadata.
+
+MAX RENEWALS:
+  The maximum amount of due-date renewals afforded to this role.
+  Can also customize per media category.
+MAX CHECKOUTS:
+  The maximum amount of items this role may check out at a time.
+  Can also customize per media category.
+CHECKOUT DURATION:
+  The maximum amount of time this role may check out an item for.
+  Can also customize per media category.
+
+
+ACCOUNT LOCK THRESHOLD:
+   Maximum amount of (fines, checkouts, ...) allowed before an account with
+   this role is barred from checking out new media.
+   An account lock, once instated, will remain active until the user
+   reverses the circumstances that effected it. (This may mean returning a
+   book, paying off a fine, re-verifying their account, ...)
