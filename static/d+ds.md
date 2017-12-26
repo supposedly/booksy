@@ -13,7 +13,7 @@ __[CONCEPTS]__
    > Chieftain:
       Blanket term for a user allowed some degree of administrative freedom.
       This applies by default to the Administrator and Organizer roles.
-   > Member, user:
+   > Member:
       Anyone registered in the database as a library patron.
    > Administrator, Organizer, Subscriber:
       The three roles present by default. See [ROLES] for more explanation.
@@ -31,7 +31,7 @@ __[CONCEPTS]__
       roles, described below.
    ----
    > Administrator:
-      The top-dog of the role hierarchy.
+      The top dog of the role hierarchy.
       These users are able to manage the location's info (name, picture, color scheme, etc)
       and to create roles with the ability to create other roles. They also have all the
       permissions given to lower roles, sans managing users' accounts (besides deletion).
@@ -44,59 +44,62 @@ __[CONCEPTS]__
 ### THE [DATABASE] ###
    >> Everything to do with libraries and their status will be stored in a
       postgreSQL database (the same DB provisioned by Heroku to its users).
-      This database will contain five tables; the primary keys `lid, mid, rid, uid` represent
-      respectively Location ID, Media ID, Role ID, and User ID. User is synonymous here with
+      An in-memory Redis database is also used to store users' refresh tokens.
+      The Postgres DB will contain five tables; the primary keys `lid, mid, rid, uid` represent
+      respectively Location ID, Media ID, Role ID, and User ID, where user is synonymous with
       member. The tables are described below:
    ----
    > locations:
       Every single library currently registered with Booksy, with record of their
       IP address and/or subnet (whichever applicable).
-         ╔══════════════════════╦═══════════╦══════╦══════════════════╦═══════════╦══════════╦═══════════════════╗
-         ║ lid (PRIMARY KEY)    ║ name      ║ ip   ║ username         ║ pwhash    ║ fine_amt ║ fine_interval     ║
-         ╠══════════════════════╬═══════════╬══════╬══════════════════╬═══════════╬══════════╬═══════════════════╣
-         ║ BIGSERIAL            ║ TEXT      ║ TEXT ║ TEXT             ║ TEXT      ║ MONEY    ║ INT               ║
-         ║ (unique location ID) ║ (location ║      ║ (self-checkout   ║ (bcrypted ║ (amt to+ ║ (wait X many days ║
-         ║                      ║ name)     ║      ║ acct's username) ║ password) ║ fine by) ║ to increase fine) ║
-         ╚══════════════════════╩═══════════╩══════╩══════════════════╩═══════════╩══════════╩═══════════════════╝
+         ╔══════════════════════╦═══════════╦══════╦═══════╦══════════╦═══════════════════╗
+         ║ lid (PRIMARY KEY)    ║ name      ║ ip   ║ state ║ fine_amt ║ fine_interval     ║
+         ╠══════════════════════╬═══════════╬══════╬═══════╬══════════╬═══════════════════╣
+         ║ BIGSERIAL            ║ TEXT      ║ TEXT ║ TEXT  ║ MONEY    ║ INT               ║
+         ║ (unique location ID) ║ (location ║      ║       ║ (amt to+ ║ (wait X many days ║
+         ║                      ║ name)     ║      ║       ║ fine by) ║ to increase fine) ║
+         ╚══════════════════════╩═══════════╩══════╩═══════╩══════════╩═══════════════════╝
    > members:
-      Data for every single patron across libraries.
-         ╔════════════════════╦══════════╦═════════════╦══════════╦══════════╦════════════╦══════════════════╦════════════════╦═══════════╦════════════╗
-         ║ uid (PRIMARY KEY)  ║ username ║ fullname    ║ email    ║ phone    ║ lid        ║ manages          ║ rid            ║ pwhash    ║ extra      ║
-         ╠════════════════════╬══════════╬═════════════╬══════════╬══════════╬════════════╬══════════════════╬════════════════╬═══════════╬════════════╣
-         ║ BIGSERIAL          ║ TEXT     ║ TEXT        ║ TEXT     ║ TEXT     ║ BIGINT     ║ BOOL             ║ BIGINT         ║ TEXT      ║ TEXT       ║
-         ║ (unique member ID) ║          ║ (full name) ║ (email   ║ (phone # ║ (location) ║ (can they manage ║ (ID of this    ║ (bcrypted ║ (anything) ║
-         ║                    ║          ║             ║ or null) ║ or null) ║            ║ this location?)  ║ member's role) ║ password) ║            ║
-         ╚════════════════════╩══════════╩═════════════╩══════════╩══════════╩════════════╩══════════════════╩════════════════╩═══════════╩════════════╝
+      Data for every single patron across libraries. LID and UID are composite unique.
+         ╔════════════════════╦═══════════╦═══════════╦═════════════╦══════════╦════════════╦══════════════════╦════════════════╦═══════════╦════════════╗
+         ║ uid (PRIMARY KEY)  ║ username [U] lid      ║ fullname    ║ email    ║ phone      ║ manages          ║ rid            ║ pwhash    ║ type       ║
+         ╠════════════════════╬═══════════╬═══════════╬═════════════╬══════════╬════════════╬══════════════════╬════════════════╬═══════════╬════════════╣
+         ║ BIGSERIAL          ║ TEXT UNIQ ║ BIGINT    ║ TEXT        ║ TEXT     ║ TEXT       ║ BOOL             ║ BIGINT         ║ TEXT      ║ SMALLINT   ║
+         ║ (unique member ID) ║ DEFAULT   ║ (location ║ (full name) ║ (email   ║ (phone #   ║ (can they manage ║ (ID of this    ║ (bcrypted ║ (user acc  ║ <= 0 for member, 1 for school
+         ║                    ║ NULL      ║ id)       ║             ║ or null) ║ or null)   ║ this location?)  ║ member's role) ║ password) ║ or school) ║ <= `manages' will ALWAYS be false for school accounts
+         ╚════════════════════╩═══════════╩═══════════╩═════════════╩══════════╩════════════╩══════════════════╩════════════════╩═══════════╩════════════╝
    > items:
       Every single item in every registered library, with records of their
       location and checkout data if applicable (else NULL).
-         ╔═══════════════════════╦════════════╦════════════════════╦══════════════╦═══════╦════════╦═══════════╦══════════════╦═════════════════╦════════════╦═════════════════╦════════════╗
-         ║ mid (PRIMARY KEY)     ║ type       ║ isbn               ║ lid          ║ title ║ author ║ published ║ issuedto     ║ days_overdue    ║ fines      ║ acquired        ║ genre      ║
-         ╠═══════════════════════╬════════════╬════════════════════╬══════════════╬═══════╬════════╬═══════════╬══════════════╬═════════════════╬════════════╬═════════════════╬════════════╣
-         ║ BIGSERIAL             ║ TEXT       ║ TEXT               ║ BIGINT       ║ TEXT  ║ TEXT   ║ DATE      ║ BIGINT       ║ BIGINT          ║ MONEY      ║ TIMESTAMP       ║ TEXT       ║
-         ║ (internal ID of item) ║ ('book' or ║ (maybe bigint)     ║ (internal id ║       ║        ║           ║ (user ID, or ║ (days passed    ║ (overdue   ║ (when this copy ║ (app sorts ║
-         ║                       ║ whatever)  ║ (null if not book) ║ of location) ║       ║        ║           ║ NULL if not  ║ since due date; ║ fines on   ║ was added to    ║ by type &  ║
-         ║                       ║            ║                    ║              ║       ║        ║           ║ checked out) ║ initially <0)   ║ this item) ║ the location)   ║ genre)     ║
-         ╚═══════════════════════╩════════════╩════════════════════╩══════════════╩═══════╩════════╩═══════════╩══════════════╩═════════════════╩════════════╩═════════════════╩════════════╝
+      An automatic "Heroku Scheduler" job will update the `fines` field every midnight by comparing the current date to the due date.
+         ╔═══════════════════════╦════════════╦════════════════════╦══════════════╦═══════╦════════╦═══════════╦══════════════╦══════════════╦════════════╦═════════════════╦════════════╗
+         ║ mid (PRIMARY KEY      ║ type       ║ isbn               ║ lid          ║ title ║ author ║ published ║ issued_to    ║ due_date     ║ fines      ║ acquired        ║ genre      ║
+         ╠═══════════════════════╬════════════╬════════════════════╬══════════════╬═══════╬════════╬═══════════╬══════════════╬══════════════╬════════════╬═════════════════╬════════════╣
+         ║ BIGSERIAL             ║ TEXT       ║ TEXT               ║ BIGINT       ║ TEXT  ║ TEXT   ║ DATE      ║ BIGINT       ║ DATE         ║ MONEY      ║ TIMESTAMP       ║ TEXT       ║
+         ║ (internal ID of item) ║ ('book' or ║ (maybe bigint)     ║ (internal id ║       ║        ║           ║ (user ID, or ║ (determined  ║ (overdue   ║ (when this copy ║ (app sorts ║
+         ║                       ║ whatever)  ║ (null if not book) ║ of location) ║       ║        ║           ║ NULL if not  ║ according to ║ fines on   ║ was added to    ║ by type &  ║
+         ║                       ║            ║                    ║              ║       ║        ║           ║ checked out) ║ user's role) ║ this item) ║ the location)   ║ genre)     ║
+         ╚═══════════════════════╩════════════╩════════════════════╩══════════════╩═══════╩════════╩═══════════╩══════════════╩══════════════╩════════════╩═════════════════╩════════════╝
    > holds:
-      Holds on every item, with just the item's ID and ID of the user placing it on hold.
-      Pairs form composite primary key.
-         ╔═══════════╦═════════════╗
-         ║ mid       ║ uid         ║
-         ╠═══════════╬═════════════╣
-         ║ BIGINT    ║ BIGINT      ║
-         ║ (item id) ║ (member id) ║
-         ╚═══════════╩═════════════╝
+      Holds for every item, with the item's ID and ID of the user placing it on hold.
+      Composite primary key between MID, UID, and LID. Also a timestamp 30 days in
+      the future from its creation date showing when to remove it from the DB.
+         ╔═══════════╦═════════════╦═════════════╦═════════════╗
+         ║ mid (PK)  ║ uid (PK)    ║ lid (PK)    ║ deadline    ║
+         ╠═══════════╬═════════════╬═════════════╬═════════════╣
+         ║ BIGINT    ║ BIGINT      ║ BIGINT      ║ TIMESTAMP   ║
+         ║ (item id) ║ (member id) ║ (loc id)    ║             ║
+         ╚═══════════╩═════════════╩═════════════╩═════════════╝
    > roles:
       Every role registered, with record of its perms and name.
-         ╔═══════════════════╦═════════════╦═════════════╦════════════════╦═══════════════╦═══════════════╗
-         ║ rid (PRIMARY KEY) ║ lid         ║ name        ║ permissions    ║ maxes         ║ locks         ║
-         ╠═══════════════════╬═════════════╬═════════════╬════════════════╬═══════════════╬═══════════════╣
-         ║ BIGSERIAL         ║ BIGINT      ║ TEXT        ║ SMALLINT       ║ BIGINT        ║ BIGINT        ║
-         ║ (role ID)         ║ (location   ║ (role name) ║ (packed field; ║ (four 1-byte  ║ (two 1-byte   ║
-         ║                   ║ id)         ║             ║ binary perms)  ║ numbers; more ║ numbers; more ║
-         ║                   ║             ║             ║                ║ reserved)     ║ reserved)     ║
-         ╚═══════════════════╩═════════════╩═════════════╩════════════════╩═══════════════╩═══════════════╝
+         ╔═══════════════════╦═══════════╦═════════════╦════════════════╦═══════════════╦═══════════════╗
+         ║ rid (PRIMARY KEY) ║ lid       ║ name        ║ permissions    ║ maxes         ║ locks         ║
+         ╠═══════════════════╬═══════════╬═════════════╬════════════════╬═══════════════╬═══════════════╣
+         ║ BIGSERIAL         ║ BIGINT    ║ TEXT        ║ SMALLINT       ║ BIGINT        ║ BIGINT        ║
+         ║ (role ID)         ║ (location ║ (role name) ║ (packed field; ║ (four 1-byte  ║ (two 1-byte   ║
+         ║                   ║ id)       ║             ║ binary perms)  ║ numbers; more ║ numbers; more ║
+         ║                   ║           ║             ║                ║ reserved)     ║ reserved)     ║
+         ╚═══════════════════╩═══════════╩═════════════╩════════════════╩═══════════════╩═══════════════╝
    >>The "permissions" packed field is as follows.
       1st bit: Manage location info
          Change things like the location's name, color scheme, and picture.

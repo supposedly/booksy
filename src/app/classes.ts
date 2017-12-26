@@ -17,7 +17,7 @@ export class ManagePageButton {
   dest?: string;
 }
 export class MediaItem {
-  id: string;
+  mid: string;
   type: string;
   isbn: string;
   lid: string;
@@ -48,4 +48,10 @@ export class Member {
   email?: string;
   phone?: string;
   manages: boolean;
+}
+export class User {
+  uid: string;
+  password: string;
+  firstName: string;
+  lastName: string;
 }

@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-
+import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './header/header.component';
@@ -14,7 +14,9 @@ import { HeadButtonService } from './head-button-service';
 import { SideButtonService } from './side-button.service';
 import { LoginComponent } from './login/login.component';
 import { CheckoutSessionComponent } from './checkout-session/checkout-session.component';
-import { AuthService } from './auth.service';
+import { SidebarComponent } from './sidebar/sidebar.component';
+import { CheckoutService } from './checkout.service';
+import { MemberAuthService } from './member-auth.service';
 
 
 @NgModule({
@@ -24,18 +26,21 @@ import { AuthService } from './auth.service';
     MediaInfoComponent,
     CheckoutComponent,
     LoginComponent,
-    CheckoutSessionComponent
+    CheckoutSessionComponent,
+    SidebarComponent
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    FormsModule,
+    AppRoutingModule,
   ],
   providers: [
     MediaService,
     CurrentMediaSessionService,
     RoleService,
     SideButtonsService,
-    AuthService
+    CheckoutService,
+    MemberAuthService
     ],
   bootstrap: [AppComponent]
 })

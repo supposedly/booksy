@@ -12,7 +12,10 @@ import { MediaService } '../media.service';
   styleUrls: ['./media-info.component.css']
 })
 export class MediaInfoComponent implements OnInit {
-
+  item: MediaItem;
+  
+  @Input() mid: number;
+  
   constructor(
     private route: ActivatedRoute,
     private mediaService: MediaService,
@@ -20,14 +23,11 @@ export class MediaInfoComponent implements OnInit {
   ) { }
   
   ngOnInit(): void {
-    this.getItem();
   }
   
-  @Input() item: Item;
-  
   getItem(): void {
-    const mid = +this.route.snapshot.paramMap.get('mid');
-    const lid = +this.route.snapshot.parmMap.get('lid');
+    this.mediaService.getInfo(mid)
+      .subscribe(item => this.item = item);
   }
 
 }

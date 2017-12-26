@@ -1,13 +1,17 @@
-Manage location info:
+Manage location info
    Change things like the location's name, color scheme, and picture.
-Create & delete accounts:
-  Self-explanatory.
-Create & delete roles:
-  Self-explanatory.
-Manage roles & permissions:
-  Change info relating to existing roles.
-Manage media:
-  Add and remove books from the system as well as changing titles & metadata.
+Manage accounts
+   Self-explanatory.
+Manage roles
+   Self-explanatory.
+Create administrative roles
+   Allow user to give roles this same permission.
+Manage media
+   Add and remove books from the system as well as changing titles & metadata.
+Generate reports
+   View & generate various status reports
+Return items
+   Check issued media back into the system
 
 MAX RENEWALS:
   The maximum amount of due-date renewals afforded to this role.

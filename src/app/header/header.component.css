@@ -19,7 +19,7 @@ nav {
   cursor: default;
 }
 */
-nav a{
+nav a {
     display:inline-block;
     padding: 20px 20px;
     color: #888;

@@ -13,5 +13,9 @@ import { LoggingService } from './logging.service';
 export class MediaService {
 
   constructor() { }
-
+  
+  getInfo(mid: number): void {
+  
+  }
+  
 }
