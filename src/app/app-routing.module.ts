@@ -4,9 +4,12 @@ import { Routermodule, Routes } from '@angular/router';
 import { MediaInfoComponent } from './
 
 const routes: Routes = [
-  {path: '', redirectTo: '/login', pathMatch: 'full'},
-  {path: 'checkout', component: CheckoutComponent },
-  {path: ':lid/media/:mid', component: MediaInfoComponent }
+  {path: '', pathMatch: 'full',
+    component: HomePageComponent,
+    children: [
+      {path: 'checkout', component: CheckoutComponent},
+      {path: ':lid/media/:mid', component: MediaInfoComponent},
+      {path: 'l
 ];
 
 @NgModule({

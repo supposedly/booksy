@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
-import { FormGroup, FormControl, FormBuilder } from '@angular/forms';
+import { FormModule } from '@angular/forms';
+
+import { MemberAuthService } from '../member-auth.service';
 
 @Component({
   selector: 'app-login',
@@ -7,10 +9,12 @@ import { FormGroup, FormControl, FormBuilder } from '@angular/forms';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-
+  uID: string;
+  password: string;
+  
   constructor(
   private builder: FormBuilder,
-  private authService: AuthService,
+  private memberAuthService: MemberAuthService,
   private router: Router
   ) { }
 

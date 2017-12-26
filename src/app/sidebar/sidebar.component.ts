@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { NavButton } from '../classes';
-import { HeadButtonService } from '../head-button.service';
+import { SideButtonService } from '../head-button.service';
 
 @Component({
   selector: 'app-header',
@@ -11,14 +11,14 @@ import { HeadButtonService } from '../head-button.service';
 export class HeaderComponent implements OnInit {
   buttons: NavButton[];
   
-  constructor(private headButtonService: HeadButtonService) { }
+  constructor(private sideButtonService: SideButtonService) { }
 
   ngOnInit() {
     this.getButtons();
   }
   
   getButtons(): void {
-    this.headButtonService.getButtons()
+    this.sideButtonService.getButtons()
       .subscribe(buttons => this.buttons = buttons);
   }
   

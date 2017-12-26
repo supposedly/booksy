@@ -1,6 +1,5 @@
 sanic
-sanic_auth
-sanic_session
+git+https://github.com/eltrhn/sanic-jwt.git
 asyncio_redis
 aiohttp
 asyncpg
