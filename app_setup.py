@@ -1,21 +1,5 @@
-#encoding: utf-8
-permissions = [
-  'manage location',
-  'manage accounts',
-  'manage roles',
-  'create administrative roles',
-  'manage media',
-  'generate reports',
-  ]
-maximums = [
-  'max renewals',
-  'max checkouts',
-  'max checkout duration',
-  ]
-acct_locks = [
-  'max fines',
-  'max checkouts',
-  ]
+import asyncio
+import asyncpg
 
 async def create_pg_tables(conn):
     query = """
@@ -38,6 +22,7 @@ async def create_pg_tables(conn):
         phone TEXT,
         manages BOOL,
         rid BIGINT,
+        checkouts BIGINT,
         pwhash TEXT,
         type SMALLINT
       );
@@ -54,7 +39,8 @@ async def create_pg_tables(conn):
         issued_to BIGINT,
         due_date DATE,
         fines NUMERIC,
-        acquired TIMESTAMP
+        acquired TIMESTAMP,
+        maxes BIGINT
       );
     CREATE TABLE IF NOT EXISTS
       holds (
@@ -72,6 +58,5 @@ async def create_pg_tables(conn):
         maxes BIGINT,
         locks BIGINT
       );
-        );
     """
     await conn.execute(query)

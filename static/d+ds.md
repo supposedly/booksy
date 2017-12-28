@@ -35,10 +35,8 @@ __[CONCEPTS]__
       These users are able to manage the location's info (name, picture, color scheme, etc)
       and to create roles with the ability to create other roles. They also have all the
       permissions given to lower roles, sans managing users' accounts (besides deletion).
-      This role is assigned by default to a location
    > Organizer:
-      Users with permission to manage members and add new media to the database. This is
-      assigned 
+      Users with permission to manage members and add new media to the database.
    > Subscriber:
       Users with just the ability to manage their own account and check out media.
 ### THE [DATABASE] ###
@@ -52,34 +50,34 @@ __[CONCEPTS]__
    > locations:
       Every single library currently registered with Booksy, with record of their
       IP address and/or subnet (whichever applicable).
-         ╔══════════════════════╦═══════════╦══════╦═══════╦══════════╦═══════════════════╗
-         ║ lid (PRIMARY KEY)    ║ name      ║ ip   ║ state ║ fine_amt ║ fine_interval     ║
-         ╠══════════════════════╬═══════════╬══════╬═══════╬══════════╬═══════════════════╣
-         ║ BIGSERIAL            ║ TEXT      ║ TEXT ║ TEXT  ║ MONEY    ║ INT               ║
-         ║ (unique location ID) ║ (location ║      ║       ║ (amt to+ ║ (wait X many days ║
-         ║                      ║ name)     ║      ║       ║ fine by) ║ to increase fine) ║
-         ╚══════════════════════╩═══════════╩══════╩═══════╩══════════╩═══════════════════╝
+         ╔══════════════════════╦═══════════╦══════╦═══════╦══════════╦═══════════════════╦═══════════════════╗
+         ║ lid (PRIMARY KEY)    ║ name      ║ ip   ║ state ║ fine_amt ║ fine_interval     ║ media_types       ║
+         ╠══════════════════════╬═══════════╬══════╬═══════╬══════════╬═══════════════════╬═══════════════════╣
+         ║ BIGSERIAL            ║ TEXT      ║ TEXT ║ TEXT  ║ MONEY    ║ INT               ║ TEXT[]            ║
+         ║ (unique location ID) ║ (location ║      ║       ║ (amt to+ ║ (wait X many days ║ (default [book],  ║
+         ║                      ║ name)     ║      ║       ║ fine by) ║ to increase fine) ║ items in library) ║
+         ╚══════════════════════╩═══════════╩══════╩═══════╩══════════╩═══════════════════╩═══════════════════╝
    > members:
       Data for every single patron across libraries. LID and UID are composite unique.
          ╔════════════════════╦═══════════╦═══════════╦═════════════╦══════════╦════════════╦══════════════════╦════════════════╦═══════════╦════════════╗
          ║ uid (PRIMARY KEY)  ║ username [U] lid      ║ fullname    ║ email    ║ phone      ║ manages          ║ rid            ║ pwhash    ║ type       ║
          ╠════════════════════╬═══════════╬═══════════╬═════════════╬══════════╬════════════╬══════════════════╬════════════════╬═══════════╬════════════╣
          ║ BIGSERIAL          ║ TEXT UNIQ ║ BIGINT    ║ TEXT        ║ TEXT     ║ TEXT       ║ BOOL             ║ BIGINT         ║ TEXT      ║ SMALLINT   ║
-         ║ (unique member ID) ║ DEFAULT   ║ (location ║ (full name) ║ (email   ║ (phone #   ║ (can they manage ║ (ID of this    ║ (bcrypted ║ (user acc  ║ <= 0 for member, 1 for school
-         ║                    ║ NULL      ║ id)       ║             ║ or null) ║ or null)   ║ this location?)  ║ member's role) ║ password) ║ or school) ║ <= `manages' will ALWAYS be false for school accounts
+         ║ (unique member ID) ║ DEFAULT   ║ (location ║ (full name) ║ (email   ║ (phone #   ║ (can they manage ║ (ID of this    ║ (bcrypted ║ (user acc  ║ <= 0 for member, 1 for library
+         ║                    ║ NULL      ║ id)       ║             ║ or null) ║ or null)   ║ this location?)  ║ member's role) ║ password) ║ or school) ║ <= `manages' will ALWAYS be false for library accounts
          ╚════════════════════╩═══════════╩═══════════╩═════════════╩══════════╩════════════╩══════════════════╩════════════════╩═══════════╩════════════╝
    > items:
       Every single item in every registered library, with records of their
       location and checkout data if applicable (else NULL).
       An automatic "Heroku Scheduler" job will update the `fines` field every midnight by comparing the current date to the due date.
-         ╔═══════════════════════╦════════════╦════════════════════╦══════════════╦═══════╦════════╦═══════════╦══════════════╦══════════════╦════════════╦═════════════════╦════════════╗
-         ║ mid (PRIMARY KEY      ║ type       ║ isbn               ║ lid          ║ title ║ author ║ published ║ issued_to    ║ due_date     ║ fines      ║ acquired        ║ genre      ║
-         ╠═══════════════════════╬════════════╬════════════════════╬══════════════╬═══════╬════════╬═══════════╬══════════════╬══════════════╬════════════╬═════════════════╬════════════╣
-         ║ BIGSERIAL             ║ TEXT       ║ TEXT               ║ BIGINT       ║ TEXT  ║ TEXT   ║ DATE      ║ BIGINT       ║ DATE         ║ MONEY      ║ TIMESTAMP       ║ TEXT       ║
-         ║ (internal ID of item) ║ ('book' or ║ (maybe bigint)     ║ (internal id ║       ║        ║           ║ (user ID, or ║ (determined  ║ (overdue   ║ (when this copy ║ (app sorts ║
-         ║                       ║ whatever)  ║ (null if not book) ║ of location) ║       ║        ║           ║ NULL if not  ║ according to ║ fines on   ║ was added to    ║ by type &  ║
-         ║                       ║            ║                    ║              ║       ║        ║           ║ checked out) ║ user's role) ║ this item) ║ the location)   ║ genre)     ║
-         ╚═══════════════════════╩════════════╩════════════════════╩══════════════╩═══════╩════════╩═══════════╩══════════════╩══════════════╩════════════╩═════════════════╩════════════╝
+         ╔═══════════════════════╦════════════╦════════════════════╦══════════════╦═══════╦════════╦═══════════╦══════════════╦══════════════╦════════════╦═════════════════╦════════════╦══════════════════╗
+         ║ mid (PRIMARY KEY      ║ type       ║ isbn               ║ lid          ║ title ║ author ║ published ║ issued_to    ║ due_date     ║ fines      ║ acquired        ║ genre      ║ maxes            ║
+         ╠═══════════════════════╬════════════╬════════════════════╬══════════════╬═══════╬════════╬═══════════╬══════════════╬══════════════╬════════════╬═════════════════╬════════════╬══════════════════╣
+         ║ BIGSERIAL             ║ TEXT       ║ TEXT               ║ BIGINT       ║ TEXT  ║ TEXT   ║ DATE      ║ BIGINT       ║ DATE         ║ MONEY      ║ TIMESTAMP       ║ TEXT       ║ BIGINT           ║
+         ║ (internal ID of item) ║ ('book' or ║ (maybe bigint)     ║ (internal id ║       ║        ║           ║ (user ID, or ║ (determined  ║ (overdue   ║ (when this copy ║ (app sorts ║ (per-item maxes, ║ <= value of 255 == defer to role maxes
+         ║                       ║ whatever)  ║ (null if not book) ║ of location) ║       ║        ║           ║ NULL if not  ║ according to ║ fines on   ║ was added to    ║ by type &  ║ overrides role   ║ <= ergo, 255 is default
+         ║                       ║            ║                    ║              ║       ║        ║           ║ checked out) ║ user's role) ║ this item) ║ the location)   ║ genre)     ║ maxes)           ║
+         ╚═══════════════════════╩════════════╩════════════════════╩══════════════╩═══════╩════════╩═══════════╩══════════════╩══════════════╩════════════╩═════════════════╩════════════╩══════════════════╝
    > holds:
       Holds for every item, with the item's ID and ID of the user placing it on hold.
       Composite primary key between MID, UID, and LID. Also a timestamp 30 days in
@@ -100,7 +98,7 @@ __[CONCEPTS]__
          ║                   ║ id)       ║             ║ binary perms)  ║ numbers; more ║ numbers; more ║
          ║                   ║           ║             ║                ║ reserved)     ║ reserved)     ║
          ╚═══════════════════╩═══════════╩═════════════╩════════════════╩═══════════════╩═══════════════╝
-   >>The "permissions" packed field is as follows.
+   >>The "permissions" packed byte field is as follows.
       1st bit: Manage location info
          Change things like the location's name, color scheme, and picture.
       2nd bit: Manage accounts
@@ -124,42 +122,45 @@ __[CONCEPTS]__
          This role CANNOT manage media.
          This role CAN view & generate reports.
          This role CAN return items.
-   >>The "maxes" packed integer field is as follows.
+      Default values: [111111] for Admin, [0110111] for Organizer, [000000] for Subscriber.
+   >>The "maxes" packed big-integer field is as follows.
      NOTE that a value of 255, binary [11111111], in any one byte field is interpreted
      as *infinity* -- i.e. no limit.
-      1st byte: MAX RENEWALS
-           The maximum amount of due-date renewals afforded to this role.
+     NOTE also that the values are 'flipped' due to little-endianness.
+     NOTE lastly that all maxes can be additionally customized per-item
+      1st byte: CHECKOUT DURATION (WEEKS)
+           The maximum amount of time this role may check out an item for.
            Can also customize per media category.
       2nd byte: MAX CHECKOUTS
            The maximum amount of items this role may check out at a time.
            Can also customize per media category.
-      3rd byte: CHECKOUT DURATION (WEEKS)
-           The maximum amount of time this role may check out an item for.
+      3rd byte: MAX RENEWALS
+           The maximum amount of due-date renewals afforded to this role.
            Can also customize per media category.
       *__Further bytes are reserved for future use.__*
       __Ergo:__ A value of 200449, binary [00000011 00001111 00000001], in
       the first three bytes would mean that:
-         This role can renew media a maximum of 3 (00000011) times.
-         This role can check out a maximum of 15 (00001111) items concurrently.
          This role can check out items for a maximum of 1 (00000010) weeks.
-   >>The "locks" packed integer field is as follows. An account "lock", once instated, will
+         This role can check out a maximum of 15 (00001111) items concurrently.
+         This role can renew media a maximum of 3 (00000011) times.
+      Default values: [255 255 255] for Admin, [255 255 255] for Organizer, [] for Subscriber.
+   >>The "locks" packed big-integer field is as follows. An account lock, once instated, will
      remain active until the user reverses the circumstances that effected it. (This may
      mean returning a book, paying off a fine, re-verifying their account, ...)
-     NOTE that all locks can be customized per-item as well, overriding any account locks
-     provided here.
      NOTE again that a value of 255, binary [11111111], in any one byte field is interpreted
      as *infinity* -- i.e. no limit.
-      1st byte: MAX FINES (USD)
-         Maximum amount of USD in fines allowed before an account with
-         this role is barred from checking out new media.
-      2nd byte: MAX CHECKOUTS
+     NOTE also again that 
+      1st byte: CHECKOUT THRESHOLD
          Maximum amount of items this role may check out before being
          barred from further borrowing of media.
+      2nd byte: FINE THRESHOLD (USD)
+         Maximum amount of USD in fines allowed before an account with
+         this role is barred from checking out new media.
       *__Further bytes are reserved for future use.__*
        __Ergo:__ A value of 3870, binary [00001111 00011110], in the first
        two bytes would mean that:
-          This role can incur a maximum of $15 at a time in overdue fines.
           This role can check out a maximum of 30 items at a time.
+          This role can incur a maximum of $15 at a time in overdue fines.
 ### [OVERDUE ITEMS] ###
    Each time an item is accessed by a user wiht 
 ### [ACCOUNT CREATION] ###
@@ -213,9 +214,8 @@ other pages being shown in the sidebar. Depending on the user's permissions, cer
       unique ID of the requested media in yet another field on the checkout
       screen.
          #) If the requested media for whatever reason has no accessible
-            barcode, then the operator is able to look it up in the
-            database by title, author, or any other potentially-
-            identifying traits.
+            barcode, then a chieftain may be called over to remove it
+            from circulation
          #) If the requested media cannot presently be found in the
             database BUT the user would like to donate it, then a
             chieftain has the ability to add it into the system; the web

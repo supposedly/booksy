@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS
     name TEXT,
     ip TEXT UNIQUE,
     fine_amt NUMERIC DEFAULT 0.10,
-    fine_interval INT DEFAULT 1
+    fine_interval INT DEFAULT 1,
+    media_types TEXT[] DEFAULT '{book, other}'
   );
 CREATE TABLE IF NOT EXISTS 
   members (
@@ -18,6 +19,7 @@ CREATE TABLE IF NOT EXISTS
     phone TEXT,
     manages BOOL,
     rid BIGINT,
+    checkouts BIGINT,
     pwhash TEXT,
     type SMALLINT
   );
@@ -34,7 +36,8 @@ CREATE TABLE IF NOT EXISTS
     issued_to BIGINT,
     due_date DATE,
     fines NUMERIC,
-    acquired TIMESTAMP
+    acquired TIMESTAMP,
+    maxes BIGINT
   );
 CREATE TABLE IF NOT EXISTS
   holds (
@@ -59,13 +62,24 @@ INSERT INTO locations (name, ip)
             '192.168.1.1';
 
 INSERT INTO roles (
-              lid, name, 
+              lid, name,
               permissions, 
               maxes, locks
-            )
+              )
      SELECT currval(pg_get_serial_sequence('locations', 'lid')),
             'Admin',
             32767, -- maximum smallint value, so every permission bc admin
+            9223372036854775807, -- maximum bigint value, so no maxes
+            9223372036854775807; -- maximum bigint value, so no locks
+
+INSERT INTO roles (
+              lid, name, 
+              permissions, 
+              maxes, locks
+              )
+     SELECT currval(pg_get_serial_sequence('locations', 'lid')),
+            'Organizer',
+            55, -- 0110111
             9223372036854775807, -- maximum bigint value, so no maxes
             9223372036854775807; -- maximum bigint value, so no locks
 
@@ -74,7 +88,7 @@ INSERT INTO members (
               lid, rid,
               fullname, email, phone,
               manages, type
-            )
+              )
      SELECT 'eh-checkout-00', 'SOMEHASH',
             currval(pg_get_serial_sequence('locations', 'lid')),
             currval(pg_get_serial_sequence('roles', 'rid')),
@@ -87,7 +101,7 @@ INSERT INTO members (
               lid, rid,
               fullname, email, phone,
               manages, type
-            )
+              )
      SELECT 'eh-admin', 'h45hbr0wn5!!!1',
             currval(pg_get_serial_sequence('locations', 'lid')),
             currval(pg_get_serial_sequence('roles', 'rid')),
@@ -101,7 +115,7 @@ INSERT INTO items (
               title, author, published, 
               issued_to, due_date, fines,
               acquired
-            )
+              )
      SELECT 'book', 'fantasy',
             NULL,
             currval(pg_get_serial_sequence('locations', 'lid')), -- in prod this will be provided as parameter
@@ -112,8 +126,10 @@ INSERT INTO items (
             current_date;
 -- END SAMPLE LIBRARY REGISTRATION --
 -- SAMPLE MEDIA CHECKOUT --
-     UPDATE items
-        SET issued_to = ($1), -- given as param
-            due_date = current_date - 10,
-            fines = 0
-      WHERE mid = currval(pg_get_serial_sequence('items', 'mid'));
+UPDATE items
+   SET issued_to = ($2), -- given as param
+       due_date = current_date + ($3), -- time-allowed parameter calculated in python bc would be awful in plpgsql
+       fines = 0
+ WHERE mid = ($1);
+ -- END SAMPLE MEDIA CHECKOUT --
+

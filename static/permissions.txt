@@ -7,7 +7,7 @@ Manage roles
 Create administrative roles
    Allow user to give roles this same permission.
 Manage media
-   Add and remove books from the system as well as changing titles & metadata.
+   Add and remove items from the system as well as changing titles & metadata.
 Generate reports
    View & generate various status reports
 Return items
