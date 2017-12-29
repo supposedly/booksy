@@ -1,6 +1,10 @@
-sanic
-git+https://github.com/eltrhn/sanic-jwt.git
-asyncio_redis
-aiohttp
+#aiohttp
+aioredis
 asyncpg
 bcrypt
+uvloop
+
+# Fork of sanic that allows blueprint meta-groups
+git+https://github.com/eltrhn/sanic.git
+# Fork of sanic-jwt that allows async setup funcs
+git+https://github.com/eltrhn/sanic-jwt.git

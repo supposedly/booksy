@@ -2,9 +2,16 @@
   "name": "booksy-db",
   "version": "0.0.0",
   "license": "MIT",
+  "engines": {
+    "node": "9.3.0"
+  },
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "heroku prebuild": "npm cache clean",
+    "start": "python3 server.py",
+    "postinstall": "ng build --aot --prod",
+    "deploy": "git push origin master && git push heroku master",
+    "fdeploy": "git push -f origin master && git push -f heroku master",
     "build": "ng build --prod",
     "test": "ng test",
     "lint": "ng lint",

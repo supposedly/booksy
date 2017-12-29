@@ -1,4 +1,4 @@
-``Documentation and design specification`` for booksy.db
+``Documentation and design specification`` for booksy-db
 
 __[DESIGN SPEC]__
 ![!][NOTE:] Various UI and UX info goes here!
@@ -131,19 +131,15 @@ __[CONCEPTS]__
       1st byte: CHECKOUT DURATION (WEEKS)
            The maximum amount of time this role may check out an item for.
            Can also customize per media category.
-      2nd byte: MAX CHECKOUTS
-           The maximum amount of items this role may check out at a time.
-           Can also customize per media category.
       3rd byte: MAX RENEWALS
            The maximum amount of due-date renewals afforded to this role.
            Can also customize per media category.
       *__Further bytes are reserved for future use.__*
-      __Ergo:__ A value of 200449, binary [00000011 00001111 00000001], in
+      __Ergo:__ A value of ???, binary [00000011 00000001], in
       the first three bytes would mean that:
-         This role can check out items for a maximum of 1 (00000010) weeks.
-         This role can check out a maximum of 15 (00001111) items concurrently.
+         This role can check out items for a maximum of 1 (00000010) week.
          This role can renew media a maximum of 3 (00000011) times.
-      Default values: [255 255 255] for Admin, [255 255 255] for Organizer, [] for Subscriber.
+      Default values: [255 255] for Admin, [4 4] for Organizer, [2 2] for Subscriber.
    >>The "locks" packed big-integer field is as follows. An account lock, once instated, will
      remain active until the user reverses the circumstances that effected it. (This may
      mean returning a book, paying off a fine, re-verifying their account, ...)
@@ -151,15 +147,15 @@ __[CONCEPTS]__
      as *infinity* -- i.e. no limit.
      NOTE also again that 
       1st byte: CHECKOUT THRESHOLD
-         Maximum amount of items this role may check out before being
-         barred from further borrowing of media.
+         Maximum amount of items this role may check out at a time
+         before being barred from further borrowing.
       2nd byte: FINE THRESHOLD (USD)
          Maximum amount of USD in fines allowed before an account with
          this role is barred from checking out new media.
       *__Further bytes are reserved for future use.__*
        __Ergo:__ A value of 3870, binary [00001111 00011110], in the first
        two bytes would mean that:
-          This role can check out a maximum of 30 items at a time.
+          This role can check out a maximum of 30 items concurrently.
           This role can incur a maximum of $15 at a time in overdue fines.
 ### [OVERDUE ITEMS] ###
    Each time an item is accessed by a user wiht 
