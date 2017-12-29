@@ -6,7 +6,9 @@ CREATE TABLE IF NOT EXISTS
     ip TEXT UNIQUE,
     fine_amt NUMERIC DEFAULT 0.10,
     fine_interval INT DEFAULT 1,
-    media_types TEXT[] DEFAULT '{book, other}'
+    media_types TEXT[] DEFAULT '{book, other}',
+    photo BYTEA,
+    color SMALLINT
   );
 CREATE TABLE IF NOT EXISTS 
   members (
