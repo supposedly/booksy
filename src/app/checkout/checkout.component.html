@@ -1,8 +1,8 @@
 <h2>Welcome</h2><br/>
-<app-user-info [user]="user"></app-user-info>
-<div *ngIf="loggedInAsSchool">
+<!--app-user-info [user]="user"></app-user-info-->
+<div *ngIf="!isLibrary">
    <input [(ngModel)]="uid" placeholder="Your ID" #uID><br/>
 </div>
 <input [(ngModel)]="mid" placeholder="Barcode" #mID>
 <button (click)="submit(mID.value); mID.value=''">Submit</button><br/>
-<app-media-info [mid]="mid"></app-media-info>
+<!--app-media-info [mid]="mid"></app-media-info-->

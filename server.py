@@ -1,38 +1,33 @@
-#TODO IF HAVE TIME: CHANGE ALL YOUR AWFUL FUNCTIONS TO METHODS OF USER/ROLE/MEDIA/LOCATION CLASS
-# Update: had time :-)
-
-#TODO: Move each distinct endpoint to its own Blueprint; stop clogging this file with everything
-# Update: done again :-)
-
 #TODO: Create a wrapping decorator that eliminates the try/except at the start of every. single. endpoint
-#
-
 import asyncio
 import itertools
 import os
 import struct
 from urllib import parse
 
+import aiohttp
 import aioredis
 import asyncpg
 import bcrypt
 import sanic
 import uvloop
+import sanic_cors
 import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
 from sanic import Sanic
 
-import assets.setup
-from assets.typedef import Location, Role, MediaItem, MediaType, User
-from assets.blueprints import bp
+from backend import setup, deco
+from backend.typedef import Location, Role, MediaItem, MediaType, User
+from backend.blueprints import bp
 
-asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy()) # make it go faster <3
 
 # Create a Sanic application for this file.
 app = Sanic('Booksy')
+
 # "Blueprints", i.e. separate files containing endpoint info to
 # avoid clogging up this main file.
-# They can be found in /assets/blueprints
+# They can be found in /backend/blueprints
 app.blueprint(bp)
 
 async def auth(rqst, *args, **kwargs):
@@ -69,39 +64,47 @@ async def retrieve_user(rqst, payload, *args, **kwargs):
     """/auth/me"""
     if payload:
         uid = payload.get('user_id', None)
-        return await User(uid, app)
+        return await User(uid, rqst.app)
     else:
         return None
 
-async def store_rtoken(uid, rtoken, *args, **kwargs):
+@deco.connect_redis
+async def store_rtoken(conn, uid, rtoken, *args, **kwargs):
     """/auth/refresh"""
-    async with app.rd_pool.get() as conn:
-        await conn.set(uid, rtoken)
+    await conn.set(uid, rtoken)
 
-async def retrieve_rtoken(uid, *args, **kwargs):
+@deco.connect_redis
+async def retrieve_rtoken(conn, uid, *args, **kwargs):
     """/auth/refresh"""
-    async with app.rd_pool.get() as conn:
-        return await conn.get(uid)
+    return await conn.get(uid)
+
+@deco.connect_redis
+async def revoke_rtoken(conn, uid, *args, **kwargs):
+    """/auth/logout"""
+    return await conn.delete(uid)
 
 # Initialize with JSON Web Token (JWT) authentication for logins.
-# First argument for it is the Sanic app object, and subsequent
+# First argument passed is the Sanic app object, and subsequent
 # parameters are helper functions for authentication & security.
 jwt.initialize(app,
   authenticate=authenticate,
   retrieve_user=retrieve_user, # could probably be a lambda but meh
   store_refresh_token=store_rtoken,
-  retrieve_refresh_token=retrieve_rtoken)
+  retrieve_refresh_token=retrieve_rtoken,
+  revoke_refresh_token=revoke_rtoken)
 
 # Config variables for JWT authentication. See sanic-jwt docs on GitHub
-# for more info.
+# for more info, or the README.md on my own fork bc I added some stuff
 app.config.SANIC_JWT_COOKIE_SET = True # Store token in cookies instead of making the client webapp send them
+                                       # ...this may also open things up for XSRF. but I don't know enough about
+                                       # that to be sure regarding how to deal with or ameliorate it
 app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
 app.config.SANIC_JWT_SECRET = os.getenv('SANIC_JWT_SECRET') # it's a secret to everybody!
 app.config.SANIC_JWT_CLAIM_IAT = True # perhaps for invalidating long sessions
 app.config.SANIC_JWT_CLAIM_NBF = True # why not, more security
 app.config.SANIC_JWT_CLAIM_NBF_DELTA = 2 # token becomes checkable 2s after creation
 
-# app.static('/', '/dist/index.html/') # Route everything to Angular's file, even if the user navigates directly to it
+app.static('/', '/dist/index.html/') # Route everything to Angular's file, even if the user navigates directly to it (think this is how it works)
 
 @app.listener('before_server_start')
 async def set_up_dbs(app, loop):
@@ -109,6 +112,10 @@ async def set_up_dbs(app, loop):
     Establishes a connection to the environment's Postgres and Redis DBs
     for use in (first) authenticating and (then) storing refresh tokens.
     """
+    app.sesion = aiohttp.ClientSession()
+    app.sem = asyncio.Semaphore(4, loop=loop) # limit concurrency of aiohttp requests to Google Books
+    app.filesem = asyncio.Semaphore(255, loop=loop) # limit concurrency of file reads without forcing one at a time
+    
     app.pg_pool = await asyncpg.create_pool(dsn=os.getenv('DATABASE_URL'), loop=loop)
     app.acquire = app.pg_pool.acquire
     async with app.acquire() as conn:

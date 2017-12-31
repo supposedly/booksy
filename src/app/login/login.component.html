@@ -1,18 +1,30 @@
 <div class="container" style="margin-top: 2em;">
-<form (ngSubmit)="submit();  pw.value=none; uid.value=none">
+<form (ngSubmit)="send();  pw.value=none; uid.value=none">
+    <span *ngIf="isLocationRegistered">
+        <input #lid
+        [(ngModel)]="lID"
+      [ngModelOptions]="{updateOn: 'submit'}"
+      class="form-input"
+      placeholder="Location ID">
+    </span>
     <input #uid
       name="uid"
       [(ngModel)]="uID"
       [ngModelOptions]="{updateOn: 'submit'}"
-      class="form-control"
+      class="form-input"
       placeholder="User ID">
     <input #pw
       name="pw" type="password"
-      (keyup.enter)="submit(); pw.value=none; uid.value=none"
+      (keyup.enter)="send(); pw.value=none; uid.value=none"
       [(ngModel)]="password"
       [ngModelOptions]="{updateOn: 'submit'}"
-      class="form-control"
+      class="form-input"
       placeholder="Password">
-    <button [disabled]="!(pw.value && uid.value)" type="submit" class="btn btn-default">Submit</button>
+    <button [disabled]="!(pw.value && uid.value)"
+      type="submit"
+      [class.loading]="loading===true"
+      class="button"
+      (click)="loading=true">Submit</button>
 </form>
+<span *ngIf="errmsg" class="error-text">{{errmsg}}</span>
 </div>

@@ -1,8 +1,8 @@
 import { HttpHeaders } from '@angular/common/http';
 
-export const httpOptions = {
-  headers: new HttpHeaders({'Content-Type': 'application/json'});
-};
+export const HttpOptions = {
+  headers: new HttpHeaders({'Content-Type': 'application/json'}),
+}
 export class NavButton {
   text: string;
   dest?: string;
@@ -24,7 +24,7 @@ export class MediaItem {
   title: string;
   author: string;
   published: string;
-  acquired: string;
+  acquired?: string;
 }
 export class PersonalItem {
   mid: string;
@@ -54,4 +54,8 @@ export class User {
   password: string;
   firstName: string;
   lastName: string;
+}
+export class Location {
+  lid: string;
+  password: string;
 }

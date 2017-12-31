@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 
 import { MediaItem } from '../classes';
-import { MediaService } '../media.service';
+import { MediaService } from '../media.service';
 
 
 @Component({
@@ -14,7 +14,7 @@ import { MediaService } '../media.service';
 export class MediaInfoComponent implements OnInit {
   item: MediaItem;
   
-  @Input() mid: number;
+  @Input() mID: number;
   
   constructor(
     private route: ActivatedRoute,
@@ -26,7 +26,7 @@ export class MediaInfoComponent implements OnInit {
   }
   
   getItem(): void {
-    this.mediaService.getInfo(mid)
+    this.mediaService.getInfo(this.mID)
       .subscribe(item => this.item = item);
   }
 

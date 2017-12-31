@@ -6,6 +6,7 @@ import { MemberAuthService } from './member-auth.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
+  isLoggedIn: boolean = false;
   
   constructor(
     private router: Router,
@@ -13,7 +14,7 @@ export class AuthGuard implements CanActivate {
   ) { }
   
   canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean {
-    if(this.memberAuthService.isLoggedIn()) {
+    if(this.memberAuthService.verify()) {
       return true;
     }
     this.router.navigate(['/login'], {queryParams: {returnUrl: state.url}})
