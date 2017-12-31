@@ -7,7 +7,7 @@
   },
   "scripts": {
     "ng": "ng",
-    "heroku-prebuild": "npm cache clean --force && npm install --dev && npm install",
+    "heroku-prebuild": "npm install --dev && npm install",
     "start": "python3 server.py",
     "heroku-postbuild": "ng build --aot --prod",
     "deploy": "git push origin master && git push heroku master",

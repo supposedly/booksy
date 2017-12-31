@@ -22,10 +22,4 @@ export class HeaderComponent implements OnInit {
       .subscribe(buttons => this.buttons = buttons);
   }
   
-  selectedButton: NavButton;
-  
-  onSelect(button: NavButton): void {
-    this.selectedButton = button;
-  }
-
 }

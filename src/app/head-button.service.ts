@@ -6,39 +6,43 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
 
-import { NavButton, httpOptions } from './classes';
+import { NavButton } from './classes';
+import { MemberAuthService } from './member-auth.service';
 import { LoggingService } from './logging.service';
 
 @Injectable()
-export class ButtonService {
-  private buttonsURL = 'stock/headerbuttons';
+export class HeadButtonService {
+  private buttonsURL = 'stock/buttons/main-header';
+  private rID: number;
   
   constructor(
     private loggingService: LoggingService,
-    private http: HttpClient
-  ) { }
+    private http: HttpClient,
+    private memberAuthService: MemberAuthService
+  ) {
+      this.memberAuthService.getRID()
+        .subscribe(rid => this.rID = rid)
+  }
   
   private log(message: string) {
-    this.loggingService.add('ButtonService: ' + message);
+    this.loggingService.add('App just used a HeaderButtonService to ' + message);
   }
   
   getButtons(): Observable<NavButton[]> {
-    return this.http.get<NavButton[]>(this.buttonsURL).pipe(
-      tap(heroes => this.log(`Fetched buttons`)),
+    return this.http.get<NavButton[]>(this.buttonsURL, {params: {rid: this.rID.toString()}}).pipe(
+      tap(heroes => this.log(`fetch the main header buttons`)),
       catchError(this.handleError('getButtons', []))
     );
   }
   
-  private handleError<T> (operation = 'operation', result ?: T) {
+  private handleError<T> (action = 'action', result ?: T) {
     return (error: any): Observable<T> => {
 
-      // TODO: send the error to remote logging infrastructure
-      console.error(error); // log to console instead
+      console.error(error); // log to console
 
-      // TODO: better job of transforming error for user consumption
-      this.log(`${operation} failed: ${error.message}`);
+      this.log(`${action} failed: ${error.message}`);
 
-      // Let the app keep running by returning an empty result.
+      // let app continue running
       return of(result as T);
     };
   }

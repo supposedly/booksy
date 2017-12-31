@@ -1,15 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 
-import { NavButton } from '../classes';
-import { SideButtonService } from '../head-button.service';
+import { SideButton } from '../classes';
+import { SideButtonService } from '../side-button.service';
 
 @Component({
-  selector: 'app-header',
-  templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css']
+  selector: 'app-sidebar',
+  templateUrl: './sidebar.component.html',
+  styleUrls: ['./sidebar.component.css']
 })
-export class HeaderComponent implements OnInit {
-  buttons: NavButton[];
+export class SidebarComponent implements OnInit {
+  buttons: SideButton[];
   
   constructor(private sideButtonService: SideButtonService) { }
 
@@ -20,12 +20,6 @@ export class HeaderComponent implements OnInit {
   getButtons(): void {
     this.sideButtonService.getButtons()
       .subscribe(buttons => this.buttons = buttons);
-  }
-  
-  selectedButton: NavButton;
-  
-  onSelect(button: NavButton): void {
-    this.selectedButton = button;
   }
 
 }
