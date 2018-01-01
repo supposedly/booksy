@@ -24,9 +24,7 @@ export class CheckoutComponent implements OnInit {
     this.isLibrary = this.memberAuthService.isCheckoutAccount;
   }
   
-  @Input() media: MediaItem;
-  
   onSubmit(): void {
-    this.checkoutService.checkOut
+    //this.checkoutService.checkOut
   }
 }

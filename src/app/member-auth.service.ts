@@ -25,6 +25,7 @@ export class MemberAuthService {
   //we can cache all of these because they're not going to change
   public isRegistered: boolean; //whether location IP is present in server db
   public isCheckoutAccount: boolean; //whether user is logged in as a library checkout acct or as a user
+  public managesLocation: boolean;
   public uID: number;
   public lID: number;
   
