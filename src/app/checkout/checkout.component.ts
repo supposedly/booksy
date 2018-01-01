@@ -12,19 +12,21 @@ import { MemberAuthService } from '../member-auth.service';
   styleUrls: ['./checkout.component.css']
 })
 export class CheckoutComponent implements OnInit {
-
+  isLibrary: boolean;
+  mid;
+  uid;
+  
   constructor(
     private checkoutService: CheckoutService,
     private mediaService: MediaService,
     private memberAuthService: MemberAuthService,
-    private isLibrary: boolean
   ) { }
 
   ngOnInit() {
     this.isLibrary = this.memberAuthService.isCheckoutAccount;
   }
   
-  onSubmit(): void {
+  submit(mID): void {
     //this.checkoutService.checkOut
   }
 }
