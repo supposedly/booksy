@@ -102,7 +102,7 @@ app.config.SANIC_JWT_CLAIM_IAT = True # perhaps for invalidating long sessions
 app.config.SANIC_JWT_CLAIM_NBF = True # why not, more security
 app.config.SANIC_JWT_CLAIM_NBF_DELTA = 2 # token becomes checkable 2s after creation
 
-app.static('/dist/index.html', '/app/dist/index.html') # Route everything to Angular's file, even if the user navigates directly to it (think this is how it works)
+app.static('/', '/dist') # Route everything to Angular's file, even if the user navigates directly to it (think this is how it works)
 
 @app.listener('before_server_start')
 async def set_up_dbs(app, loop):
