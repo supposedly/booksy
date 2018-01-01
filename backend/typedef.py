@@ -293,8 +293,7 @@ class Location(AsyncInit):
         return await MediaType(type_name, self, self.app)
     
     @classmethod
-    @lockquire(lock=False)
-    async def instate(cls, conn, **kwargs):
+    async def instate(cls, app, **kwargs):
         """In this order:"""
         props = [
           'name', 'ip', 'color', 'image',
@@ -303,19 +302,19 @@ class Location(AsyncInit):
           'admin_name', 'admin_email', 'admin_phone'
           ]
         args = [kwargs[attr] for attr in props]
-        async with self.__class__._aiolock:
+        async with cls._aiolock, app.pg_pool.acquire() as conn:
             lid = await conn.fetchval(REGISTER_LOCATION, *args) # returns LID
-        return cls(lid, self.app)
+        return cls(lid, cls.app)
     
     @classmethod
-    @lockquire('location')
-    async def from_ip(cls, conn, ip):
-        query = """
-        SELECT lid
-          FROM locations
-         WHERE ip = $1::text
-        """
-        result = await conn.fetchval(query)
+    async def from_ip(cls, app, ip):
+        async with cls._aiolock, app.pg_pool.acquire() as conn:
+            query = """
+            SELECT lid
+              FROM locations
+             WHERE ip = $1::text
+            """
+            result = await conn.fetchval(query)
         if result:
             return cls(result)
         return None
@@ -508,32 +507,30 @@ class User(AsyncInit):
         return {i: getattr(self, i, None) for i in props}
     
     @classmethod
-    @lockquire('user')
     async def create(cls, conn, **kwargs):
         props = ['username', 'pwhash', 'lid', 'email', 'phone']
-                 
-        query = """
-        INSERT INTO members (
-                      username, pwhash,
-                      lid,
-                      email, phone
-                      )
-             SELECT $1::text, $2::bytea,
-                    $3::bigint,
-                    $4::text, $5::text
-        """
-        await conn.fetch(query, *(kwargs[i] for i in props))
+        async with cls._aiolock, app.pg_pool.acquire() as conn:
+            query = """
+            INSERT INTO members (
+                          username, pwhash,
+                          lid,
+                          email, phone
+                          )
+                 SELECT $1::text, $2::bytea,
+                        $3::bigint,
+                        $4::text, $5::text
+            """
+            await conn.execute(query, *(kwargs[i] for i in props))
+        return None
     
     @classmethod
-    @lockquire('user')
     async def from_identifiers(cls, conn, username, lid):
         """
         Returns a new User instance, given a username and location ID.
-        
-        Extra line.
         """
-        query = """SELECT uid FROM members WHERE username = $1 AND lid = $2::bigint"""
-        uid = await conn.fetchval(query, username, lid)
+        async with cls._aiolock, app.pg_pool.acquire() as conn:
+            query = """SELECT uid FROM members WHERE username = $1 AND lid = $2::bigint"""
+            uid = await conn.fetchval(query, username, lid)
         return await cls(uid)
     
     @lockquire('user')
