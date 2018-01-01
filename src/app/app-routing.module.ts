@@ -19,7 +19,7 @@ const routes: Routes = [
       {path: 'checkout', component: CheckoutComponent},
       {path: 'dashboard', component: DashboardComponent},
       {path: 'media/search', component: MediaSearchComponent},
-      {path: 'media/:mid', component: MediaInfoComponent},
+      {path: 'media/:mID', component: MediaInfoComponent},
       {path: 'account', component: MemberAcctInfoComponent},
       {path: 'reports', component: ReportsComponent},
       {path: 'manage', component: LocationMgmtComponent}

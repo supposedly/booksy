@@ -22,8 +22,7 @@ export class SideButtonService {
     private http: HttpClient,
     private memberAuthService: MemberAuthService,
   ) {
-      this.memberAuthService.getRID()
-        .subscribe(rid => this.rID = rid);
+      this.rID = this.memberAuthService.rID;
   }
   
   private log(message: string) {

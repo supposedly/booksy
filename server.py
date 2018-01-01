@@ -1,4 +1,3 @@
-#TODO: Create a wrapping decorator that eliminates the try/except at the start of every. single. endpoint
 import asyncio
 import itertools
 import os
@@ -11,7 +10,6 @@ import asyncpg
 import bcrypt
 import sanic
 import uvloop
-import sanic_cors
 import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
 from sanic import Sanic
