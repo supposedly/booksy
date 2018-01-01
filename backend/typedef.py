@@ -485,7 +485,6 @@ class Role(AsyncInit):
     
 class User(AsyncInit):
     _aiolock = asyncio.Lock()
-    
     @lockquire(lock=False)
     async def __init__(self, uid, app):
         self.app = app
