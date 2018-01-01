@@ -114,7 +114,7 @@ async def set_up_dbs(app, loop):
     app.sem = asyncio.Semaphore(4, loop=loop) # limit concurrency of aiohttp requests to Google Books
     app.filesem = asyncio.Semaphore(255, loop=loop) # limit concurrency of file reads without forcing one at a time
     
-    app.pg_pool = await asyncpg.create_pool(dsn=os.getenv('DATABASE_URL'), loop=loop)
+    app.pg_pool = await asyncpg.create_pool(dsn=os.getenv('DATABASE_URL'), max_size=15, loop=loop)
     app.acquire = app.pg_pool.acquire
     async with app.acquire() as conn:
         await setup.create_pg_tables(conn)
@@ -124,7 +124,7 @@ async def set_up_dbs(app, loop):
         app.rd_pool = await aioredis.create_pool(
                       os.getenv('REDIS_URL'),
                       minsize=5,
-                      maxsize=10,
+                      maxsize=15,
                       loop=loop)
 
 @app.listener('before_server_stop')
