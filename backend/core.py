@@ -5,7 +5,9 @@ import contextlib
 import struct
 from functools import wraps
 
-def lockquire(lock=True, db=True, sem=False, file=False):
+from .badhack import Location, Role, MediaType, MediaItem, User
+
+def lockquire(lock='', db=True, sem=False, file=False):
     """
     `lock' can be set to False when the function contains other stuff
     that doesn't require the lock (so as to release it sooner for other
@@ -13,8 +15,6 @@ def lockquire(lock=True, db=True, sem=False, file=False):
     I don't think anyone would ever find a practical reason to set `db'
     to False, but it's still there just in case.
     
-    lock: Acquire the class' instance-communal asyncio.Lock(),
-           used to prevent concurrent database reads/writes
     db:   Acquire a connection to the sanic app's global postgres
            connection pool for DB fetching/writing
     sem:  Acquire a lock with the app's global asyncio.Semaphore(),
@@ -37,7 +37,7 @@ def lockquire(lock=True, db=True, sem=False, file=False):
             (lockquire = 'lock and acquire')
             """
             # acquire whatever's necessary
-            if lock: await self.__class__._aiolock.acquire()
+            if lock: await eval(f'{lock}.acquire()') # meh workaround to not being able to use class variables
             if db: conn = await self.app.pg_pool.acquire()
             if sem: await self.app.sem.acquire()
             if file: await self.app.filesem.acquire()
