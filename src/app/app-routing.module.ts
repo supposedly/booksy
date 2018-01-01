@@ -11,8 +11,10 @@ import { MediaInfoComponent } from './media-info/media-info.component';
 import { MemberAcctInfoComponent } from './member-acct-info/member-acct-info.component';
 import { ReportsComponent } from './reports/reports.component';
 import { LocationMgmtComponent } from './location-mgmt/location-mgmt.component';
+import { LoginComponent } from './login/login.component';
 
 const routes: Routes = [
+  {path: 'login', component: LoginComponent},
   {path: '', pathMatch: 'full',
     component: HomePageComponent,
     children: [                     // routed to by the sidebar
