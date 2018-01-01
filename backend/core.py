@@ -37,7 +37,7 @@ def lockquire(lock='', db=True, sem=False, file=False):
             (lockquire = 'lock and acquire')
             """
             # acquire whatever's necessary
-            if lock: await eval(f'typedef.{lock}._aiolock.acquire()') # meh workaround to not being able to use class variables
+            if lock: await eval(f'typedef.{lock}._aiolock.acquire()') # AWFUL AWFUL AWFUL workaround to not being able to use class variables but it works ha
             if db: conn = await self.app.pg_pool.acquire()
             if sem: await self.app.sem.acquire()
             if file: await self.app.filesem.acquire()
