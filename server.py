@@ -28,7 +28,7 @@ app = Sanic('Booksy')
 # They can be found in /backend/blueprints
 app.blueprint(bp)
 
-async def auth(rqst, *args, **kwargs):
+async def authenticate(rqst, *args, **kwargs):
     """
     /auth
     Authenticate a user's credentials through sanic-jwt to give them
@@ -117,7 +117,7 @@ async def set_up_dbs(app, loop):
     app.pg_pool = await asyncpg.create_pool(dsn=os.getenv('DATABASE_URL'), loop=loop)
     app.acquire = app.pg_pool.acquire
     async with app.acquire() as conn:
-        await res.create_pg_tables(conn)
+        await setup.create_pg_tables(conn)
     if os.getenv('REDIS_URL', None) is None: # can't do nothin bout this
         app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = False
     else:
@@ -137,4 +137,4 @@ async def close_dbs(app, loop):
     await app.rd_pool.wait_closed()
     print('Shutting down.')
 
-app.run(host='0.0.0.0', port=os.environ.get('PORT', 8000), debug=True, workers=5)
+app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)), debug=True, workers=5)
