@@ -10,7 +10,7 @@ root = sanic.Blueprint('location_api', url_prefix='')
 
 @uid_get('location')
 @root.get('/')
-async def return_location_repr(rqst, location):
+async def give_location_repr(rqst, location):
     return sanic.response.json(location.to_dict(), status=200)
 
 @uid_get('location')

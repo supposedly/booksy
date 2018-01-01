@@ -10,7 +10,7 @@ media = sanic.Blueprint('location_media_api', url_prefix='/media')
 
 @uid_get('location')
 @media.get('/search')
-@jwtdec.protect()
+@jwtdec.protected()
 async def search_location_media(rqst, location):
     try:
         query = rqst.raw_args['query']
@@ -20,13 +20,13 @@ async def search_location_media(rqst, location):
 
 @uid_get('location')
 @media.get('/types')
-@jwtdec.protect()
+@jwtdec.protected()
 async def get_location_media_types(rqst, location):
     return sanic.response.json(await location.media_types())
 
 @uid_get('location', user=True)
 @media.post('/types/<action:(add|remove)>')
-@jwtdec.protect()
+@jwtdec.protected()
 async def edit_location_media_types(rqst, user, location, role, action):
     try:
         type_name = rqst.json['name']

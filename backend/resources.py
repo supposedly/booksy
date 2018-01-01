@@ -3,7 +3,7 @@ Just the three types: Perms, Maxes, Locks.
 I may actually be able to remove this entirely and just implement the
 distinct types as some sort of dictionary with the mixins...
 """
-from app_core import PackedByteFieldMixin, PackedBigIntMixin
+from .core import PackedByteFieldMixin, PackedBigIntMixin
 
 class Perms(PackedByteFieldMixin):
     _names = [

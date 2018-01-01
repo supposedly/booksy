@@ -10,7 +10,7 @@ mbrs = sanic.Blueprint('location_members_api', url_prefix='/members')
 
 @uid_get('location', user=True)
 @mbrs.post('/add')
-@jwtdec.protect()
+@jwtdec.protected()
 async def add_member_to_location(rqst, user, location, role):
     try:
         userdata = rqst.form['data']
@@ -22,8 +22,8 @@ async def add_member_to_location(rqst, user, location, role):
 
 @uid_get('location', user=True)
 @mbrs.post('/remove')
-@jwtdec.protect()
-async def remove_member_from_location(rqst, user, location, role)
+@jwtdec.protected()
+async def remove_member_from_location(rqst, user, location, role):
     try:
         to_remove = rqst.form['toRemove']
     except KeyError:
