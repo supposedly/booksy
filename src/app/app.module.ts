@@ -5,6 +5,8 @@ import { HttpClientModule } from '@angular/common/http';
 
 import { Globals } from './session-info-globals';
 
+import { AuthGuard } from './auth.guard';
+
 import { AboutComponent } from './about/about.component';
 import { AppComponent } from './app.component';
 import { CheckoutComponent } from './checkout/checkout.component';
@@ -67,6 +69,7 @@ import { SideButtonService } from './side-button.service';
     LoggingService,
     CheckoutService,
     MemberAuthService,
+    AuthGuard,
     Globals
     ],
   bootstrap: [AppComponent]

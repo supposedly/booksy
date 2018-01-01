@@ -77,23 +77,24 @@ export class MemberAuthService {
   }
   
   logIn(uid: string, password: string, lid?: string) {
-    var ret = this.http.post<any>(this.authURL, {
+    let ret = this.http.post<any>(this.authURL, {
       user_id: uid,
       password: password,
       lid: this.lID,
     }, httpOptions)
-    
-    this.getInfo()
-      .subscribe(res => this.resjson = res.json());
-    this.uID = this.resjson.user_id;
-    this.rID = this.resjson.rid;
-    this.lID = this.resjson.lid;
-    this.isCheckoutAccount = this.resjson.is_checkout;
-    this.username = this.resjson.username;
-    this.managesLocation = this.resjson.manages;
-    this.email = this.resjson.email;
-    this.phone = this.resjson.phone;
-    
+    let _; ret.subscribe(temp => _);
+    if (_) {
+      this.getInfo()
+        .subscribe(res => this.resjson = res.json());
+      this.uID = this.resjson.user_id;
+      this.rID = this.resjson.rid;
+      this.lID = this.resjson.lid;
+      this.isCheckoutAccount = this.resjson.is_checkout;
+      this.username = this.resjson.username;
+      this.managesLocation = this.resjson.manages;
+      this.email = this.resjson.email;
+      this.phone = this.resjson.phone;
+    }
     return ret;
   }
   
@@ -103,7 +104,7 @@ export class MemberAuthService {
       catchError(this.handleError<any>(`verification`))
       )
       .subscribe(resp => this.verified = resp.json());
-    if (!this.verified.valid) {
+    if (!this.verified || !this.verified.valid) {
       this.http.get<any>(this.refreshURL).pipe(
         tap(_ => this.log(`found expired access token so attempted to refresh it`)),
         catchError(this.handleError<any>(`refreshing token`))

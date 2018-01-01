@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
+import { AuthGuard } from './auth.guard';
+
 import { HomePageComponent } from './home-page/home-page.component';
 import { HelpComponent } from './help/help.component';
 import { AboutComponent } from './about/about.component';
@@ -15,7 +17,9 @@ import { LoginComponent } from './login/login.component';
 
 const routes: Routes = [
   {path: 'login', component: LoginComponent},
+  {path: 'home', redirectTo: '/'},
   {path: '', pathMatch: 'full',
+    canActivate: [AuthGuard], canActivateChild: [AuthGuard],
     component: HomePageComponent,
     children: [                     // routed to by the sidebar
       {path: 'checkout', component: CheckoutComponent},

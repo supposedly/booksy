@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { LoggingService } from '../logging.service';
 
 @Component({
-  selector: 'app-messages',
+  selector: 'app-logging',
   templateUrl: './logging.component.html',
   styleUrls: ['./logging.component.css']
 })
