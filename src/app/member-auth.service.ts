@@ -105,7 +105,7 @@ export class MemberAuthService {
       )
       .subscribe(resp => this.verified = resp.json());
     if (!this.verified || !this.verified.valid) {
-      this.http.get<any>(this.refreshURL).pipe(
+      this.http.post<any>(this.refreshURL, httpOptions).pipe(
         tap(_ => this.log(`found expired access token so attempted to refresh it`)),
         catchError(this.handleError<any>(`refreshing token`))
         )
