@@ -1,29 +1,29 @@
 <div class="container" style="margin-top: 2em;">
   <p>Welcome to Booksy! Log in below.</p>
-  <div class="err-container">
-  <div *ngIf="errmsg" class="err"><p>{{errmsg}}</p></div>
-  </div>
-  <form (ngSubmit)="send();  pw.value=null; uid.value=null; lid.value=null" class="theform">
-      <input #lid [hidden]="isLocationRegistered"
-        name="lid"
-        [(ngModel)]="lID"
-        [ngModelOptions]="{updateOn: 'submit'}"
-        placeholder="Location ID">
-      <input #uid
-        name="uid"
-        (keyup)="errmsg=null"
-        [(ngModel)]="uID"
-        [ngModelOptions]="{updateOn: 'submit'}"
-        placeholder="User ID">
-      <input #pw
-        name="pw" type="password"
-        (keyup)="errmsg=null"
-        [(ngModel)]="password"
-        [ngModelOptions]="{updateOn: 'submit'}"
-        placeholder="Password">
-      <button [disabled]="!(pw.value && uid.value && (isLocationRegistered?lid.value:true))"
-        type="submit"
-        [class.loading]="loading===true"
-        class="button"
-        (click)="loading=true">Submit</button>
+  <form (ngSubmit)="send();  pw.value=null; uid.value=null; lid.value=null">
+    <div class="err-container">
+      <div *ngIf="errmsg" class="err"><p>{{errmsg}}</p></div>
+    </div>
+    <input #lid [hidden]="isLocationRegistered"
+      name="lid"
+      [(ngModel)]="lID"
+      [ngModelOptions]="{updateOn: 'submit'}"
+      placeholder="Location ID">
+    <input #uid
+      name="uid"
+      (keyup)="errmsg=null"
+      [(ngModel)]="uID"
+      [ngModelOptions]="{updateOn: 'submit'}"
+      placeholder="User ID">
+    <input #pw
+      name="pw" type="password"
+      (keyup)="errmsg=null"
+      [(ngModel)]="password"
+      [ngModelOptions]="{updateOn: 'submit'}"
+      placeholder="Password">
+    <button [disabled]="!(pw.value && uid.value && (isLocationRegistered?lid.value:true))"
+      type="submit"
+      [class.loading]="loading===true"
+      class="button"
+      (click)="loading=true">Submit</button>
   </form>

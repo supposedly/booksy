@@ -13,10 +13,29 @@ p {
   font-size: 60px;
   text-align: center;
 }
-input {
-  margin: 4px auto;
-  width: 20em;
+div.err-container {
+  margin: auto;
+  height: 3em;
+}
+div.err {
+  border-style: solid;
+  border-width: 1px;
+  border-color: #ff2929;
+  background-color: #fef0ed;
+  border-radius: 8px;
+}
+div.err p {
+  font-family: Roboto, sans-serif;
+  font-weight: 300;
+  color: #ff2929;
+  font-size: 20px;
+}
+form input, form div.err-container {
+  width: 20em !important;
   padding: 1em;
+  margin: 4px auto;
+}
+form input {
   border: none;
   margin: 8px auto;
   border-style: solid;
@@ -24,6 +43,7 @@ input {
   border-radius: 5px;
   border-width: 1px;
 }
+
 button {
   background-color: #43ba2e;
   color: white;
@@ -44,22 +64,4 @@ button:hover:not(:disabled) {
 button.loading {
   opacity: 0.5;
   cursor: pointer;
-}
-div.err-container {
-  width: 50%;
-  margin: auto;
-  height: 5em;
-}
-div.err {
-  border-style: solid;
-  border-width: 1px;
-  border-color: #ff2929;
-  background-color: #fef0ed;
-  border-radius: 8px;
-}
-div.err p {
-  font-family: Roboto, sans-serif;
-  font-weight: 300;
-  color: #ff2929;
-  font-size: 20px;
 }
