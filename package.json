@@ -9,7 +9,7 @@
     "ng": "ng",
     "start": ":",
     "heroku-prebuild": "npm install",
-    "heroku-postbuild": ":",
+    "heroku-postbuild": "ng build --aot --prod",
     "deploy": "git push origin master && git push heroku master",
     "deployf": "git push -f origin master && git push -f heroku master",
     "build": "ng build",
