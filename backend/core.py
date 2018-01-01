@@ -5,7 +5,7 @@ import contextlib
 import struct
 from functools import wraps
 
-def lockquire(lock='', db=True, sem=False, file=False):
+def lockquire(lock=True, db=True, sem=False, file=False):
     """
     `lock' can be set to False when the function contains other stuff
     that doesn't require the lock (so as to release it sooner for other
@@ -35,7 +35,7 @@ def lockquire(lock='', db=True, sem=False, file=False):
             (lockquire = 'lock and acquire')
             """
             # acquire whatever's necessary
-            if lock: await self._aiolock.acquire() # AWFUL AWFUL AWFUL workaround to not being able to use class variables but it works ha
+            if lock: await eval(f'self.app.{lock}_lock.acquire()') # AWFUL AWFUL AWFUL workaround to not being able to use class variables but it works ha
             if db: conn = await self.app.pg_pool.acquire()
             if sem: await self.app.sem.acquire()
             if file: await self.app.filesem.acquire()
@@ -53,7 +53,7 @@ def lockquire(lock='', db=True, sem=False, file=False):
                 if file: await self.app.filesem.acquire()
                 if sem: self.app.sem.release()
                 if db: await self.app.pg_pool.release(conn)
-                if lock: self.app._aiolock.release()
+                if lock: eval(f'self.app.{lock}_lock.release()')
         return wrapper
     return decorator
 
