@@ -42,5 +42,4 @@ testem.log
 Thumbs.db
 
 # Personals
-/server2.py
-/__pycache__/
+__pycache__/

@@ -6,11 +6,11 @@ from sanic_jwt import decorators as jwtdec
 from .import uid_get, rqst_get
 from .import Location, Role, MediaType, MediaItem, User
 
-media = sanic.Blueprint('location_edit_api', url_prefix='/edit')
+edit = sanic.Blueprint('location_edit_api', url_prefix='/edit')
 
 @uid_get('location')
-@loc.post('/<action:(name|image|color)>')
-@jwtdec.protect()
+@edit.post('/<action:(name|image|color)>')
+@jwtdec.protected()
 async def edit_location_info(rqst, location, action):
     """
     Catch-all endpoint for updating a location's info

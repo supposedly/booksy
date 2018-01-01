@@ -5,7 +5,7 @@ import contextlib
 import struct
 from functools import wraps
 
-async def lockquire(lock=True, db=True, sem=False, file=False):
+def lockquire(lock=True, db=True, sem=False, file=False):
     """
     `lock' can be set to False when the function contains other stuff
     that doesn't require the lock (so as to release it sooner for other
@@ -26,7 +26,7 @@ async def lockquire(lock=True, db=True, sem=False, file=False):
            that linux doesn't handle that automatically and it can
            cause strange stuff if too many reads happen at once
     """
-    async def decorator(func):
+    def decorator(func):
         @wraps(func)
         async def wrapper(self, *args, **kwargs):
             """

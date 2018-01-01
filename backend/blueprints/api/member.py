@@ -12,7 +12,7 @@ members = sanic.Blueprint('member_api', url_prefix='/member')
 @members.post('/edit')
 @jwtdec.protected()
 async def edit_member(rqst, member, new, action):
-    if action='password':
+    if action == 'password':
         sanic.exceptions.abort(404)
         # ugh
     await member.edit(action, new)

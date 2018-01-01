@@ -6,8 +6,8 @@ import aiofiles
 import datetime as dt
 from asyncio import iscoroutinefunction as is_coro
 
-from app_core import LazyProperty, AsyncInit, lockquire
-from app_resources import Perms, Maxes, Locks
+from .core import LazyProperty, AsyncInit, lockquire
+from .resources import Perms, Maxes, Locks
 
 class MediaType(AsyncInit):
     _aiolock = asyncio.Lock()
@@ -26,7 +26,7 @@ class MediaType(AsyncInit):
         return self.name
     
     def to_dict(self):
-        return 
+        return None # Not implemented?NSDFO:a;sldkjfasd
     
     @lockquire()
     async def get_items(self, conn):
@@ -140,7 +140,7 @@ class MediaItem(AsyncInit):
         return resp
     
     @lockquire(lock=False)
-    async def issue_to(self, conn, user):
+    async def check_in(self, conn, user):
         async with self.__class__._aiolock:
             query = """
             UPDATE items
@@ -148,15 +148,15 @@ class MediaItem(AsyncInit):
                    due_date = current_date + $2, -- time-allowed parameter calculated in python bc would be awful to do in plpgsql
                    fines = 0
              WHERE mid = $3;
-             """
-             await conn.execute(user.uid, 7*user.maxes['checkout duration'], self.mid)
-         self.issued_to = user
-         self.due_date = dt.datetime.utcnow() + dt.timedelta(weeks=user.maxes['checkout duration'])
-         self.fines = 0
-         self.available = False
+            """
+            await conn.execute(user.uid, 7*user.maxes['checkout duration'], self.mid)
+        self.issued_to = user
+        self.due_date = dt.datetime.utcnow() + dt.timedelta(weeks=user.maxes['checkout duration'])
+        self.fines = 0
+        self.available = False
     
     @lockquire()
-    async def return(self, conn):
+    async def check_in(self, conn):
         query = """
         UPDATE items
            SET issued_to = NULL,
@@ -193,6 +193,9 @@ class Location(AsyncInit):
         async with self.__class__._aiolock:
             query = """SELECT name, ip, fine_amt, fine_interval, color FROM locations WHERE lid = $1::bigint"""
             name, ip, fine_amt, fine_interval, color, image = await conn.fetchrow(query)
+            query = """SELECT uid FROM members WHERE lid = $1 AND manages = true"""
+            uid = await conn.fetchval(query)
+            self.owner = await User(uid)
         self.name = name
         self.ip = ip
         self.fine_amt = fine_amt
@@ -204,7 +207,7 @@ class Location(AsyncInit):
         return str(self.lid)
     
     def to_dict(self):
-        return {i: getattr(self, i, None) for i in self.props} + {'owner_id', (await self.owner()).id}
+        return {i: getattr(self, i, None) for i in self.props} + {'owner_id', (self.owner).id}
     
     async def media_type(self, type_name: str):
         return await MediaType(type_name, self, self.app)
@@ -267,8 +270,7 @@ class Location(AsyncInit):
         if isbn:
             query += f'isbn:"{isbn}"'
         else:
-            query += f'intitle:"{title.replace(" ", "+")}"'
-                     f'inauthor:"{author.replace(" ", "+")}"'
+            query += f'intitle:"{title.replace(" ", "+")}"+inauthor:"{author.replace(" ", "+")}"'
         return query + end
         
     
@@ -287,12 +289,6 @@ class Location(AsyncInit):
          WHERE lid = $2
         """
         await conn.execute(query, new, self.lid)
-    
-    @lockquire()
-    async def owner(self, conn):
-        query = """SELECT uid FROM members WHERE lid = $1 AND manages = true"""
-        uid = await conn.fetchval(query)
-        return await User(uid, self.app)
     
     @lockquire(lock=False, db=False)
     async def image(self):
@@ -408,10 +404,6 @@ class Role(AsyncInit):
     def locks(self):
         return Locks(self._lockbin)
     
-    @LazyProperty
-    def location(self):
-        return await Location(lid)
-
 class User(AsyncInit):
     _aiolock = asyncio.Lock()
     
@@ -456,7 +448,7 @@ class User(AsyncInit):
     
     @classmethod
     @lockquire()
-    async def from_identifiers(cls, conn, username, lid) -> User:
+    async def from_identifiers(cls, conn, username, lid):
         """
         Returns a new User instance, given a username and location ID.
         
@@ -486,12 +478,13 @@ class User(AsyncInit):
         if all(able):
             # success
             return None
-        return 'User is forbidden from checking out.'
-             + ('' if able[0] else ' (currently using {} of {} allowed concurrent '
+        ret = 'User is forbidden from checking out.'
+        + ('' if able[0] else ' (currently using {} of {} allowed concurrent '
                                     'checkouts)'.format(self.num_checkouts,
                                                         self.locks.checkout_threshold)
                )
-             + '' if able[1] else ' (allowed to check out for 0 weeks)'
+        + '' if able[1] else ' (allowed to check out for 0 weeks)'
+        return ret
     
     @lockquire()
     async def num_checkouts(self) -> int:

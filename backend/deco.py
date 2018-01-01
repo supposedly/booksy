@@ -1,10 +1,10 @@
-from functools import partial
+from functools import wraps
 
 import sanic
 
 from .typedef import Location, Role, MediaType, MediaItem, User
 
-async def connect_redis(func):
+def connect_redis(func):
     @wraps(func)
     async def wrapper(*args, **kwargs):
         """
@@ -14,8 +14,8 @@ async def connect_redis(func):
             return await func(conn, *args, **kwargs)
     return wrapper
 
-async def uid_get(*attrs=None, user=False):
-    async def decorator(func):
+def uid_get(*attrs, user=False):
+    def decorator(func):
         """
         To be placed directly after the sanic routing deco
         so that it can make use of the request info
@@ -32,15 +32,15 @@ async def uid_get(*attrs=None, user=False):
                 user = await User(uid, rqst.app)
             except KeyError:
                 sanic.exceptions.abort(422, 'No user ID given')
-            vals = [user] if attrs is None or user is True
-            if attrs is not None:
-                vals += [getattr(user, i) for i in attrs)]
+            vals = [user] if user or not attrs else []
+            if attrs:
+                vals += [getattr(user, i) for i in attrs]
             return await func(rqst, *vals, *args, **kwargs)
         return wrapper
     return decorator
 
-async def rqst_get(*attrs):
-    async def decorator(func):
+def rqst_get(*attrs):
+    def decorator(func):
         @wraps(func)
         async def wrapper(rqst, *args, **kwargs):
             """

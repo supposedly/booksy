@@ -24,7 +24,7 @@ async def issue_item(rqst, user, item):
         # so if it's nonempty we know someth went wrong
         sanic.exceptions.abort(403, 'Unauthorized to check out.')
     await item.issue_to(user)
-    return sanic.response.raw({'checked': 'out', 'title': item.title, 'author': item.author, 'image': item.image_url)
+    return sanic.response.raw({'checked': 'out', 'title': item.title, 'author': item.author, 'image': item.image_url})
 
 @rqst_get('user', 'item')
 @media.post('/check/in')

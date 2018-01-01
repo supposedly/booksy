@@ -94,7 +94,7 @@ async def expose_management_buttons(rqst, user):
         sanic.exceptions.abort(400, 'Only available to user accounts')
     head_buttons = []
     if user.perms.can_manage_locations:
-        head_buttons.append({"text": 'location info', "dest": '/manage/location'}
+        head_buttons.append({"text": 'location info', "dest": '/manage/location'})
     if user.perms.can_manage_accounts:
         head_buttons.append({"text": 'create/delete accounts', "dest": '/manage/accounts'})
     if user.perms.can_manage_roles:
