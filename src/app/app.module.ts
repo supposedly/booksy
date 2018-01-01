@@ -19,7 +19,6 @@ import { LoginComponent } from './login/login.component';
 import { MediaInfoComponent } from './media-info/media-info.component';
 import { MediaSearchComponent } from './media-search/media-search.component';
 import { MemberAcctInfoComponent } from './member-acct-info/member-acct-info.component';
-import { MessagesComponent } from './messages/messages.component';
 import { ReportsComponent } from './reports/reports.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 

@@ -10,20 +10,23 @@ import { MemberAuthService } from '../member-auth.service';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
-  error: string;
+  public errmsg: string = null
+  isLocationRegistered: boolean;
   uID: string;
   password: string;
   lID: string;
   loading: boolean;
+  pw;
+  uid;
   
   constructor(
     private memberAuthService: MemberAuthService,
     private router: Router,
-    public errmsg: string = null
   ) {}
   
   ngOnInit() {
     this.loading = false;
+    this.isLocationRegistered = this.memberAuthService.isRegistered;
   }
   
   send(): void {

@@ -1,8 +1,8 @@
 <div class="container" style="margin-top: 2em;">
-<form (ngSubmit)="send();  pw.value=none; uid.value=none">
+<form (ngSubmit)="send();  pw.value=null; uid.value=null">
     <span *ngIf="isLocationRegistered">
-        <input #lid
-        [(ngModel)]="lID"
+      <input #lid
+      [(ngModel)]="lID"
       [ngModelOptions]="{updateOn: 'submit'}"
       class="form-input"
       placeholder="Location ID">
@@ -15,7 +15,7 @@
       placeholder="User ID">
     <input #pw
       name="pw" type="password"
-      (keyup.enter)="send(); pw.value=none; uid.value=none"
+      (keyup.enter)="send(); pw.value=null; uid.value=null"
       [(ngModel)]="password"
       [ngModelOptions]="{updateOn: 'submit'}"
       class="form-input"
