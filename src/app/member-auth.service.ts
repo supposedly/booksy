@@ -20,7 +20,7 @@ export class MemberAuthService {
   private refreshURL = '/auth/refresh';
   private logoutURL = '/auth/logout';
   
-  private locInfoURL = '/location/is-registered';
+  private locInfoURL = '/api/location/is-registered';
   
   //we can cache all of these because they're not going to change
   public isRegistered: boolean; //whether location IP is present in server db
