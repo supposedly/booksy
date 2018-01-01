@@ -26,7 +26,7 @@ async def create_location(rqst):
       in from here -- that way, we can infer their location ID and
       spare them from having to keep entering it to sign in!
     """
-    await Location.instate(rqst.json) # just gonna have Angular do the ordering
+    await Location.instate(rqst.app, **rqst.json) # just gonna have Angular do the ordering
     return sanic.response.raw(status=200)
     
 

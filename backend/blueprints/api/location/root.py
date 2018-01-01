@@ -22,7 +22,7 @@ async def return_location_attr(rqst, user, attr):
 async def is_location_registered(rqst):
     if not rqst.ip:
         return sanic.response.json({'registered': False, 'reason': 'No IP address found'})
-    location = await Location.from_ip(rqst.ip)
+    location = await Location.from_ip(rqst.ip, rqst.app)
     if location is not None:
         return sanic.response.json({'registered': True, 'lid': location.id}, status=200)
     else:

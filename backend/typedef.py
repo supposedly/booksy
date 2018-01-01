@@ -108,7 +108,7 @@ class MediaType(AsyncInit):
     def to_dict(self):
         return None # Not implemented?NSDFO:a;sldkjfasd
     
-    @lockquire('media_type')
+    @lockquire()
     async def get_items(self, conn):
         query = """
         SELECT mid
@@ -118,19 +118,19 @@ class MediaType(AsyncInit):
         """
         return await conn.fetch(query, self.name, self.lid)
     
-    @lockquire('media_type')
+    @lockquire()
     async def locks(self, conn):
         query = """SELECT locks FROM items WHERE media_type = $1::text"""
         locknum = await conn.fetch(query, self.name)
         return Locks(locknum)
     
-    @lockquire('media_type')
+    @lockquire()
     async def maxes(self, conn):
         query = """SELECT maxes FROM items WHERE media_type = $1::text"""
         maxnum = await conn.fetchval(query, self.name)
         return Maxes(maxnum)
     
-    @lockquire('media_type')
+    @lockquire()
     async def set_locks(self, conn, newlocks):
         if not isinstance(newlocks, Locks):
             raise TypeError('Argument must be of type Locks')
@@ -141,7 +141,7 @@ class MediaType(AsyncInit):
         """
         await conn.execute(query, newlocks.num, self.name)    
     
-    @lockquire('media_type')
+    @lockquire()
     async def set_maxes(self, conn, newmaxes: Maxes):
         if not isinstance(newmaxes, Maxes):
             raise TypeError('Argument must be of type Maxes')
@@ -235,7 +235,7 @@ class MediaItem(AsyncInit):
         self.fines = 0
         self.available = False
     
-    @lockquire('media_item')
+    @lockquire()
     async def check_in(self, conn):
         query = """
         UPDATE items
@@ -307,7 +307,7 @@ class Location(AsyncInit):
         return cls(lid, cls.app)
     
     @classmethod
-    async def from_ip(cls, app, ip):
+    async def from_ip(cls, ip, app):
         async with cls._aiolock, app.pg_pool.acquire() as conn:
             query = """
             SELECT lid
@@ -352,14 +352,14 @@ class Location(AsyncInit):
         return query + end
         
     
-    @lockquire('location')
+    @lockquire()
     async def get_roles(self, conn):
         query = """
         SELECT rid FROM roles WHERE lid = $1
         """
         return [await Role(i['rid']) for i in await query.fetch(self.lid)]
 
-    @lockquire('location')
+    @lockquire()
     async def edit(self, conn, to_edit, new):
         query = f"""
         UPDATE locations
@@ -372,12 +372,12 @@ class Location(AsyncInit):
     async def image(self):
         raise NotImplementedError
     
-    @lockquire('location')
+    @lockquire()
     async def media_types(self, conn):
         query = """SELECT media_types FROM locations WHERE lid = $1"""
         return await conn.fetchval(query, self.lid)
     
-    @lockquire('location')
+    @lockquire()
     async def add_media_type(self, conn, type_name: str):
         query = """
         UPDATE locations
@@ -387,7 +387,7 @@ class Location(AsyncInit):
         await conn.execute(query, type_name, self.lid)
         return await self.media_type(type_name)
     
-    @lockquire('location')
+    @lockquire()
     async def remove_media_type(self, conn, type_name: str):
         query = """
         UPDATE locations
@@ -428,7 +428,7 @@ class Location(AsyncInit):
             """
             await conn.execute(query, img, *args)
     
-    @lockquire('location')
+    @lockquire()
     async def remove_item(self, conn, item):
         item = item if isinstance(item, MediaItem) else await MediaItem(item)
         query = """
@@ -533,7 +533,7 @@ class User(AsyncInit):
             uid = await conn.fetchval(query, username, lid)
         return await cls(uid)
     
-    @lockquire('user')
+    @lockquire()
     async def edit(self, conn, to_edit, new):
         query = f"""
         UPDATE members
@@ -561,7 +561,7 @@ class User(AsyncInit):
         + '' if able[1] else ' (allowed to check out for 0 weeks)'
         return ret
     
-    @lockquire('user')
+    @lockquire()
     async def num_checkouts(self) -> int:
         query = """SELECT count(*) FROM items WHERE uid = $1::bigint"""
         return await conn.fetchval(self.uid)
