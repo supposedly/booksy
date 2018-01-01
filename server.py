@@ -124,13 +124,6 @@ async def set_up_dbs(app, loop):
     app.sem = asyncio.Semaphore(4, loop=loop) # limit concurrency of aiohttp requests to Google Books
     app.filesem = asyncio.Semaphore(255, loop=loop) # limit concurrency of file reads without forcing one at a time
     
-    # more dumb hack I don't like this (see core.py for where it's used)
-    app.media_type_lock = asyncio.Lock()
-    app.media_item_lock = asyncio.Lock()
-    app.location_lock = asyncio.Lock()
-    app.role_lock = asyncio.Lock()
-    app.user_lock = asyncio.Lock()
-    
     app.pg_pool = await asyncpg.create_pool(dsn=os.getenv('DATABASE_URL'), max_size=15, loop=loop)
     app.acquire = app.pg_pool.acquire
     async with app.acquire() as conn:
