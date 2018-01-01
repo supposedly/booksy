@@ -147,4 +147,8 @@ async def close_dbs(app, loop):
     await app.rd_pool.wait_closed()
     print('Shutting down.')
 
+@app.route('/')
+async def redirect_to_index(rqst):
+    return sanic.response.redirect('/index.html')
+
 app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)), debug=True, workers=1)
