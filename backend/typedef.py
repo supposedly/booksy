@@ -307,14 +307,14 @@ class Location(AsyncInit):
         return cls(lid, cls.app)
     
     @classmethod
-    async def from_ip(cls, ip, app):
-        async with cls._aiolock, app.pg_pool.acquire() as conn:
+    async def from_ip(cls, rqst):
+        async with cls._aiolock, rqst.app.pg_pool.acquire() as conn:
             query = """
             SELECT lid
               FROM locations
              WHERE ip = $1::text
             """
-            result = await conn.fetchval(query)
+            result = await conn.fetchval(query, rqst.ip)
         if result:
             return cls(result)
         return None
