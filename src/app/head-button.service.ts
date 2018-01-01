@@ -28,7 +28,7 @@ export class HeadButtonService {
   }
   
   getButtons(): Observable<NavButton[]> {
-    return this.http.get<NavButton[]>(this.buttonsURL, {params: {rid: this.rID.toString()}}).pipe(
+    return this.http.get<NavButton[]>(this.buttonsURL).pipe(
       tap(heroes => this.log(`fetch the main header buttons`)),
       catchError(this.handleError('getButtons', []))
     );

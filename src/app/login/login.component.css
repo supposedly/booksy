@@ -1,13 +1,65 @@
-button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 14px 20px;
-    margin: 8px 0;
-    border: none;
-    cursor: pointer;
-    width: 100%;
-}
+@import url('https://fonts.googleapis.com/css?family=Monteserrat');
 
-button:hover {
-    opacity: 0.8;
+* {
+  /*background-color: #fafafa;*/
+}
+form {
+  display: flex;
+  flex-direction: column;
+}
+p {
+  font-family: Roboto, sans-serif;
+  font-weight: 200;
+  font-size: 60px;
+  text-align: center;
+}
+input {
+  margin: 4px auto;
+  width: 20em;
+  padding: 1em;
+  border: none;
+  margin: 8px auto;
+  border-style: solid;
+  border-color: #dcdcdc;
+  border-radius: 5px;
+  border-width: 1px;
+}
+button {
+  background-color: #43ba2e;
+  color: white;
+  padding: 14px 20px;
+  margin: auto;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  transition: opacity .2s;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+button:hover:not(:disabled) {
+  opacity: 0.8;
+}
+button.loading {
+  opacity: 0.5;
+  cursor: pointer;
+}
+div.err-container {
+  width: 50%;
+  margin: auto;
+  height: 5em;
+}
+div.err {
+  border-style: solid;
+  border-width: 1px;
+  border-color: #ff2929;
+  background-color: #fef0ed;
+  border-radius: 8px;
+}
+div.err p {
+  font-family: Roboto, sans-serif;
+  font-weight: 300;
+  color: #ff2929;
+  font-size: 20px;
 }

@@ -44,16 +44,6 @@ export class MemberAuthService {
   ) {
       this.isLocationRegistered()
         .subscribe(value => this.isRegistered = value);
-      this.getInfo()
-        .subscribe(res => this.resjson = res.json());
-      this.uID = this.resjson.user_id;
-      this.rID = this.resjson.rid;
-      this.lID = this.resjson.lid;
-      this.isCheckoutAccount = this.resjson.is_checkout;
-      this.username = this.resjson.username
-      this.managesLocation = this.resjson.manages
-      this.email = this.resjson.email
-      this.phone = this.resjson.phone
   }
   
   resetCache(): void {
@@ -87,11 +77,24 @@ export class MemberAuthService {
   }
   
   logIn(uid: string, password: string, lid?: string) {
-    return this.http.post<any>(this.authURL, {
+    var ret = this.http.post<any>(this.authURL, {
       user_id: uid,
       password: password,
       lid: this.lID,
     }, httpOptions)
+    
+    this.getInfo()
+      .subscribe(res => this.resjson = res.json());
+    this.uID = this.resjson.user_id;
+    this.rID = this.resjson.rid;
+    this.lID = this.resjson.lid;
+    this.isCheckoutAccount = this.resjson.is_checkout;
+    this.username = this.resjson.username;
+    this.managesLocation = this.resjson.manages;
+    this.email = this.resjson.email;
+    this.phone = this.resjson.phone;
+    
+    return ret;
   }
   
   verify(): boolean {

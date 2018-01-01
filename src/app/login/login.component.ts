@@ -10,7 +10,7 @@ import { MemberAuthService } from '../member-auth.service';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
-  public errmsg: string = null
+  public errmsg: string = null;
   isLocationRegistered: boolean;
   uID: string;
   password: string;
@@ -18,7 +18,8 @@ export class LoginComponent implements OnInit {
   loading: boolean;
   pw;
   uid;
-  
+  lid;
+    
   constructor(
     private memberAuthService: MemberAuthService,
     private router: Router,
