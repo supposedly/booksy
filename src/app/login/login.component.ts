@@ -29,7 +29,7 @@ export class LoginComponent implements OnInit {
   
   ngOnInit() {
     this.isLocationRegistered = this.memberAuthService.isRegistered;
-    this.returnURL = this.route.snapshot.queryParams['returnUrl'] || '/';
+    this.returnURL = this.route.snapshot.queryParams['returnURL'] || '/';
   }
   
   send(): void {
