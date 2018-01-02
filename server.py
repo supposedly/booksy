@@ -49,7 +49,7 @@ async def authenticate(rqst, *args, **kwargs):
     async with app.acquire() as conn:
         query = """SELECT pwhash FROM members WHERE lid = $1::bigint AND username = $2::text"""
         pwhash = await conn.fetch(query, lid, username)
-        if uid is None or not bcrypt.checkpw(password, pwhash):
+        if username is None or not bcrypt.checkpw(password, pwhash):
                 # (we shouldn't specify which of pw/username is invalid lest an attacker
                 # use the info to enumerate possible passwords/usernames)
                 raise jwt.exceptions.AuthenticationFailed('Invalid username or password.')
@@ -144,8 +144,23 @@ async def close_dbs(app, loop):
     print('Shutting down.')
 
 
-@app.route('/<path:.*>')
-async def redirect_to_index(rqst, path):
-    return sanic.response.redirect(f'/?redirect={urllib.parse.quote(path)}')
+@app.route('/')
+async def handle_homepage(rqst):
+    return sanic.response.redirect('/index.html')
 
+@app.route('/<path:[^?]+>')
+async def redirect_to_index(rqst, path):
+    """
+    A jury-rigged solution to the problem with Angular's PathLocationStrategy
+    routing.
+    The app won't load if you don't redirect to /index.html, but then
+    /index.html doesn't match any routes within the app... so one has 
+    to add a redirect router within the app from /index.html to the
+    home component and then have said component redirect to whatever
+    is listed in the ?redirect= parameter (a feat in itself!). Sort
+    of shamefully proud of this.
+    """
+    return sanic.response.redirect(f'/index.html/?redirect={urllib.parse.quote(path)}')
+
+# more than 1 worker and you get too many DB connections :((
 app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)), debug=True, workers=1)

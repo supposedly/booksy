@@ -35,15 +35,15 @@ export class LoginComponent implements OnInit {
   send(): void {
     this.memberAuthService.logIn(this.uID, this.password, this.lID)  // memberAuthService will now send this info, along with the location ID fetched from /auth/me
       .subscribe(
-      resp => {
-          // login successful
-          this.router.navigateByUrl(this.returnURL);
-      },
-      err => {
-          // login failed
-          this.errmsg = 'Incorrect username or password';
-          this.loading = false;
-      }
+        resp => {
+            // login successful
+            this.router.navigateByUrl(this.returnURL);
+        },
+        err => {
+            // login failed
+            this.errmsg = 'Incorrect username or password';
+            this.loading = false;
+        }
     );
   }
   
