@@ -524,12 +524,12 @@ class User(AsyncInit):
         return None
     
     @classmethod
-    async def from_identifiers(cls, conn, username, lid):
+    async def from_identifiers(cls, app, username, lid):
         """
         Returns a new User instance, given a username and location ID.
         """
         async with cls._aiolock, app.pg_pool.acquire() as conn:
-            query = """SELECT uid FROM members WHERE username = $1 AND lid = $2::bigint"""
+            query = """SELECT uid FROM members WHERE username = $1::text AND lid = $2::bigint"""
             uid = await conn.fetchval(query, username, lid)
         return await cls(uid)
     
