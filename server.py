@@ -146,6 +146,8 @@ async def close_dbs(app, loop):
 
 @app.route('/<path:.*>')
 async def redirect_to_index(rqst, path):
+    if path:
+        return sanic.response.redirect('/') # blegh
     return sanic.response.redirect(f'/?redirect={urllib.parse.quote_plus(path)}')
 
 app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)), debug=True, workers=1)
