@@ -26,12 +26,12 @@ export class MemberAuthService {
   public isRegistered: boolean; //whether location IP is present in server db
   public isCheckoutAccount: boolean; //whether user is logged in as a library checkout acct or as a user
   public managesLocation: boolean;
-  public uID: number;
-  public lID: number;
+  public uID: string;
+  public lID: string;
   
   //these are potentially subject to change but can still be cached until they do
   public username: string;
-  public rID: number;
+  public rID: string;
   public phone: string;
   public email: string;
   
@@ -69,7 +69,7 @@ export class MemberAuthService {
   }
   
   getInfo(): Observable<any> {
-    return this.http.get<any>(this.infoURL, {params: {uid: this.uID.toString()}}).pipe(
+    return this.http.get<any>(this.infoURL, {params: {uid: this.uID}}).pipe(
       tap(_ => this.log(`requested user info`)),
       catchError(this.handleError<any>(`refreshing`))
       )
@@ -80,7 +80,7 @@ export class MemberAuthService {
     let ret = this.http.post<any>(this.authURL, {
       user_id: uid,
       password: password,
-      lid: this.lID,
+      lid: this.lID ? this.lID : lid,
     }, httpOptions)
     let _; ret.subscribe(temp => _);
     if (_) {

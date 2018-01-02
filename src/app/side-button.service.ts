@@ -15,7 +15,7 @@ const httpOptions = HttpOptions;
 @Injectable()
 export class SideButtonService {
   private buttonsURL: string = 'stock/buttons/home-sidebar';
-  private rID: number;
+  private rID: string;
   
   constructor(
     private loggingService: LoggingService,
@@ -30,7 +30,7 @@ export class SideButtonService {
   }
   
   getButtons(): Observable<SideButton[]> {
-    return this.http.get<SideButton[]>(this.buttonsURL, {params: {rid: this.rID.toString()}}).pipe(
+    return this.http.get<SideButton[]>(this.buttonsURL, {params: {rid: this.rID}}).pipe(
       tap(heroes => this.log(`fetch the sidebar buttons from remote server`)),
       catchError(this.handleError('getButtons', []))
     );

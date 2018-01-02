@@ -26,7 +26,7 @@ app = Sanic('Booksy')
 
 # "Blueprints", i.e. separate files containing endpoint info to
 # avoid clogging up this main file.
-# They can be found in /backend/blueprints
+# They can be found in ./backend/blueprints
 app.blueprint(bp)
 
 async def authenticate(rqst, *args, **kwargs):
@@ -37,22 +37,17 @@ async def authenticate(rqst, *args, **kwargs):
     """
     try:
         # standard fare. get username and password from the app's request
-        uid = request.json['username'].lower()
-        user_type = request.json['type'].lower()
-        password = request.json['password'].encode('utf-8')
+        username = rqst.json['user_id'].lower()
+        password = rqst.json['password'].encode('utf-8')
+        lid = rqst.json['lid']
     except KeyError:
         # this will always be handled client-side regardless, but...
         # ...just in case, I guess
         raise jwt.exceptions.AuthenticationFailed('Missing username or password.')
     # look up the username/pw pair in the database
     async with app.acquire() as conn:
-        try:
-            query = """SELECT lid FROM locations WHERE ip == $1::text"""
-            lid = await conn.execute(query, rqst.remote_addr)
-        except AttributeError:
-            raise jwt.exceptions.AuthenticationFailed('Invalid username or password.')
-        query = """SELECT pwhash FROM members WHERE uid = $1::int"""
-        pwhash = await conn.fetch(query, uid)
+        query = """SELECT pwhash FROM members WHERE lid = $1::int AND username = $2"""
+        pwhash = await conn.fetch(query, lid, username)
         if uid is None or not bcrypt.checkpw(password, pwhash):
                 # (we shouldn't specify which of pw/username is invalid lest an attacker
                 # use the info to enumerate possible passwords/usernames)
@@ -114,7 +109,7 @@ absolute = [glob(i) for i in map('/app/dist/'.__add__, filenames)]
 for rel, absol in zip(relative, absolute):
     app.static(rel[0], absol[0]) # Route user requests to Angular's files
 
-app.static('/', '/dist/index.html') #probably not work
+app.static('/', '/dist/index.html?redirect=') #probably not work
 
 @app.listener('before_server_start')
 async def set_up_dbs(app, loop):
@@ -149,9 +144,9 @@ async def close_dbs(app, loop):
     await app.rd_pool.wait_closed()
     print('Shutting down.')
 
-'''
+
 @app.route('/')
 async def redirect_to_index(rqst):
     return sanic.response.redirect('/index.html')
-'''
+
 app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)), debug=True, workers=1)
