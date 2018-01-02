@@ -16,6 +16,7 @@ export class HomePageComponent implements OnInit {
 
   ngOnInit() {
     this.redirect = this.route.snapshot.queryParams['redirect'] || '/';
+    console.log(this.redirect);
     this.router.navigateByUrl(this.redirect);
   }
 
