@@ -19,7 +19,7 @@ async def expose_header_buttons(rqst):
     
     Requires nothing from client, being static.
     """
-    resp = [{"text": 'home', "dest": ''}, {"text": 'help'}, {"text": 'about'}]
+    resp = [{"text": 'home'}, {"text": 'help'}, {"text": 'about'}]
     # dest on home should not be necessary, but for some reason Angular
     # isn't picking up the redirect I've tried to place on the router
     # from '/home' to '/'... so instead it says

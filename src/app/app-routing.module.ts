@@ -17,8 +17,9 @@ import { LoginComponent } from './login/login.component';
 
 const routes: Routes = [
   {path: 'login', component: LoginComponent},
-  {path: 'home', redirectTo: '/'},
-  {path: '', pathMatch: 'full',
+  {path: '', redirectTo: 'home', pathMatch: 'full'},
+  {path: 'index.html', redirectTo: 'home'},
+  {path: 'home',
     canActivate: [AuthGuard], canActivateChild: [AuthGuard],
     component: HomePageComponent,
     children: [                     // routed to by the sidebar
