@@ -14,10 +14,11 @@ export class HomePageComponent implements OnInit {
     private route: ActivatedRoute
   ) {}
 
-  ngOnInit() {
+  ngOnInit() {/*
     this.redirect = this.route.snapshot.queryParams['redirect'] || '/';
-    console.log(this.redirect);
-    this.router.navigateByUrl(this.redirect);
+    if (this.redirect.length > 1) {
+        this.router.navigateByUrl(this.redirect);
+    }*/
   }
 
 }
