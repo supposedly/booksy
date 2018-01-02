@@ -107,7 +107,7 @@ export class MemberAuthService {
     if (!this.verified || !this.verified.valid) {
       this.http.post<any>(this.refreshURL, httpOptions).pipe(
         tap(_ => this.log(`found expired access token so attempted to refresh it`)),
-        catchError(this.handleError<any>(`refreshing token`))
+        catchError(this.handleError<any>(`obtaining refresh token`))
         )
         .subscribe(resp => this.verified = resp.json());
     }
@@ -125,13 +125,13 @@ export class MemberAuthService {
   logout() {
     return this.http.post(this.logoutURL, httpOptions).pipe(
       tap(_ => this.log(`logged out`)),
-      catchError(this.handleError<any>(`verification`))
+      catchError(this.handleError<any>(`logout`))
     )
     .subscribe();
   }
   
-  private log(message: string) {
-    this.loggingService.add('memberAuthService just ' + message);
+  private log(message: string, error?: boolean) {
+    this.loggingService.add((error?'memberAuthService: ':'memberAuthService just ') + message);
   }
   
   /* Handle Http operation that failed.
@@ -144,7 +144,7 @@ export class MemberAuthService {
 
       console.error(error); // log to console
 
-      this.log(`${operation} failed: ${error.message}`);
+      this.log(`${operation} failed: ${error.message}`, true);
 
       // let app continue running
       return of(result as T);

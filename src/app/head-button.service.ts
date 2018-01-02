@@ -18,10 +18,6 @@ export class HeadButtonService {
     private http: HttpClient,
   ) {}
   
-  private log(message: string) {
-    this.loggingService.add('App just used a HeaderButtonService to ' + message);
-  }
-  
   getButtons(): Observable<NavButton[]> {
     return this.http.get<NavButton[]>(this.buttonsURL).pipe(
       tap(heroes => this.log(`fetch the main header buttons`)),
@@ -29,12 +25,16 @@ export class HeadButtonService {
     );
   }
   
+  private log(message: string, error?: boolean) {
+    this.loggingService.add((error?'headerButtonService: ':'App just used a HeaderButtonService to ') + message);
+  }
+  
   private handleError<T> (action = 'action', result ?: T) {
     return (error: any): Observable<T> => {
 
       console.error(error); // log to console
 
-      this.log(`${action} failed: ${error.message}`);
+      this.log(`${action} failed: ${error.message}`, true);
 
       // let app continue running
       return of(result as T);

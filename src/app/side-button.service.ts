@@ -25,10 +25,6 @@ export class SideButtonService {
       this.rID = this.memberAuthService.rID;
   }
   
-  private log(message: string) {
-    this.loggingService.add('App just used a SideButtonService to ' + message);
-  }
-  
   getButtons(): Observable<SideButton[]> {
     return this.http.get<SideButton[]>(this.buttonsURL, {params: {rid: this.rID}}).pipe(
       tap(heroes => this.log(`fetch the sidebar buttons from remote server`)),
@@ -36,14 +32,16 @@ export class SideButtonService {
     );
   }
   
+  private log(message: string, error?: boolean) {
+    this.loggingService.add(error?'sideButtonService: ':'App just used a SideButtonService to ' + message);
+  }
+    
   private handleError<T> (operation = 'operation', result ?: T) {
     return (error: any): Observable<T> => {
 
-      // TODO: send the error to remote logging infrastructure
-      console.error(error); // log to console instead
+      console.error(error); // log to console
 
-      // TODO: better job of transforming error for user consumption
-      this.log(`${operation} failed: ${error.message}`);
+      this.log(`${operation} failed: ${error.message}`, true);
 
       // Let the app keep running by returning an empty result.
       return of(result as T);

@@ -13,7 +13,7 @@ export class LoginComponent implements OnInit {
   public errmsg: string = null;
   loading: boolean = false;
   returnURL: string;
-  isLocationRegistered: boolean;
+  isLocationRegistered: boolean = false;
   uID: string;
   password: string;
   lID: string;
