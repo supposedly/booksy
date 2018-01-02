@@ -5,7 +5,7 @@ bcrypt
 uvloop
 
 # Fork of sanic that allows blueprint meta-groups
-git+https://github.com/eltrhn/sanic.git
+git+git://github.com/eltrhn/sanic.git
 # Fork of sanic-jwt that allows asynchronous setup functions
 # and some other stuff like refresh-token revocation
-git+https://github.com/eltrhn/sanic-jwt.git
+git+git://github.com/eltrhn/sanic-jwt.git
