@@ -114,6 +114,8 @@ absolute = [glob(i) for i in map('/app/dist/'.__add__, filenames)]
 for rel, absol in zip(relative, absolute):
     app.static(rel[0], absol[0]) # Route user requests to Angular's files
 
+app.static('/', '/dist/index.html') #probably not work
+
 @app.listener('before_server_start')
 async def set_up_dbs(app, loop):
     """
@@ -147,8 +149,9 @@ async def close_dbs(app, loop):
     await app.rd_pool.wait_closed()
     print('Shutting down.')
 
+'''
 @app.route('/')
 async def redirect_to_index(rqst):
     return sanic.response.redirect('/index.html')
-
+'''
 app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)), debug=True, workers=1)
