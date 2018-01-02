@@ -10,6 +10,7 @@ import aioredis
 import asyncpg
 import bcrypt
 import sanic
+import urllib
 import uvloop
 import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
@@ -39,20 +40,20 @@ async def authenticate(rqst, *args, **kwargs):
         # standard fare. get username and password from the app's request
         username = rqst.json['user_id'].lower()
         password = rqst.json['password'].encode('utf-8')
-        lid = rqst.json['lid']
+        lid = int(rqst.json['lid'])
     except KeyError:
         # this will always be handled client-side regardless, but...
         # ...just in case, I guess
         raise jwt.exceptions.AuthenticationFailed('Missing username or password.')
     # look up the username/pw pair in the database
     async with app.acquire() as conn:
-        query = """SELECT pwhash FROM members WHERE lid = $1::int AND username = $2"""
+        query = """SELECT pwhash FROM members WHERE lid = $1::bigint AND username = $2::text"""
         pwhash = await conn.fetch(query, lid, username)
         if uid is None or not bcrypt.checkpw(password, pwhash):
                 # (we shouldn't specify which of pw/username is invalid lest an attacker
                 # use the info to enumerate possible passwords/usernames)
                 raise jwt.exceptions.AuthenticationFailed('Invalid username or password.')
-    return await User.from_identifiers(uid, lid)
+    return await User.from_identifiers(rqst.app, uid, lid)
 
 async def retrieve_user(rqst, payload, *args, **kwargs):
     """/auth/me"""
@@ -109,8 +110,6 @@ absolute = [glob(i) for i in map('/app/dist/'.__add__, filenames)]
 for rel, absol in zip(relative, absolute):
     app.static(rel[0], absol[0]) # Route user requests to Angular's files
 
-app.static('/', '/dist/index.html?redirect=') #probably not work
-
 @app.listener('before_server_start')
 async def set_up_dbs(app, loop):
     """
@@ -145,8 +144,8 @@ async def close_dbs(app, loop):
     print('Shutting down.')
 
 
-@app.route('/')
-async def redirect_to_index(rqst):
-    return sanic.response.redirect('/index.html')
+@app.route('/<path:.*>')
+async def redirect_to_index(rqst, path):
+    return sanic.response.redirect(f'/?redirect={urllib.parse.quote_plus(path)}')
 
 app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)), debug=True, workers=1)
