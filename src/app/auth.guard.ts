@@ -17,10 +17,14 @@ export class AuthGuard implements CanActivate {
     if (this.memberAuthService.verify()) {
       return true;
     }
+    if (Object.keys(next.queryParams).includes('redirect') && !(next.queryParams['redirect'])) {
+      this.router.navigateByUrl(next.url.toString());
+      return true;
+    }
     if (next.queryParams['redirect']) {
       return true;
     }
-    this.router.navigate(['/login'], {queryParams: {returnURL: state.url}})
+    this.router.navigate(['/login'], {queryParams: state.url==='/'?{}:{returnURL: state.url}})
     return false;
   }
 }
