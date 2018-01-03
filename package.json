@@ -8,8 +8,10 @@
   "scripts": {
     "ng": "ng",
     "start": ":",
+    "rr": "git reset HEAD~1 && git add . && git commit -am",
     "r": "git reset HEAD~1 && git commit -am",
     "d": "git push origin master && git push heroku master",
+    "deploy": "npm run d",
     "df": "git push -f origin master && git push -f heroku master",
     "heroku-prebuild": "npm install",
     "heroku-postbuild": "ng build --aot --prod",
