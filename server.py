@@ -52,7 +52,7 @@ async def authenticate(rqst, *args, **kwargs):
         if username is None or not pwhash or not bcrypt.checkpw(password, pwhash):
                 # (we shouldn't specify which of pw/username is invalid lest an attacker
                 # use the info to enumerate possible passwords/usernames)
-                raise jwt.exceptions.AuthenticationFailed('Invalid username or password.')
+                return False # unverified
     return await User.from_identifiers(rqst.app, uid, lid)
 
 async def retrieve_user(rqst, payload, *args, **kwargs):
