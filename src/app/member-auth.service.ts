@@ -43,7 +43,7 @@ export class MemberAuthService {
     private loggingService: LoggingService
   ) {
       this.isLocationRegistered()
-        .subscribe(value => this.isRegistered = value);
+        .subscribe(value => this.isRegistered = value.json()['registered']);
   }
   
   resetCache(): void {
