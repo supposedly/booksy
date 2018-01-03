@@ -34,7 +34,6 @@ import { MediaService } from './media.service';
 import { MemberAuthService } from './member-auth.service';
 import { RoleService } from './role.service';
 import { SideButtonService } from './side-button.service';
-import { ReroutingComponent } from './rerouting/rerouting.component';
 
 @NgModule({
   declarations: [
@@ -54,7 +53,6 @@ import { ReroutingComponent } from './rerouting/rerouting.component';
     HomePageComponent,
     HelpComponent,
     AboutComponent,
-    ReroutingComponent,
   ],
   imports: [
     BrowserModule,
