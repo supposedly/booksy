@@ -122,7 +122,7 @@ export class MemberAuthService {
       .subscribe(resp => resp.json().isCheckoutAccount);
   }
   
-  logout() {
+  logOut() {
     return this.http.post(this.logoutURL, httpOptions).pipe(
       tap(_ => this.log(`logged out`)),
       catchError(this.handleError<any>(`logout`))

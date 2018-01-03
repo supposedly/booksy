@@ -26,6 +26,7 @@ export class SideButtonService {
   }
   
   getButtons(): Observable<SideButton[]> {
+    if (!this.rID) { return; }
     return this.http.get<SideButton[]>(this.buttonsURL, {params: {rid: this.rID}}).pipe(
       tap(heroes => this.log(`fetch the sidebar buttons from remote server`)),
       catchError(this.handleError('getButtons', []))
