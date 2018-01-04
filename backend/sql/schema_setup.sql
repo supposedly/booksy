@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS
     checkouts BIGINT,
     pwhash bytea,
     type SMALLINT,
+    perms BIGINT,
     maxes BIGINT,
     locks BIGINT
   );

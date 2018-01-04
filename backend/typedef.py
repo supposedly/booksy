@@ -259,17 +259,17 @@ class Location(AsyncInit):
       'username',
       'fine_amt', 'fine_interval'
       ]
-    async def __init__(self, lid, app):
+    async def __init__(self, lid, app, *, owner=None):
         self.app = app
         self.pool = self.app.pg_pool
         self.acquire = self.pool.acquire
         self.lid = int(lid)
         async with self.__class__._aiolock, self.acquire() as conn:
-            query = """SELECT name, ip, fine_amt, fine_interval, color FROM locations WHERE lid = $1::bigint"""
-            name, ip, fine_amt, fine_interval, color, image = await conn.fetchrow(query)
+            query = """SELECT name, ip, fine_amt, fine_interval, color, image FROM locations WHERE lid = $1::bigint"""
+            name, ip, fine_amt, fine_interval, color, image = await conn.fetchrow(query, self.lid)
             query = """SELECT uid FROM members WHERE lid = $1 AND manages = true"""
-            uid = await conn.fetchval(query)
-        self.owner = await User(uid, self.app)
+            uid = await conn.fetchval(query, self.lid)
+        self.owner = await User(uid, self.app, location=self) if owner is None else owner # just for consistency; don't think the else will ever be used though
         self.name = name
         self.ip = ip
         self.fine_amt = fine_amt
@@ -355,6 +355,10 @@ class Location(AsyncInit):
 
     @lockquire()
     async def edit(self, conn, to_edit, new):
+        """
+        to_edit: What row to edit with new info; can be anything, this
+        func will handle type automatically
+        """
         query = f"""
         UPDATE locations
            SET {to_edit} = $1::{'bytea' if to_edit=='image' else 'text'}
@@ -433,7 +437,7 @@ class Location(AsyncInit):
 
 class Role(AsyncInit):
     _aiolock = asyncio.Lock()
-    async def __init__(self, rid, app):
+    async def __init__(self, rid, app, *, location=None):
         self.app = app
         self.pool = self.app.pg_pool
         self.acquire = self.pool.acquire
@@ -441,7 +445,7 @@ class Role(AsyncInit):
         async with self.__class__._aiolock, self.acquire() as conn:
             query = """SELECT lid, name, permissions, maxes, locks FROM roles WHERE rid = $1::bigint"""
             lid, name, permbin, maxbin, lockbin = await conn.fetchrow(query, self.rid)
-        self.location = await Location(lid, self.app)
+        self.location = await Location(lid, self.app) if location is None else location
         self.name = name
         self._permbin = permbin
         self._maxbin = maxbin
@@ -476,25 +480,26 @@ class Role(AsyncInit):
     
 class User(AsyncInit):
     _aiolock = asyncio.Lock()
-    async def __init__(self, uid, app):
+    async def __init__(self, uid, app, *, location=None, role=None):
         self.app = app
         self.pool = self.app.pg_pool
         self.acquire = self.pool.acquire
         self.user_id = self.uid = int(uid)
         async with self.__class__._aiolock, self.acquire() as conn:
-            query = """SELECT username, lid, rid, manages, email, phone, type, perms, maxes, locks FROM members WHERE uid = lower($1::text);"""
-            username, lid, rid, manages, email, phone, self._type, maxbin, lockbin = await conn.fetchrow(query, uid)
-        self.role = await Role(rid, self.app)
-        self.location = await Location(lid, self.app)
+            query = """SELECT username, lid, rid, manages, email, phone, type, perms, maxes, locks FROM members WHERE uid = $1::bigint;"""
+            username, lid, rid, manages, email, phone, self._type, permbin, maxbin, lockbin = await conn.fetchrow(query, uid)
+        self.location = await Location(lid, self.app) if location is None else location
+        self.role = await Role(rid, self.app, location=self.location) if role is None else role
         self.email = email
         self.phone = phone
         self.manages = manages
+        self._permnum = permbin
         self._maxnum = maxbin
         self._locknum = lockbin
         self.is_checkout = bool(self._type) # == 1
     
     def to_dict(self) -> dict:
-        props = ['user_id', 'username', 'lid', 'manages', 'rid', 'email', 'phone', 'is_checkout']
+        props = ['user_id', 'username', 'lid', 'manages', 'rid', 'email', 'phone', 'is_checkout', 'perms', ]
         return {i: getattr(self, i, None) for i in props}
     
     @classmethod
@@ -518,9 +523,12 @@ class User(AsyncInit):
     async def from_identifiers(cls, app, *, username=None, lid=None, uid=None):
         """
         Returns a new User instance, given a username and location ID.
+        (More specifically, it grabs the user's ID from the above combo
+        and, once found, passes it to __init__())
         """
         async with cls._aiolock, app.pg_pool.acquire() as conn:
             query = """SELECT uid FROM members WHERE {} = $1::text AND lid = $2::bigint""".format('username' if uid is None else uid)
+            #XXX: if I have the uID then why would I be using from_identifiers??
             uid = await conn.fetchval(query, username, lid)
         return await cls(uid, app)
     

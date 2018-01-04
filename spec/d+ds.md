@@ -59,13 +59,13 @@ __[CONCEPTS]__
          ╚══════════════════════╩═══════════╩══════╩═══════╩══════════╩═══════════════════╩═══════════════════╝
    > members:
       Data for every single patron across libraries. LID and UID are composite unique.
-         ╔════════════════════╦═══════════╦═══════════╦═════════════╦══════════╦════════════╦══════════════════╦════════════════╦═══════════╦════════════╗
-         ║ uid (PRIMARY KEY)  ║ username [U] lid      ║ fullname    ║ email    ║ phone      ║ manages          ║ rid            ║ pwhash    ║ type       ║
-         ╠════════════════════╬═══════════╬═══════════╬═════════════╬══════════╬════════════╬══════════════════╬════════════════╬═══════════╬════════════╣
-         ║ BIGSERIAL          ║ TEXT UNIQ ║ BIGINT    ║ TEXT        ║ TEXT     ║ TEXT       ║ BOOL             ║ BIGINT         ║ TEXT      ║ SMALLINT   ║
+         ╔════════════════════╦═══════════╦═══════════╦═════════════╦══════════╦════════════╦══════════════════╦════════════════╦═══════════╦════════════╦═══════╦═══════╗
+         ║ uid (PRIMARY KEY)  ║ username [U] lid      ║ fullname    ║ email    ║ phone      ║ manages          ║ rid            ║ pwhash    ║ type       ║ maxes ║ locks ║ (custom values; they override role maxes+locks, but are overridden by item maxes)
+         ╠════════════════════╬═══════════╬═══════════╬═════════════╬══════════╬════════════╬══════════════════╬════════════════╬═══════════╬════════════╬═══════╬═══════╣
+         ║ BIGSERIAL          ║ TEXT UNIQ ║ BIGINT    ║ TEXT        ║ TEXT     ║ TEXT       ║ BOOL             ║ BIGINT         ║ TEXT      ║ SMALLINT   ║ BINT  ║ BINT  ║
          ║ (unique member ID) ║ DEFAULT   ║ (location ║ (full name) ║ (email   ║ (phone #   ║ (can they manage ║ (ID of this    ║ (bcrypted ║ (user acc  ║ <= 0 for member, 1 for library
          ║                    ║ NULL      ║ id)       ║             ║ or null) ║ or null)   ║ this location?)  ║ member's role) ║ password) ║ or school) ║ <= `manages' will ALWAYS be false for library accounts
-         ╚════════════════════╩═══════════╩═══════════╩═════════════╩══════════╩════════════╩══════════════════╩════════════════╩═══════════╩════════════╝
+         ╚════════════════════╩═══════════╩═══════════╩═════════════╩══════════╩════════════╩══════════════════╩════════════════╩═══════════╩════════════╩═══════╩═══════╝
    > items:
       Every single item in every registered library, with records of their
       location and checkout data if applicable (else NULL).
