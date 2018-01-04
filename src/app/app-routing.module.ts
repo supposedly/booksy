@@ -14,11 +14,14 @@ import { MemberAcctInfoComponent } from './member-acct-info/member-acct-info.com
 import { ReportsComponent } from './reports/reports.component';
 import { LocationMgmtComponent } from './location-mgmt/location-mgmt.component';
 import { LoginComponent } from './login/login.component';
+import { ReroutingComponent } from './rerouting/rerouting.component';
+import { SignupComponent } from './signup/signup.component';
 
 const routes: Routes = [
+  {path: 'signup', component: SignupComponent},
   {path: 'login', component: LoginComponent},
-  {path: '', redirectTo: 'home', pathMatch: 'full'},
-  {path: 'index.html', redirectTo: 'home'},
+  {path: '', redirectTo: 'home', pathMatch: 'full', canActivate: [AuthGuard]},
+  {path: 'index.html', component: ReroutingComponent},
   {path: 'home',
     canActivate: [AuthGuard], canActivateChild: [AuthGuard],
     component: HomePageComponent,

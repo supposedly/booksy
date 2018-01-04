@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-home-page',
@@ -7,18 +6,9 @@ import { Router, ActivatedRoute } from '@angular/router';
   styleUrls: ['./home-page.component.css']
 })
 export class HomePageComponent implements OnInit {
-  redirect: string = null;
-  
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute
-  ) {}
+  constructor() { }
 
   ngOnInit() {
-    this.redirect = this.route.snapshot.queryParams['redirect'] || '/';
-    if (this.redirect) {
-        this.router.navigateByUrl(this.redirect, {});
-    }
   }
 
 }

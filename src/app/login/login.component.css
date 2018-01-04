@@ -43,7 +43,13 @@ form input {
   border-radius: 5px;
   border-width: 1px;
 }
-
+input.invalid {
+  border-style: solid !important;
+  border-color: #ff2929 !important;
+  border-width: 1px !important;
+  color: #ff2929 !important;
+  background-color: #fef0ed !important;
+}
 button {
   background-color: #43ba2e;
   color: white;
@@ -53,6 +59,9 @@ button {
   border: none;
   border-radius: 5px;
   transition: opacity .2s;
+}
+button.signup {
+  background-color: #2e7fba !important;
 }
 button:disabled {
   opacity: 0.5;

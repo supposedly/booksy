@@ -43,7 +43,7 @@ export class MemberAuthService {
     private loggingService: LoggingService
   ) {
       this.isLocationRegistered()
-        .subscribe(value => this.isRegistered = value.json()['registered']);
+        .subscribe(value => this.isRegistered = value.json()['registered'], err => this.isRegistered = false);
   }
   
   resetCache(): void {
@@ -51,27 +51,27 @@ export class MemberAuthService {
     this.rID = null;
     this.email = null;
     this.phone = null;
-
-    this.getInfo()
-      .subscribe(res => this.resjson = res.json());
     
-    this.username = this.resjson.username;
-    this.rID = this.resjson.rid;
-    this.email = this.resjson.email;
-    this.phone = this.resjson.phone
+    this.getInfo()
+      .subscribe(res => this.resjson = res.json(), err => this.resjson=null);
+    
+    if (this.resjson) {
+      this.username = this.resjson.username;
+      this.rID = this.resjson.rid;
+      this.email = this.resjson.email;
+      this.phone = this.resjson.phone
+    }
   }
   
   isLocationRegistered(): Observable<any> {
     return this.http.get<any>(this.locInfoURL).pipe(
       tap(_ => this.log(`inquired whether the location's IP is registered w/ booksy`)),
-      catchError(this.handleError<any>(`requesting loc info`))
       )
   }
   
   getInfo(): Observable<any> {
     return this.http.get<any>(this.infoURL, {params: {uid: this.uID}}).pipe(
       tap(_ => this.log(`requested user info`)),
-      catchError(this.handleError<any>(`refreshing`))
       )
       .shareReplay();
   }
@@ -99,25 +99,23 @@ export class MemberAuthService {
   }
   
   verify(): boolean {
+    let ok = true;
     this.http.get<any>(this.verifyURL).pipe(
       tap(_ => this.log(`verified current user's access token`)),
-      catchError(this.handleError<any>(`verification`))
       )
-      .subscribe(resp => this.verified = resp.json());
-    if (!this.verified || !this.verified.valid) {
+      .subscribe(resp => this.verified = resp.json(), err => this.verified = false);
+    if ((!this.verified) || !this.verified['valid']) {
       this.http.post<any>(this.refreshURL, httpOptions).pipe(
         tap(_ => this.log(`found expired access token so attempted to refresh it`)),
-        catchError(this.handleError<any>(`obtaining refresh token`))
         )
-        .subscribe(resp => this.verified = resp.json());
+        .subscribe(resp => this.verified = resp.json(), err => this.verified=false);
     }
-    return this.verified && this.verified.length > 0;
+    return this.verified && (this.verified.access_token || this.verified.valid);
   }
   
   isLibrary() {
     return this.http.get<any>(this.infoURL).pipe(
       tap(_ => this.log(`verified current user's access token`)),
-      catchError(this.handleError<any>(`verification`))
       )
       .subscribe(resp => resp.json().isCheckoutAccount);
   }
@@ -125,29 +123,11 @@ export class MemberAuthService {
   logOut() {
     return this.http.post(this.logoutURL, httpOptions).pipe(
       tap(_ => this.log(`logged out`)),
-      catchError(this.handleError<any>(`logout`))
     )
     .subscribe();
   }
   
   private log(message: string, error?: boolean) {
     this.loggingService.add((error?'memberAuthService: ':'memberAuthService just ') + message);
-  }
-  
-  /* Handle Http operation that failed.
-  * Let the app continue.
-  * @param operation - name of the operation that failed
-  * @param result - optional value to return as the observable result
-  */
-  private handleError<T> (operation = 'operation', result?: T) {
-    return (error: any): Observable<T> => {
-
-      console.error(error); // log to console
-
-      this.log(`${operation} failed: ${error.message}`, true);
-
-      // let app continue running
-      return of(result as T);
-    };
   }
 }

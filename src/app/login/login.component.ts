@@ -20,6 +20,7 @@ export class LoginComponent implements OnInit {
   pw;
   uid;
   lid;
+  numRe = /^\d+$/
     
   constructor(
     private memberAuthService: MemberAuthService,
