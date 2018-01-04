@@ -56,7 +56,7 @@ INSERT INTO members (
             locations.name + ' Patron',
             false, 1
        FROM locations
-      WHERE lid = currval(pg_get_serial_sequence('locations', 'lid'))
+      WHERE lid = currval(pg_get_serial_sequence('locations', 'lid'));
 
 INSERT INTO members (
               username, pwhash,
