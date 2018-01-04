@@ -72,5 +72,5 @@ button:hover:not(:disabled) {
 }
 button.loading {
   opacity: 0.5;
-  cursor: pointer;
+  cursor: wheel;
 }

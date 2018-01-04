@@ -93,7 +93,6 @@ class MediaType(AsyncInit):
     props = [
       'name', 
     ]
-    
     async def __init__(self, name, location, app):
         self.name = name
         self.app = app
@@ -161,14 +160,12 @@ class MediaItem(AsyncInit):
              'acquired', 'maxes',
              'image']
      
-    @lockquire(lock=False)
     async def __init__(self, conn, mid, app):
         self.mid = int(mid)
         self.app = app
         self.pool = app.pg_pool
         self.acquire = self.pool.acquire
-        
-        async with self.__class__._aiolock:
+        async with self.__class__._aiolock, self.acquire() as conn:
             query = """
             SELECT type, isbn, lid, author, title, published, genre, issued_to, due_date, fines, acquired, maxes, image
              FROM items
@@ -262,14 +259,12 @@ class Location(AsyncInit):
       'username',
       'fine_amt', 'fine_interval'
       ]
-      
-    @lockquire(lock=False)
     async def __init__(self, conn, lid, app):
         self.app = app
         self.pool = self.app.pg_pool
         self.acquire = self.pool.acquire
         self.lid = int(lid)
-        async with self.__class__._aiolock:
+        async with self.__class__._aiolock, self.acquire() as conn:
             query = """SELECT name, ip, fine_amt, fine_interval, color FROM locations WHERE lid = $1::bigint"""
             name, ip, fine_amt, fine_interval, color, image = await conn.fetchrow(query)
             query = """SELECT uid FROM members WHERE lid = $1 AND manages = true"""
@@ -438,14 +433,12 @@ class Location(AsyncInit):
 
 class Role(AsyncInit):
     _aiolock = asyncio.Lock()
-    
-    @lockquire(lock=False)
     async def __init__(self, conn, rid, app):
         self.app = app
         self.pool = self.app.pg_pool
         self.acquire = self.pool.acquire
         self.rid = int(rid)
-        async with self.__class__._aiolock:
+        async with self.__class__._aiolock, self.acquire() as conn:
             query = """SELECT lid, name, permissions, maxes, locks FROM roles WHERE rid = $1::bigint"""
             lid, name, permbin, maxbin, lockbin = await conn.fetchrow(query, self.rid)
         self.location = await Location(lid, self.app)
@@ -483,13 +476,12 @@ class Role(AsyncInit):
     
 class User(AsyncInit):
     _aiolock = asyncio.Lock()
-    @lockquire(lock=False)
     async def __init__(self, uid, app):
         self.app = app
         self.pool = self.app.pg_pool
         self.acquire = self.pool.acquire
         self.user_id = self.uid = int(uid)
-        async with self.__class__._aiolock:
+        async with self.__class__._aiolock, self.acquire() as conn:
             query = """SELECT username, lid, rid, manages, email, phone, type, perms, maxes, locks FROM members WHERE uid = lower($1::text);"""
             username, lid, rid, manages, email, phone, self._type, maxbin, lockbin = await conn.fetchrow(query, uid)
         self.role = await Role(rid)
@@ -523,12 +515,12 @@ class User(AsyncInit):
         return None
     
     @classmethod
-    async def from_identifiers(cls, app, username, lid):
+    async def from_identifiers(cls, app, *, username=None, lid=None, uid=None):
         """
         Returns a new User instance, given a username and location ID.
         """
         async with cls._aiolock, app.pg_pool.acquire() as conn:
-            query = """SELECT uid FROM members WHERE username = $1::text AND lid = $2::bigint"""
+            query = """SELECT uid FROM members WHERE {} = $1::text AND lid = $2::bigint""".format('username' if uid is None else uid)
             uid = await conn.fetchval(query, username, lid)
         return await cls(uid)
     

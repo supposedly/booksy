@@ -1,8 +1,6 @@
 """/api/signup"""
 import asyncio
-#import bcrypt
-from concurrent.futures import ProcessPoolExecutor
-EXEC = ProcessPoolExecutor(4)
+import bcrypt
 
 import sanic
 import sanic_jwt as jwt
@@ -33,7 +31,7 @@ async def create_location(rqst):
     """
     kwargs = rqst.json
     app_loop = asyncio.get_event_loop()
-    kwargs['pwhash'] = await app_loop.run_in_executor(EXEC, bcrypt.hashpw, kwargs['password'], bcrypt.gensalt(15))
+    kwargs['pwhash'] = await app_loop.run_in_executor(app.ppe, bcrypt.hashpw, kwargs['password'], bcrypt.gensalt(15))
     await Location.instate(rqst.app, rqst.ip, **kwargs) # just gonna have Angular do the stuff here
     return sanic.response.raw(status=200)
     

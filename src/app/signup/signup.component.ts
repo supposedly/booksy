@@ -7,7 +7,8 @@ import { ActivatedRoute } from '@angular/router';
   styleUrls: ['./signup.component.css']
 })
 export class SignupComponent implements OnInit {
-
+  asOrg: boolean;
+  
   constructor() { }
 
   ngOnInit() {

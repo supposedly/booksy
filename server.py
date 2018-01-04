@@ -2,6 +2,7 @@ import asyncio
 import itertools
 import os
 import struct
+from concurrent.futures import ProcessPoolExecutor
 from glob import glob
 from urllib import parse
 
@@ -49,11 +50,12 @@ async def authenticate(rqst, *args, **kwargs):
     async with app.acquire() as conn:
         query = """SELECT pwhash FROM members WHERE lid = $1::bigint AND username = $2::text"""
         pwhash = await conn.fetchval(query, lid, username)
-        if username is None or not pwhash or not bcrypt.checkpw(password, pwhash):
-                # (we shouldn't specify which of pw/username is invalid lest an attacker
-                # use the info to enumerate possible passwords/usernames)
-                return False # unverified
-    return await User.from_identifiers(rqst.app, uid, lid)
+    bvalid = await app.aexec(app.ppe, bcrypt.checkpw, password, pwhash)
+    if not any((username, password, pwhash, bvalid)):
+            # (we shouldn't specify which of pw/username is invalid lest an attacker
+            # use the info to enumerate possible passwords/usernames)
+            return False # unverified
+    return await User.from_identifiers(rqst.app, lid=lid, username=username)
 
 async def retrieve_user(rqst, payload, *args, **kwargs):
     """/auth/me"""
@@ -119,6 +121,9 @@ async def set_up_dbs(app, loop):
     app.session = aiohttp.ClientSession()
     app.sem = asyncio.Semaphore(4, loop=loop) # limit concurrency of aiohttp requests to Google Books
     app.filesem = asyncio.Semaphore(255, loop=loop) # limit concurrency of file reads without forcing one at a time
+    
+    app.ppe = ProcessPoolExecutor(4)
+    app.aexec = loop.run_in_executor
     
     app.pg_pool = await asyncpg.create_pool(dsn=os.getenv('DATABASE_URL'), max_size=15, loop=loop)
     app.acquire = app.pg_pool.acquire
