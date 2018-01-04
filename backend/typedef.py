@@ -160,7 +160,7 @@ class MediaItem(AsyncInit):
              'acquired', 'maxes',
              'image']
      
-    async def __init__(self, conn, mid, app):
+    async def __init__(self, mid, app):
         self.mid = int(mid)
         self.app = app
         self.pool = app.pg_pool
@@ -259,7 +259,7 @@ class Location(AsyncInit):
       'username',
       'fine_amt', 'fine_interval'
       ]
-    async def __init__(self, conn, lid, app):
+    async def __init__(self, lid, app):
         self.app = app
         self.pool = self.app.pg_pool
         self.acquire = self.pool.acquire
@@ -269,7 +269,7 @@ class Location(AsyncInit):
             name, ip, fine_amt, fine_interval, color, image = await conn.fetchrow(query)
             query = """SELECT uid FROM members WHERE lid = $1 AND manages = true"""
             uid = await conn.fetchval(query)
-            self.owner = await User(uid)
+        self.owner = await User(uid, self.app)
         self.name = name
         self.ip = ip
         self.fine_amt = fine_amt
@@ -287,7 +287,7 @@ class Location(AsyncInit):
         return await MediaType(type_name, self, self.app)
     
     @classmethod
-    async def instate(cls, app, ip, **kwargs):
+    async def instate(cls, rqst, **kwargs):
         """In this order:"""
         props = [
           'name', 'ip', 'color',# 'image',
@@ -295,10 +295,10 @@ class Location(AsyncInit):
           'admin_username', 'admin_pwhash',
           'admin_name', 'admin_email', 'admin_phone'
           ]
-        args = [kwargs.get(attr, None) for attr in props]
-        async with cls._aiolock, app.pg_pool.acquire() as conn:
+        args = [kwargs.get(attr, rqst.ip if attr=='ip' else None) for attr in props]
+        async with cls._aiolock, rqst.app.pg_pool.acquire() as conn:
             lid = await conn.fetchval(REGISTER_LOCATION, *args) # returns LID
-        return cls(lid, cls.app)
+        return cls(lid, rqst.app)
     
     @classmethod
     async def from_ip(cls, rqst):
@@ -310,7 +310,7 @@ class Location(AsyncInit):
             """
             result = await conn.fetchval(query, rqst.ip)
         if result:
-            return cls(result)
+            return cls(result, rqst.app)
         return None
 
     @lockquire(lock=False)
@@ -351,7 +351,7 @@ class Location(AsyncInit):
         query = """
         SELECT rid FROM roles WHERE lid = $1
         """
-        return [await Role(i['rid']) for i in await query.fetch(self.lid)]
+        return [await Role(i['rid'], self.app) for i in await query.fetch(self.lid)]
 
     @lockquire()
     async def edit(self, conn, to_edit, new):
@@ -424,7 +424,7 @@ class Location(AsyncInit):
     
     @lockquire()
     async def remove_item(self, conn, item):
-        item = item if isinstance(item, MediaItem) else await MediaItem(item)
+        item = item if isinstance(item, MediaItem) else await MediaItem(item, self.app)
         query = """
         DELETE FROM items
         WHERE mid = $1
@@ -433,7 +433,7 @@ class Location(AsyncInit):
 
 class Role(AsyncInit):
     _aiolock = asyncio.Lock()
-    async def __init__(self, conn, rid, app):
+    async def __init__(self, rid, app):
         self.app = app
         self.pool = self.app.pg_pool
         self.acquire = self.pool.acquire
@@ -484,8 +484,8 @@ class User(AsyncInit):
         async with self.__class__._aiolock, self.acquire() as conn:
             query = """SELECT username, lid, rid, manages, email, phone, type, perms, maxes, locks FROM members WHERE uid = lower($1::text);"""
             username, lid, rid, manages, email, phone, self._type, maxbin, lockbin = await conn.fetchrow(query, uid)
-        self.role = await Role(rid)
-        self.location = await Location(lid)
+        self.role = await Role(rid, self.app)
+        self.location = await Location(lid, self.app)
         self.email = email
         self.phone = phone
         self.manages = manages
@@ -498,7 +498,7 @@ class User(AsyncInit):
         return {i: getattr(self, i, None) for i in props}
     
     @classmethod
-    async def create(cls, conn, **kwargs):
+    async def create(cls, app, **kwargs):
         props = ['username', 'pwhash', 'lid', 'email', 'phone']
         async with cls._aiolock, app.pg_pool.acquire() as conn:
             query = """
@@ -512,7 +512,7 @@ class User(AsyncInit):
                         $4::text, $5::text
             """
             await conn.execute(query, *(kwargs[i] for i in props))
-        return None
+        return await cls(uid, app)
     
     @classmethod
     async def from_identifiers(cls, app, *, username=None, lid=None, uid=None):
@@ -522,7 +522,7 @@ class User(AsyncInit):
         async with cls._aiolock, app.pg_pool.acquire() as conn:
             query = """SELECT uid FROM members WHERE {} = $1::text AND lid = $2::bigint""".format('username' if uid is None else uid)
             uid = await conn.fetchval(query, username, lid)
-        return await cls(uid)
+        return await cls(uid, app)
     
     @lockquire()
     async def edit(self, conn, to_edit, new):
