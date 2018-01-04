@@ -7,6 +7,8 @@ import { Globals } from './session-info-globals';
 
 import { AuthGuard } from './auth.guard';
 
+//import { ErrorInterceptorProvider } from './error.interceptor';
+
 import { AboutComponent } from './about/about.component';
 import { AppComponent } from './app.component';
 import { CheckoutComponent } from './checkout/checkout.component';
@@ -22,7 +24,9 @@ import { MediaInfoComponent } from './media-info/media-info.component';
 import { MediaSearchComponent } from './media-search/media-search.component';
 import { MemberAcctInfoComponent } from './member-acct-info/member-acct-info.component';
 import { ReportsComponent } from './reports/reports.component';
+import { ReroutingComponent } from './rerouting/rerouting.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
+import { SignupComponent } from './signup/signup.component';
 
 import { AppRoutingModule } from './/app-routing.module';
 
@@ -53,6 +57,8 @@ import { SideButtonService } from './side-button.service';
     HomePageComponent,
     HelpComponent,
     AboutComponent,
+    SignupComponent,
+    ReroutingComponent,
   ],
   imports: [
     BrowserModule,
@@ -61,6 +67,7 @@ import { SideButtonService } from './side-button.service';
     HttpClientModule
   ],
   providers: [
+    //ErrorInterceptorProvider,
     MediaService,
     CurrentMediaSessionService,
     RoleService,

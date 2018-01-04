@@ -14,11 +14,18 @@ export class AuthGuard implements CanActivate {
   ) {}
   
   canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean {
-    let href: string = window.location.href;
+    let href: string = next.url.toString();
+    let hrefArr = href.split('/');
+    console.log(href);
+    console.log(hrefArr);
     if (Object.keys(next.queryParams).indexOf('redirect') > -1 && !(next.queryParams['redirect'])) {
       this.router.navigateByUrl(next.url.toString());
       return true;
-    } else if (next.queryParams['redirect'] || href.substr(href.lastIndexOf('/') + 1).startsWith('login')) {
+    } else if (
+      next.queryParams['redirect']
+      || href.startsWith('login')
+      || href.startsWith('signup')
+  ) {
       return true;
     } else if (this.memberAuthService.verify()) {
       return true;

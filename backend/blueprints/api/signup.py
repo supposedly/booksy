@@ -1,4 +1,9 @@
 """/api/signup"""
+import asyncio
+#import bcrypt
+from concurrent.futures import ProcessPoolExecutor
+EXEC = ProcessPoolExecutor(4)
+
 import sanic
 import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
@@ -26,7 +31,10 @@ async def create_location(rqst):
       in from here -- that way, we can infer their location ID and
       spare them from having to keep entering it to sign in!
     """
-    await Location.instate(rqst.app, **rqst.json) # just gonna have Angular do the ordering
+    kwargs = rqst.json
+    app_loop = asyncio.get_event_loop()
+    kwargs['pwhash'] = await app_loop.run_in_executor(EXEC, bcrypt.hashpw, kwargs['password'], bcrypt.gensalt(15))
+    await Location.instate(rqst.app, rqst.ip, **kwargs) # just gonna have Angular do the stuff here
     return sanic.response.raw(status=200)
     
 

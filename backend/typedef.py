@@ -87,7 +87,6 @@ INSERT INTO members (
 
 SELECT currval(pg_get_serial_sequence('locations', 'lid'))
 """
-# aiofiles isn't working for some reason so screw it I'll just do this
 
 class MediaType(AsyncInit):
     _aiolock = asyncio.Lock()
@@ -293,15 +292,15 @@ class Location(AsyncInit):
         return await MediaType(type_name, self, self.app)
     
     @classmethod
-    async def instate(cls, app, **kwargs):
+    async def instate(cls, app, ip, **kwargs):
         """In this order:"""
         props = [
-          'name', 'ip', 'color', 'image',
+          'name', 'ip', 'color',# 'image',
           'username', 'pwhash',
           'admin_username', 'admin_pwhash',
           'admin_name', 'admin_email', 'admin_phone'
           ]
-        args = [kwargs[attr] for attr in props]
+        args = [kwargs.get(attr, None) for attr in props]
         async with cls._aiolock, app.pg_pool.acquire() as conn:
             lid = await conn.fetchval(REGISTER_LOCATION, *args) # returns LID
         return cls(lid, cls.app)
