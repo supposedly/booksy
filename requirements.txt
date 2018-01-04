@@ -1,8 +1,8 @@
 aiohttp
-aioredis
 asyncpg
 bcrypt
 uvloop
+git+git://github.com/aio-libs/aioredis.git
 
 # Fork of sanic that allows blueprint meta-groups
 git+git://github.com/eltrhn/sanic.git

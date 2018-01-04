@@ -4,16 +4,6 @@ import sanic
 
 from .typedef import Location, Role, MediaType, MediaItem, User
 
-def connect_redis(func):
-    @wraps(func)
-    async def wrapper(*args, **kwargs):
-        """
-        Just so I don't have to keep typing out the get-connection line
-        """
-        async with func.__globals__['app'].rd_pool.get() as conn:
-            return await func(conn, *args, **kwargs)
-    return wrapper
-
 def uid_get(*attrs, user=False):
     def decorator(func):
         """

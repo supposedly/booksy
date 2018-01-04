@@ -65,20 +65,20 @@ async def retrieve_user(rqst, payload, *args, **kwargs):
     else:
         return None
 
-@deco.connect_redis
-async def store_rtoken(conn, uid, rtoken, *args, **kwargs):
+async def store_rtoken(user_id, refresh_token, *args, **kwargs):
     """/auth/refresh"""
-    await conn.set(uid, rtoken)
+    async with app.rd_pool.get() as conn:
+        await conn.execute('set', user_id, refresh_token)
 
-@deco.connect_redis
-async def retrieve_rtoken(conn, uid, *args, **kwargs):
+async def retrieve_rtoken(user_id, *args, **kwargs):
     """/auth/refresh"""
-    return await conn.get(uid)
+    async with app.rd_pool.get() as conn:
+        return await conn.execute('get', user_id)
 
-@deco.connect_redis
-async def revoke_rtoken(conn, uid, *args, **kwargs):
+async def revoke_rtoken(user_id, *args, **kwargs):
     """/auth/logout"""
-    return await conn.delete(uid)
+    async with app.rd_pool.get() as conn:
+        return await conn.execute('delete', user_id)
 
 # Initialize with JSON Web Token (JWT) authentication for logins.
 # First argument passed is the Sanic app object, and subsequent
