@@ -10,7 +10,7 @@ def connect_redis(func):
         """
         Just so I don't have to keep typing out the get-connection line
         """
-        async with func.__globals__.app.rd_pool.get() as conn:
+        async with func.__globals__['app'].rd_pool.get() as conn:
             return await func(conn, *args, **kwargs)
     return wrapper
 
