@@ -32,7 +32,7 @@ async def create_location(rqst):
     kwargs = rqst.json
     app_loop = asyncio.get_event_loop()
     kwargs['pwhash'] = await app_loop.run_in_executor(app.ppe, bcrypt.hashpw, kwargs['password'], bcrypt.gensalt(15))
-    await Location.instate(rqst.app, rqst.ip, **kwargs) # just gonna have Angular do the stuff here
+    await Location.instate(rqst, **kwargs) # just gonna have Angular do the stuff here
     return sanic.response.raw(status=200)
     
 
