@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { LoggingService } from './logging.service';
 
 import { Location, HttpOptions } from './classes';
+//import { HeaderComponent } from './header/header.component';
 
 import { catchError, map, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs/Observable';
@@ -39,11 +40,12 @@ export class MemberAuthService {
   private verified;
   
   constructor(
+    //private headerComponent: HeaderComponent,
     private http: HttpClient,
     private loggingService: LoggingService
   ) {
       this.isLocationRegistered()
-        .subscribe(value => this.isRegistered = value.json()['registered'], err => this.isRegistered = false);
+        .subscribe(value => this.isRegistered = value['registered'], err => this.isRegistered = false);
   }
   
   resetCache(): void {
@@ -53,7 +55,7 @@ export class MemberAuthService {
     this.phone = null;
     
     this.getInfo()
-      .subscribe(res => this.resjson = res.json(), err => this.resjson=null);
+      .subscribe(res => this.resjson = res, err => this.resjson=null);
     
     if (this.resjson) {
       this.username = this.resjson.username;
@@ -82,10 +84,10 @@ export class MemberAuthService {
       password: password,
       lid: this.lID ? this.lID : lid,
     }, httpOptions)
-    let _; ret.subscribe(temp => _);
+    let _; ret.subscribe(tempresp => _);
     if (_) {
       this.getInfo()
-        .subscribe(res => this.resjson = res.json());
+        .subscribe(res => this.resjson = res);
       this.uID = this.resjson.user_id;
       this.rID = this.resjson.rid;
       this.lID = this.resjson.lid;
@@ -94,6 +96,7 @@ export class MemberAuthService {
       this.managesLocation = this.resjson.manages;
       this.email = this.resjson.email;
       this.phone = this.resjson.phone;
+      //this.headerComponent.loggedIn();
     }
     return ret;
   }
@@ -103,13 +106,14 @@ export class MemberAuthService {
     this.http.get<any>(this.verifyURL).pipe(
       tap(_ => this.log(`verified current user's access token`)),
       )
-      .subscribe(resp => this.verified = resp.json(), err => console.log(err));
+      .subscribe(resp => this.verified = resp, err => {console.log(err); this.verified = false;/* this.headerComponent.loggedOut();*/});
     if ((!this.verified) || !this.verified['valid']) {
       this.http.post<any>(this.refreshURL, httpOptions).pipe(
         tap(_ => this.log(`found expired access token so attempted to refresh it`)),
         )
-        .subscribe(resp => this.verified = resp.json(), err => console.log(err));
+        .subscribe(resp => this.verified = resp, err => {console.log(err); this.verified = false;/* this.headerComponent.loggedOut();*/});
     }
+    //this.headerComponent.loggedIn();
     return this.verified && (this.verified.access_token || this.verified.valid);
   }
   
@@ -117,10 +121,11 @@ export class MemberAuthService {
     return this.http.get<any>(this.infoURL).pipe(
       tap(_ => this.log(`verified current user's access token`)),
       )
-      .subscribe(resp => resp.json().isCheckoutAccount);
+      .subscribe(resp => resp.isCheckoutAccount);
   }
   
   logOut() {
+    //this.headerComponent.loggedOut();
     return this.http.post(this.logoutURL, httpOptions).pipe(
       tap(_ => this.log(`logged out`)),
     )

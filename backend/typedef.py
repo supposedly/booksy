@@ -6,7 +6,7 @@ import aiofiles
 import datetime as dt
 from asyncio import iscoroutinefunction as is_coro
 
-from .core import LazyProperty, AsyncInit, lockquire
+from .core import AsyncInit, lockquire
 from .resources import Perms, Maxes, Locks
 
 # aiofiles isn't working for some reason so screw it I'll just do this
@@ -466,15 +466,15 @@ class Role(AsyncInit):
     def __str__(self):
         return str(self.rid)
     
-    @LazyProperty
+    @property
     def perms(self):
         return Perms(self._permbin)
     
-    @LazyProperty
+    @property
     def maxes(self):
         return Maxes(self._maxbin)
     
-    @LazyProperty
+    @property
     def locks(self):
         return Locks(self._lockbin)
     
@@ -569,14 +569,20 @@ class User(AsyncInit):
     async def checkouts_left(self) -> int:
         return self.locks.checkout_threshold - self.num_checkouts
     
-    @LazyProperty
+    @property
     def perms(self):
-        return Perms(self._permnum) or self.role.perms
+        if self._permnum is None:
+            return self.role.perms
+        return Perms(self._permnum)
     
-    @LazyProperty
+    @property
     def maxes(self):
-        return Maxes(self._maxnum) or self.role.maxes
+        if self._maxnum is None:
+            return self.role.maxes
+        return Maxes(self._maxnum)
     
-    @LazyProperty
+    @property
     def locks(self):
-        return Locks(self._locknum) or self.role.locks
+        if self._locknum is None:
+            return self.role.locks
+        return Locks(self._locknum)

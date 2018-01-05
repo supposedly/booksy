@@ -4,6 +4,7 @@ Base classes & core funcs for the server side to inherit from.
 import contextlib
 import struct
 from functools import wraps
+from inspect import iscoroutinefunction as is_coro
 
 def lockquire(lock=True, db=True, sem=False, file=False):
     """
@@ -63,6 +64,8 @@ class LazyProperty:
     Allows definition of properties calculated once and once only.
     From user Cyclone on StackOverflow; modified slightly to look more
     coherent for my own benefit and to work with asyncio's coroutines.
+    
+    UNUSED as of 4 January 2018. May reintroduce in the future; dunno.
     """
     def __init__(self, method):
         self.method = method
@@ -110,6 +113,7 @@ class PackedByteFieldMixin:
         self.raw = num
         self.bin = format(int(self.raw), f'0{7}b') #XXX: 7 is magic number >:(
         self.seq = map(int, tuple(self.bin))
+        #print(self.raw, list(self.seq))
         self.names = {name: bool(value) for name, value in zip(self._names, self.seq)}
         for k, v in self.names.items():
             # Allow, for example, obj.manage_location instead of obj.names['manage_location']
