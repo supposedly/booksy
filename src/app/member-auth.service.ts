@@ -103,12 +103,12 @@ export class MemberAuthService {
     this.http.get<any>(this.verifyURL).pipe(
       tap(_ => this.log(`verified current user's access token`)),
       )
-      .subscribe(resp => this.verified = resp.json(), err => this.verified = false);
+      .subscribe(resp => this.verified = resp.json(), err => console.log(err));
     if ((!this.verified) || !this.verified['valid']) {
       this.http.post<any>(this.refreshURL, httpOptions).pipe(
         tap(_ => this.log(`found expired access token so attempted to refresh it`)),
         )
-        .subscribe(resp => this.verified = resp.json(), err => this.verified=false);
+        .subscribe(resp => this.verified = resp.json(), err => console.log(err));
     }
     return this.verified && (this.verified.access_token || this.verified.valid);
   }
