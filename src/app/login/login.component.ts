@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { MemberAuthService } from '../member-auth.service';
+//import { HeaderComponent } from '../header/header.component';
 
 @Component({
   selector: 'app-login',
@@ -23,6 +24,7 @@ export class LoginComponent implements OnInit {
   numRe = /^\d+$/
     
   constructor(
+    //private headerComponent: HeaderComponent,
     private memberAuthService: MemberAuthService,
     private router: Router,
     private route: ActivatedRoute
@@ -30,7 +32,7 @@ export class LoginComponent implements OnInit {
   
   ngOnInit() {
     this.isLocationRegistered = this.memberAuthService.isRegistered;
-    this.returnURL = this.route.snapshot.queryParams['returnURL'] || '/';
+    this.returnURL = this.route.snapshot.queryParams['returnURL'] || '/home';
   }
   
   send(): void {
@@ -39,11 +41,13 @@ export class LoginComponent implements OnInit {
         resp => {
             // login successful
             this.router.navigateByUrl(this.returnURL);
+            //this.headerComponent.loggedIn();
         },
         err => {
             // login failed
             this.errmsg = 'Incorrect username or password';
             this.loading = false;
+            //this.headerComponent.loggedOut();
         }
     );
   }

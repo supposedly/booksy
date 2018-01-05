@@ -77,7 +77,8 @@ import { SideButtonService } from './side-button.service';
     CheckoutService,
     MemberAuthService,
     AuthGuard,
-    Globals
+    Globals,
+    HeaderComponent //?
     ],
   bootstrap: [AppComponent]
 })

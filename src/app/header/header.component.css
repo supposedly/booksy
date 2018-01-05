@@ -39,7 +39,13 @@ nav a:active {
     background-color: #888;
     color: #f7f7f7;
 }
-.selected {
+nav a.selected {
   background-color: #BFC8CC !important;
   color: #f7f7f7 !important;
+}
+nav a.logout {
+  background-color: #ffbcbc !important;
+}
+nav a.logout:active {
+  background-color: #c34545;
 }

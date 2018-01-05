@@ -78,7 +78,7 @@ async def retrieve_rtoken(user_id, *args, **kwargs):
 async def revoke_rtoken(user_id, *args, **kwargs):
     """/auth/logout"""
     async with app.rd_pool.get() as conn:
-        return await conn.execute('delete', user_id)
+        return await conn.execute('del', user_id)
 
 # Initialize with JSON Web Token (JWT) authentication for logins.
 # First argument passed is the Sanic app object, and subsequent

@@ -2,10 +2,10 @@ aiohttp
 asyncpg
 bcrypt
 uvloop
-git+git://github.com/aio-libs/aioredis.git
+git+git://github.com/aio-libs/aioredis.git#egg=aioredis
 
 # Fork of sanic that allows blueprint meta-groups
-git+git://github.com/eltrhn/sanic.git
+git+git://github.com/eltrhn/sanic.git#egg=sanic
 # Fork of sanic-jwt that allows asynchronous setup functions
 # and some other stuff like refresh-token revocation
-git+git://github.com/eltrhn/sanic-jwt.git
+git+git://github.com/eltrhn/sanic-jwt.git#egg=sanic-jwt
