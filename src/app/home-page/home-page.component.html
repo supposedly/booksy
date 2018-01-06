@@ -1,9 +1,5 @@
-<div id="content">
-  <div class="spacer"></div>
-  <div id="sidebar">
-      <app-sidebar [uID]="globals.uID"></app-sidebar>
-  </div>
-  <div id="main">
-      <router-outlet name="home"></router-outlet>
-  </div>
+<div id="container">
+    <div id="spacer"></div>
+    <app-sidebar [uID]="globals.uID" class="sidebar"></app-sidebar>
+    <router-outlet name="home" class="main"></router-outlet>
 </div>

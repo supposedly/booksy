@@ -1,4 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 
 import { SideButton } from '../classes';
 import { SideButtonService } from '../side-button.service';
@@ -10,10 +11,16 @@ import { SideButtonService } from '../side-button.service';
 })
 export class SidebarComponent /*implements OnInit*/ {
   buttons: SideButton[] = null;
+  public san;
   
   @Input() uID: string;
   
-  constructor(private sideButtonService: SideButtonService) { }
+  constructor(
+    private sideButtonService: SideButtonService,
+    private sanitizer: DomSanitizer
+  ) {
+      this.san = sanitizer.bypassSecurityTrustStyle;
+  }
   
   ngOnChanges() {
     this.getButtons();
