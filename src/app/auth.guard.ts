@@ -13,7 +13,7 @@ export class AuthGuard implements CanActivate {
     private memberAuthService: MemberAuthService
   ) {}
   
-  canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean {
+  canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
     let href: string = next.url.toString();
     if (Object.keys(next.queryParams).indexOf('redirect') > -1 && !(next.queryParams['redirect'])) {
       this.router.navigateByUrl(next.url.toString());

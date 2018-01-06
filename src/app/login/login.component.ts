@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { MemberAuthService } from '../member-auth.service';
-import { Globals } from '../session-info-globals';
+import { Globals } from '../globals';
 
 @Component({
   selector: 'app-login',

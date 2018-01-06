@@ -1,2 +1,9 @@
-<app-sidebar [uID]="globals.uID"></app-sidebar>
-<router-outlet name="home"></router-outlet>
+<div id="content">
+  <div class="spacer"></div>
+  <div id="sidebar">
+      <app-sidebar [uID]="globals.uID"></app-sidebar>
+  </div>
+  <div id="main">
+      <router-outlet name="home"></router-outlet>
+  </div>
+</div>

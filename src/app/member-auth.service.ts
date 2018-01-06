@@ -4,7 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { LoggingService } from './logging.service';
 
 import { Location, HttpOptions } from './classes';
-import { Globals } from './session-info-globals';
+import { Globals } from './globals';
 
 import { catchError, map, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs/Observable';
@@ -47,26 +47,7 @@ export class MemberAuthService {
     private loggingService: LoggingService
   ) {
       this.isLocationRegistered()
-        .subscribe(value => this.isRegistered = value['registered'], err => this.isRegistered = false);
-  }
-  
-  resetCache(): void {
-    this.username = null;
-    this.rID = null;
-    this.email = null;
-    this.phone = null;
-    
-    this.getInfo()
-      .subscribe(res => this.resjson = res, err => this.resjson=null);
-    // FIXME: THIS DOES NOT WORK AS I PREVIOUSLY RAN INTO
-    // BECAUSE SUBSCRIPTIONS ARE NOT WAITED UPON
-    if (this.resjson) {
-      this.username = this.resjson.username;
-      this.rID = this.resjson.rid;
-      this.globals.rID = this.rID;
-      this.email = this.resjson.email;
-      this.phone = this.resjson.phone
-    }
+        .subscribe(value => this.isRegistered = value.registered, err => this.isRegistered = false);
   }
   
   isLocationRegistered(): Observable<any> {
@@ -80,6 +61,23 @@ export class MemberAuthService {
       tap(_ => this.log(`requested user info`)),
       )
       .shareReplay();
+  }
+  
+  storeMeInfo(): void {
+    this.getInfo()
+      .subscribe(res => {
+        this.globals.uID = res.me.user_id;
+        this.globals.rID = res.me.rid;
+        this.globals.lID = res.me.lid;
+        this.globals.isCheckoutAccount = res.me.is_checkout;
+        this.globals.username = res.me.username;
+        this.globals.managesLocation = res.me.manages;
+        this.globals.email = res.me.email;
+        this.globals.phone = res.me.phone;
+        this.globals.isLoggedIn = true;
+        this.resjson = res.me;
+      }
+    );
   }
   
   logIn(uid: string, password: string, lid?: string) {
