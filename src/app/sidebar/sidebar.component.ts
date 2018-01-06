@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 
 import { SideButton } from '../classes';
 import { SideButtonService } from '../side-button.service';
@@ -8,17 +8,26 @@ import { SideButtonService } from '../side-button.service';
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css']
 })
-export class SidebarComponent implements OnInit {
-  buttons: SideButton[];
+export class SidebarComponent /*implements OnInit*/ {
+  buttons: SideButton[] = null;
+  
+  @Input() uID: string;
   
   constructor(private sideButtonService: SideButtonService) { }
-
-  ngOnInit() {
+  
+  ngOnChanges() {
     this.getButtons();
   }
   
+  /*
+  ngOnInit() {
+    //this.getButtons();
+  }
+  */
+  
   getButtons(): void {
-    this.sideButtonService.getButtons()
+    //if (!this.uID) { this.buttons = null; return;}
+    this.sideButtonService.getButtons(this.uID)
       .subscribe(buttons => this.buttons = buttons);
   }
 

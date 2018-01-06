@@ -8,8 +8,8 @@ from .import Location, Role, MediaType, MediaItem, User
 
 mbrs = sanic.Blueprint('location_members_api', url_prefix='/members')
 
-@uid_get('location', user=True)
 @mbrs.post('/add')
+@uid_get('location', user=True)
 @jwtdec.protected()
 async def add_member_to_location(rqst, user, location, role):
     try:
@@ -20,8 +20,8 @@ async def add_member_to_location(rqst, user, location, role):
         sanic.exceptions.abort(401, 'Unauthorized to add members')
     return await location.add_member(**userdata)
 
-@uid_get('location', user=True)
 @mbrs.post('/remove')
+@uid_get('location', user=True)
 @jwtdec.protected()
 async def remove_member_from_location(rqst, user, location, role):
     try:

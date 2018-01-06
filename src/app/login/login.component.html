@@ -1,8 +1,8 @@
 <div class="container" style="margin-top: 2em;">
   <p>Welcome to Booksy! Log in below.</p>
   <form (ngSubmit)="send();  pw.value=null; uid.value=null; lid.value=null">
-    <div class="err-container">
-      <div *ngIf="errmsg" class="err"><p>{{errmsg}}</p></div>
+    <div class="msg-container">
+      <div *ngIf="msg" class="msg" [ngClass]="err?'err':'suc'"><p>{{msg}}</p></div>
     </div>
     <input #lid [hidden]="isLocationRegistered"
       name="lid"
@@ -13,7 +13,7 @@
       placeholder="Location ID">
     <input #uid
       name="uid"
-      (keyup)="errmsg=null"
+      (keyup)="msg=null"
       [(ngModel)]="uID"
       [ngModelOptions]="{updateOn: 'submit'}"
       [class.invalid]="!numRe.test(uid.value)"
@@ -21,7 +21,7 @@
       placeholder="User ID">
     <input #pw
       name="pw" type="password"
-      (keyup)="errmsg=null"
+      (keyup)="msg=null"
       [(ngModel)]="password"
       [ngModelOptions]="{updateOn: 'submit'}"
       autocomplete=current-password

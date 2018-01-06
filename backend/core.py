@@ -1,10 +1,11 @@
 """
 Base classes & core funcs for the server side to inherit from.
 """
+import asyncio
 import contextlib
 import struct
 from functools import wraps
-from inspect import iscoroutinefunction as is_coro
+from asyncio import iscoroutinefunction as is_coro
 
 def lockquire(lock=True, db=True, sem=False, file=False):
     """
@@ -93,6 +94,12 @@ class AsyncInit:
         return obj
     async def __init__(self):
         pass
+
+
+class WithLock:
+    @classmethod
+    def _init_lock(cls, loop):
+        cls._aiolock = asyncio.Lock(loop=loop)
 
 
 class PackedByteFieldMixin:

@@ -8,13 +8,13 @@ from .import Location, Role, MediaType, MediaItem, User
 
 media = sanic.Blueprint('media_api', url_prefix='/media')
 
-@rqst_get('item')
 @media.get('/check')
+@rqst_get('item')
 async def get_media_status(rqst, item):
     return sanic.response.json(item.status, status=200)
 
-@rqst_get('user', 'item')
 @media.post('/check/out')
+@rqst_get('user', 'item')
 @jwtdec.protected()
 async def issue_item(rqst, user, item):
     forbidden = user.perms.can_check_out
@@ -26,8 +26,8 @@ async def issue_item(rqst, user, item):
     await item.issue_to(user)
     return sanic.response.raw({'checked': 'out', 'title': item.title, 'author': item.author, 'image': item.image_url})
 
-@rqst_get('user', 'item')
 @media.post('/check/in')
+@rqst_get('user', 'item')
 @jwtdec.protected()
 async def return_item(rqst, user, item):
     if not user.perms.can_return_items:
@@ -35,8 +35,8 @@ async def return_item(rqst, user, item):
     await item.check_in()
     return sanic.response.raw(status=204)
 
-@rqst_get('item')
 @media.get('/info')
+@rqst_get('item')
 @jwtdec.protected()
 async def get_media_info(rqst, item):
     return sanic.response.json(item.to_dict(), status=200)

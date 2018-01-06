@@ -6,7 +6,7 @@ import aiofiles
 import datetime as dt
 from asyncio import iscoroutinefunction as is_coro
 
-from .core import AsyncInit, lockquire
+from .core import AsyncInit, WithLock, lockquire
 from .resources import Perms, Maxes, Locks
 
 # aiofiles isn't working for some reason so screw it I'll just do this
@@ -88,14 +88,11 @@ INSERT INTO members (
 SELECT currval(pg_get_serial_sequence('locations', 'lid'))
 """
 
-class MediaType(AsyncInit):
+class MediaType(AsyncInit, WithLock):
     props = [
       'name', 
     ]
-    _aiolock = None
     async def __init__(self, name, location, app):
-        if self.__class__._aiolock is None:
-            self.__class__._aiolock = asyncio.Lock(loop=app.loop)
         self.name = name
         self.app = app
         self.pool = app.pg_pool
@@ -153,17 +150,14 @@ class MediaType(AsyncInit):
         await conn.execute(query, newmaxes.num, self.name)
     
 
-class MediaItem(AsyncInit):
+class MediaItem(AsyncInit, WithLock):
     props = ['type', 'genre',
              'isbn', 'lid', 
              'title', 'author', 'published', 
              'issued_to', 'due_date', 'fines',
              'acquired', 'maxes',
              'image']
-    _aiolock = None
     async def __init__(self, mid, app):
-        if self.__class__._aiolock is None:
-            self.__class__._aiolock = asyncio.Lock(loop=app.loop)
         self.mid = int(mid)
         self.app = app
         self.pool = app.pg_pool
@@ -253,7 +247,7 @@ class MediaItem(AsyncInit):
         await self.location.remove_item(self)
 
 
-class Location(AsyncInit):
+class Location(AsyncInit, WithLock):
     props = [
       'lid',
       'name', 'ip',
@@ -261,10 +255,7 @@ class Location(AsyncInit):
       'username',
       'fine_amt', 'fine_interval'
       ]
-    _aiolock = None
     async def __init__(self, lid, app, *, owner=None):
-        if self.__class__._aiolock is None:
-            self.__class__._aiolock = asyncio.Lock(loop=app.loop)
         self.app = app
         self.pool = self.app.pg_pool
         self.acquire = self.pool.acquire
@@ -440,11 +431,8 @@ class Location(AsyncInit):
         """
         return await conn.execute(query, item.mid) ###
 
-class Role(AsyncInit):
-    _aiolock = None
+class Role(AsyncInit, WithLock):
     async def __init__(self, rid, app, *, location=None):
-        if self.__class__._aiolock is None:
-            self.__class__._aiolock = asyncio.Lock(loop=app.loop)
         self.app = app
         self.pool = self.app.pg_pool
         self.acquire = self.pool.acquire
@@ -485,18 +473,15 @@ class Role(AsyncInit):
     def locks(self):
         return Locks(self._lockbin)
     
-class User(AsyncInit):
-    _aiolock = None
+class User(AsyncInit, WithLock):
     async def __init__(self, uid, app, *, location=None, role=None):
-        if self.__class__._aiolock is None:
-            self.__class__._aiolock = asyncio.Lock(loop=app.loop)
         self.app = app
         self.pool = self.app.pg_pool
         self.acquire = self.pool.acquire
         self.user_id = self.uid = int(uid)
         async with self.__class__._aiolock, self.acquire() as conn:
             query = """SELECT username, lid, rid, manages, email, phone, type, perms, maxes, locks FROM members WHERE uid = $1::bigint;"""
-            username, lid, rid, manages, email, phone, self._type, permbin, maxbin, lockbin = await conn.fetchrow(query, uid)
+            username, lid, rid, manages, email, phone, self._type, permbin, maxbin, lockbin = await conn.fetchrow(query, self.uid)
         self.location = await Location(lid, self.app) if location is None else location
         self.role = await Role(rid, self.app, location=self.location) if role is None else role
         self.email = email

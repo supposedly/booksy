@@ -13,24 +13,32 @@ p {
   font-size: 60px;
   text-align: center;
 }
-div.err-container {
-  margin: auto;
-  height: 3em;
+div.msg-container {
+  display: table;
+  border-collapse: collapse;
 }
-div.err {
+div.err, div.suc {
+  display: table-row;
+  vertical-align: bottom;
   border-style: solid;
   border-width: 1px;
   border-color: #ff2929;
   background-color: #fef0ed;
-  border-radius: 8px;
 }
-div.err p {
+div.err p, div.suc p {
   font-family: Roboto, sans-serif;
   font-weight: 300;
   color: #ff2929;
   font-size: 20px;
 }
-form input, form div.err-container {
+div.suc {
+  border-color: #00c516;
+  background-color: #edfeee;
+}
+div.suc p {
+  color: #00c516;
+}
+form input, form div.msg-container {
   width: 20em !important;
   padding: 1em;
   margin: 4px auto;

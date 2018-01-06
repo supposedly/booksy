@@ -10,6 +10,8 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
 import 'rxjs/add/operator/shareReplay';
+import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/do';
 
 const httpOptions = HttpOptions;
 
@@ -56,10 +58,12 @@ export class MemberAuthService {
     
     this.getInfo()
       .subscribe(res => this.resjson = res, err => this.resjson=null);
-    
+    // FIXME: THIS DOES NOT WORK AS I PREVIOUSLY RAN INTO
+    // BECAUSE SUBSCRIPTIONS ARE NOT WAITED UPON
     if (this.resjson) {
       this.username = this.resjson.username;
       this.rID = this.resjson.rid;
+      this.globals.rID = this.rID;
       this.email = this.resjson.email;
       this.phone = this.resjson.phone
     }
@@ -72,7 +76,7 @@ export class MemberAuthService {
   }
   
   getInfo(): Observable<any> {
-    return this.http.get<any>(this.infoURL, {params: {uid: this.uID}}).pipe(
+    return this.http.get<Observable<any>>(this.infoURL, {params: {uid: this.uID}}).pipe(
       tap(_ => this.log(`requested user info`)),
       )
       .shareReplay();
@@ -84,20 +88,30 @@ export class MemberAuthService {
       password: password,
       lid: this.lID ? this.lID : lid,
     }, httpOptions)
-    let _; ret.subscribe(tempresp => _);
-    if (_) {
-      this.getInfo()
-        .subscribe(res => this.resjson = res);
-      this.uID = this.resjson.user_id;
-      this.rID = this.resjson.rid;
-      this.lID = this.resjson.lid;
-      this.isCheckoutAccount = this.resjson.is_checkout;
-      this.username = this.resjson.username;
-      this.managesLocation = this.resjson.manages;
-      this.email = this.resjson.email;
-      this.phone = this.resjson.phone;
-      this.globals.isLoggedIn = true;
-    }
+    ret.subscribe(_ => {
+      if (_) {
+        this.getInfo()
+          .subscribe(res => {
+            this.uID = res.me.user_id;
+            this.globals.uID = this.uID;
+            
+            this.rID = res.me.rid;
+            this.globals.rID = this.rID;
+            
+            this.lID = res.me.lid;
+            this.globals.lID = this.lID;
+            
+            this.isCheckoutAccount = res.me.is_checkout;
+            this.username = res.me.username;
+            this.managesLocation = res.me.manages;
+            this.email = res.me.email;
+            this.phone = res.me.phone;
+            this.globals.isLoggedIn = true;
+            this.resjson = res.me;
+          }
+        );
+      }
+    });
     return ret;
   }
   

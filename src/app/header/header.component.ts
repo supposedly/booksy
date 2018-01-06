@@ -16,7 +16,7 @@ export class HeaderComponent implements OnInit {
   constructor(
     private headButtonService: HeadButtonService,
     private memberAuthService: MemberAuthService,
-    private globals: Globals
+    public globals: Globals
   ) {}
 
   ngOnInit() {
