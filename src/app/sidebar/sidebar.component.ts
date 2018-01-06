@@ -26,9 +26,10 @@ export class SidebarComponent /*implements OnInit*/ {
   */
   
   getButtons(): void {
-    //if (!this.uID) { this.buttons = null; return;}
-    this.sideButtonService.getButtons(this.uID)
-      .subscribe(buttons => this.buttons = buttons);
+    if (!this.buttons) {
+      this.sideButtonService.getButtons(this.uID)
+        .subscribe(buttons => this.buttons = buttons);
+    }
   }
 
 }

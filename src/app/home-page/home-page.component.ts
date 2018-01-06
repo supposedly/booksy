@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { Globals } from '../session-info-globals';
+
+import { MemberAuthService } from '../member-auth.service';
+
+import { Globals } from '../globals';
 
 @Component({
   selector: 'app-home-page',
@@ -7,7 +10,12 @@ import { Globals } from '../session-info-globals';
   styleUrls: ['./home-page.component.css']
 })
 export class HomePageComponent implements OnInit {
-  constructor(public globals: Globals) {}
+  constructor(
+  public globals: Globals,
+  private memberAuthService: MemberAuthService
+  ) {}
   
-  ngOnInit() {}
+  ngOnInit() {
+    this.memberAuthService.storeMeInfo();
+  }
 }

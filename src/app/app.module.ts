@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
-import { Globals } from './session-info-globals';
+import { Globals } from './globals';
 
 import { AuthGuard } from './auth.guard';
 
@@ -28,7 +28,7 @@ import { ReroutingComponent } from './rerouting/rerouting.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { SignupComponent } from './signup/signup.component';
 
-import { AppRoutingModule } from './/app-routing.module';
+import { AppRoutingModule } from './app-routing.module';
 
 import { CheckoutService } from './checkout.service';
 import { CurrentMediaSessionService } from './current-media-session.service';

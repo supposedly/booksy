@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { NavButton } from '../classes';
 import { HeadButtonService } from '../head-button.service';
 import { MemberAuthService } from '../member-auth.service';
-import { Globals } from '../session-info-globals';
+import { Globals } from '../globals';
 
 @Component({
   selector: 'app-header',

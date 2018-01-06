@@ -1,4 +1,4 @@
-<ul *ngIf="buttons" class="home-sidebar">
+<ul *ngIf="buttons" class="sidebar-container">
   <li routerLink="{{button.hasOwnProperty('dest')?button.dest:'/'+button.text}}"
     routerLinkActive="selected"
     *ngFor="let button of buttons">{{button.text}}</li>
