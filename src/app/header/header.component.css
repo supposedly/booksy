@@ -40,12 +40,13 @@ nav a:active {
     color: #f7f7f7;
 }
 nav a.selected {
-  background-color: #BFC8CC !important;
+  background-color: #bfc8cc !important;
   color: #f7f7f7 !important;
 }
 nav a.logout {
-  background-color: #ffbcbc !important;
+  float: right;
+  background-color: #f3cbcb !important;
 }
 nav a.logout:active {
-  background-color: #c34545;
+  background-color: #c34545 !important;
 }

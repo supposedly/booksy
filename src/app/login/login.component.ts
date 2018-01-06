@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { MemberAuthService } from '../member-auth.service';
-//import { HeaderComponent } from '../header/header.component';
+import { Globals } from '../session-info-globals';
 
 @Component({
   selector: 'app-login',
@@ -24,15 +24,19 @@ export class LoginComponent implements OnInit {
   numRe = /^\d+$/
     
   constructor(
-    //private headerComponent: HeaderComponent,
+    private globals: Globals,
     private memberAuthService: MemberAuthService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private zone: NgZone
   ) {}
   
   ngOnInit() {
     this.isLocationRegistered = this.memberAuthService.isRegistered;
     this.returnURL = this.route.snapshot.queryParams['returnURL'] || '/home';
+    if (this.memberAuthService.verify()) {
+      this.zone.run(() => window.location.href = this.returnURL);
+    }
   }
   
   send(): void {
@@ -40,14 +44,14 @@ export class LoginComponent implements OnInit {
       .subscribe(
         resp => {
             // login successful
-            this.router.navigateByUrl(this.returnURL);
-            //this.headerComponent.loggedIn();
+            this.zone.run(() => window.location.href = this.returnURL);
+            this.globals.isLoggedIn = true;
         },
         err => {
             // login failed
             this.errmsg = 'Incorrect username or password';
             this.loading = false;
-            //this.headerComponent.loggedOut();
+            this.globals.isLoggedIn = false;
         }
     );
   }
