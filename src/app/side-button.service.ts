@@ -7,7 +7,6 @@ import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
 
 import { SideButton, HttpOptions } from './classes';
-import { MemberAuthService } from './member-auth.service';
 import { LoggingService } from './logging.service';
 
 const httpOptions = HttpOptions;
@@ -20,16 +19,12 @@ export class SideButtonService {
   constructor(
     private loggingService: LoggingService,
     private http: HttpClient,
-    private memberAuthService: MemberAuthService,
-  ) {
-      this.rID = this.memberAuthService.rID;
-  }
+  ) {}
   
-  getButtons(): Observable<any> {
-    if (!this.rID) { return of(null); }
-    return this.http.get<SideButton[]>(this.buttonsURL, {params: {rid: this.rID}}).pipe(
+  getButtons(uID: string): Observable<any> {
+    return this.http.get<SideButton[]>(this.buttonsURL, {params: {uid: uID}}).pipe(
       tap(heroes => this.log(`fetch the sidebar buttons from remote server`)),
-      catchError(this.handleError('getButtons', []))
+      catchError(this.handleError('getting sidebar buttons', []))
     );
   }
   

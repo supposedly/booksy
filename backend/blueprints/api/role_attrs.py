@@ -8,8 +8,8 @@ from .import Location, Role, MediaType, MediaItem, User
 
 roles = sanic.Blueprint('role_attrs_api', url_prefix='/roles')
 
-@uid_get('role')
 @roles.get('/my-attrs')
+@uid_get('role')
 @jwtdec.protected()
 async def provide_role_attrs(rqst, role):
     """
@@ -21,8 +21,8 @@ async def provide_role_attrs(rqst, role):
     resp = {'id': role.rid, 'perms': role.perms, 'maxes': role.maxes, 'locks': role.locks}
     return sanic.response.json(resp, status=200)
 
-@uid_get('role')
 @roles.get('/my-attrs/<attr:(perms|maxes|locks)>')
+@uid_get('role')
 @jwtdec.protected()
 async def provide_specific_role_attr(rqst, role, attr):
     """

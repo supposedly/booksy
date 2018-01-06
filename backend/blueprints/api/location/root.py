@@ -8,13 +8,13 @@ from .import Location, Role, MediaType, MediaItem, User
 
 root = sanic.Blueprint('location_api', url_prefix='')
 
-@uid_get('location')
 @root.get('/')
+@uid_get('location')
 async def give_location_repr(rqst, location):
     return sanic.response.json(location.to_dict(), status=200)
 
-@uid_get('location')
 @root.get('/<attr:(name|image|color)>')
+@uid_get('location')
 async def return_location_attr(rqst, user, attr):
     return sanic.response.json({attr: getattr(location, attr)}, status=200)
 

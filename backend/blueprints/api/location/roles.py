@@ -8,8 +8,8 @@ from .import Location, Role, MediaType, MediaItem, User
 
 roles = sanic.Blueprint('location_roles_api', url_prefix='/roles')
 
-@uid_get('role')
 @roles.get('/')
+@uid_get('role')
 @jwtdec.protected()
 async def search_roles(rqst, role):
     if not role.can_manage_roles:
@@ -18,9 +18,9 @@ async def search_roles(rqst, role):
     return None
 
 
+@roles.post('/add')
 @uid_get('role')
 @rqst_get('newRole')
-@roles.post('/add')
 @jwtdec.protected()
 async def add_role_to_location(rqst, role, new_role):
     sanic.exceptions.abort(404)

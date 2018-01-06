@@ -11,7 +11,8 @@ import { Globals } from '../session-info-globals';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
-  public errmsg: string = null;
+  public msg: string = null;
+  public err: boolean = false;
   loading: boolean = false;
   returnURL: string;
   isLocationRegistered: boolean = false;
@@ -35,7 +36,8 @@ export class LoginComponent implements OnInit {
     this.isLocationRegistered = this.memberAuthService.isRegistered;
     this.returnURL = this.route.snapshot.queryParams['returnURL'] || '/home';
     if (this.memberAuthService.verify()) {
-      this.zone.run(() => window.location.href = this.returnURL);
+      //this.zone.run(() => window.location.href = this.returnURL);
+      //window.location.href = this.returnURL;
     }
   }
   
@@ -44,12 +46,16 @@ export class LoginComponent implements OnInit {
       .subscribe(
         resp => {
             // login successful
-            this.zone.run(() => window.location.href = this.returnURL);
+            //this.zone.run(() => window.location.href = this.returnURL);
+            //window.location.href = this.returnURL;
             this.globals.isLoggedIn = true;
+            this.err = false;
+            this.msg = 'Thank you! You may now navigate to the HOME tab.';
         },
         err => {
             // login failed
-            this.errmsg = 'Incorrect username or password';
+            this.err = true;
+            this.msg = 'Invalid login credentials';
             this.loading = false;
             this.globals.isLoggedIn = false;
         }

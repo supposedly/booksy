@@ -26,10 +26,10 @@ async def expose_header_buttons(rqst):
     # "Cannot match routes. url segment: home"
     return sanic.response.json(resp, status=200)
 
-@rqst_get('user', 'isCheckoutAccount')
 @btn.get('/home-sidebar')
+@rqst_get('user')
 @jwtdec.protected()
-async def expose_home_sidebar_buttons(rqst, user, is_checkout):
+async def expose_home_sidebar_buttons(rqst, user):
     """
     Almost a static resource like above, but this time varies depending
     on user's role. I'm ALMOST positive it should work alright this way
@@ -74,8 +74,8 @@ async def expose_home_sidebar_buttons(rqst, user, is_checkout):
             side_buttons.append({"text": 'manage location', "dest": '/manage', "color": '#ec9fa0'})
     return sanic.response.json(side_buttons, status=200)
 
-@uid_get()
 @btn.get('/mgmt-header')
+@uid_get()
 @jwtdec.protected()
 async def expose_management_buttons(rqst, user):
     """
