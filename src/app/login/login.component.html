@@ -9,6 +9,7 @@
       [(ngModel)]="lID"
       [ngModelOptions]="{updateOn: 'submit'}"
       [class.invalid]="!numRe.test(lid.value)"
+      autocomplete=section-lid
       placeholder="Location ID">
     <input #uid
       name="uid"
@@ -16,12 +17,14 @@
       [(ngModel)]="uID"
       [ngModelOptions]="{updateOn: 'submit'}"
       [class.invalid]="!numRe.test(uid.value)"
+      autocomplete=username
       placeholder="User ID">
     <input #pw
       name="pw" type="password"
       (keyup)="errmsg=null"
       [(ngModel)]="password"
       [ngModelOptions]="{updateOn: 'submit'}"
+      autocomplete=current-password
       placeholder="Password">
     <button [disabled]="!(pw.value && uid.value && (isLocationRegistered?lid.value:true))"
       type="submit"

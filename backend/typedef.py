@@ -89,11 +89,13 @@ SELECT currval(pg_get_serial_sequence('locations', 'lid'))
 """
 
 class MediaType(AsyncInit):
-    _aiolock = asyncio.Lock()
     props = [
       'name', 
     ]
+    _aiolock = None
     async def __init__(self, name, location, app):
+        if self.__class__._aiolock is None:
+            self.__class__._aiolock = asyncio.Lock(loop=app.loop)
         self.name = name
         self.app = app
         self.pool = app.pg_pool
@@ -152,15 +154,16 @@ class MediaType(AsyncInit):
     
 
 class MediaItem(AsyncInit):
-    _aiolock = asyncio.Lock()    
     props = ['type', 'genre',
              'isbn', 'lid', 
              'title', 'author', 'published', 
              'issued_to', 'due_date', 'fines',
              'acquired', 'maxes',
              'image']
-     
+    _aiolock = None
     async def __init__(self, mid, app):
+        if self.__class__._aiolock is None:
+            self.__class__._aiolock = asyncio.Lock(loop=app.loop)
         self.mid = int(mid)
         self.app = app
         self.pool = app.pg_pool
@@ -251,7 +254,6 @@ class MediaItem(AsyncInit):
 
 
 class Location(AsyncInit):
-    _aiolock = asyncio.Lock()
     props = [
       'lid',
       'name', 'ip',
@@ -259,7 +261,10 @@ class Location(AsyncInit):
       'username',
       'fine_amt', 'fine_interval'
       ]
+    _aiolock = None
     async def __init__(self, lid, app, *, owner=None):
+        if self.__class__._aiolock is None:
+            self.__class__._aiolock = asyncio.Lock(loop=app.loop)
         self.app = app
         self.pool = self.app.pg_pool
         self.acquire = self.pool.acquire
@@ -436,8 +441,10 @@ class Location(AsyncInit):
         return await conn.execute(query, item.mid) ###
 
 class Role(AsyncInit):
-    _aiolock = asyncio.Lock()
+    _aiolock = None
     async def __init__(self, rid, app, *, location=None):
+        if self.__class__._aiolock is None:
+            self.__class__._aiolock = asyncio.Lock(loop=app.loop)
         self.app = app
         self.pool = self.app.pg_pool
         self.acquire = self.pool.acquire
@@ -479,8 +486,10 @@ class Role(AsyncInit):
         return Locks(self._lockbin)
     
 class User(AsyncInit):
-    _aiolock = asyncio.Lock()
+    _aiolock = None
     async def __init__(self, uid, app, *, location=None, role=None):
+        if self.__class__._aiolock is None:
+            self.__class__._aiolock = asyncio.Lock(loop=app.loop)
         self.app = app
         self.pool = self.app.pg_pool
         self.acquire = self.pool.acquire

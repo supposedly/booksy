@@ -4,7 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { LoggingService } from './logging.service';
 
 import { Location, HttpOptions } from './classes';
-//import { HeaderComponent } from './header/header.component';
+import { Globals } from './session-info-globals';
 
 import { catchError, map, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs/Observable';
@@ -40,7 +40,7 @@ export class MemberAuthService {
   private verified;
   
   constructor(
-    //private headerComponent: HeaderComponent,
+    private globals: Globals,
     private http: HttpClient,
     private loggingService: LoggingService
   ) {
@@ -96,25 +96,24 @@ export class MemberAuthService {
       this.managesLocation = this.resjson.manages;
       this.email = this.resjson.email;
       this.phone = this.resjson.phone;
-      //this.headerComponent.loggedIn();
+      this.globals.isLoggedIn = true;
     }
     return ret;
   }
   
   verify(): boolean {
-    let ok = true;
     this.http.get<any>(this.verifyURL).pipe(
       tap(_ => this.log(`verified current user's access token`)),
       )
-      .subscribe(resp => this.verified = resp, err => {console.log(err); this.verified = false;/* this.headerComponent.loggedOut();*/});
+      .subscribe(resp => this.verified = resp, err => {console.log(err); this.verified = false});
     if ((!this.verified) || !this.verified['valid']) {
       this.http.post<any>(this.refreshURL, httpOptions).pipe(
         tap(_ => this.log(`found expired access token so attempted to refresh it`)),
         )
-        .subscribe(resp => this.verified = resp, err => {console.log(err); this.verified = false;/* this.headerComponent.loggedOut();*/});
+        .subscribe(resp => this.verified = resp, err => {console.log(err); this.verified = false});
     }
-    //this.headerComponent.loggedIn();
-    return this.verified && (this.verified.access_token || this.verified.valid);
+    this.globals.isLoggedIn = this.verified && (this.verified.access_token || this.verified.valid);
+    return this.globals.isLoggedIn
   }
   
   isLibrary() {
@@ -125,11 +124,10 @@ export class MemberAuthService {
   }
   
   logOut() {
-    //this.headerComponent.loggedOut();
     return this.http.post(this.logoutURL, httpOptions).pipe(
       tap(_ => this.log(`logged out`)),
     )
-    .subscribe();
+    .subscribe(resp => this.globals.isLoggedIn = false, err => console.log(err));
   }
   
   private log(message: string, error?: boolean) {

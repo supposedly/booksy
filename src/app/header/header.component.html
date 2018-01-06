@@ -4,11 +4,10 @@
   <a routerLink="{{button.hasOwnProperty('dest')?button.dest:'/'+button.text}}"
     routerLinkActive="selected"
     *ngFor="let button of buttons">{{button.text}}</a>
-  <div *ngIf="false"> <!--hm-->
-    <a
-      (click)="memberAuthService.logOut()"
-      class="logout">
-        Logout
-    </a>
-  </div>
+  <a *ngIf="globals.isLoggedIn"
+    href="/login"
+    (click)="memberAuthService.logOut()"
+    class="logout">
+      Logout
+  </a>
 </nav>

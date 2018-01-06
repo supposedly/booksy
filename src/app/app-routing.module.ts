@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { RouterModule, Routes, ExtraOptions } from '@angular/router';
 
 import { AuthGuard } from './auth.guard';
 
@@ -28,13 +28,13 @@ const routes: Routes = [
     component: HomePageComponent,
     children: [
       // routed to by the sidebar
-      {path: 'checkout', component: CheckoutComponent},
-      {path: 'dashboard', component: DashboardComponent},
-      {path: 'media/search', component: MediaSearchComponent},
-      {path: 'media/:mID', component: MediaInfoComponent},
-      {path: 'account', component: MemberAcctInfoComponent},
-      {path: 'reports', component: ReportsComponent},
-      {path: 'manage', component: LocationMgmtComponent}
+      {path: 'checkout', component: CheckoutComponent, outlet: 'home'},
+      {path: 'dashboard', component: DashboardComponent, outlet: 'home'},
+      {path: 'media/search', component: MediaSearchComponent, outlet: 'home'},
+      {path: 'media/:mID', component: MediaInfoComponent, outlet: 'home'},
+      {path: 'account', component: MemberAcctInfoComponent, outlet: 'home'},
+      {path: 'reports', component: ReportsComponent, outlet: 'home'},
+      {path: 'manage', component: LocationMgmtComponent, outlet: 'home'}
     ]
   },
   {path: 'help', component: HelpComponent},
@@ -42,7 +42,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes, {onSameUrlNavigation: 'reload'})],
   exports: [RouterModule]
 })
 export class AppRoutingModule {}
