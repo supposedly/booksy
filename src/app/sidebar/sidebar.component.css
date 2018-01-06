@@ -1,32 +1,51 @@
-ul.sidebar-container {
-    height: 100%; /* Full-height: remove this if you want "auto" height */
-    width: 160px; /* Set the width of the sidebar */
-    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
-    z-index: 1; /* Stay on top */
-    top: 0; /* Stay at the top */
-    left: 0;
-    overflow-x: hidden; /* Disable horizontal scroll */
-    padding-top: 20px;
+#sidebar-container {
+  box-shadow: -4px 8px 11px 0px black;
+  background-color: #eee;
+  list-style: none;
+  padding-left: 0;
+  position: fixed;
+  height: 100%;
+  z-index: 1;
+  left: 0;
+  top: 0;
 }
-.sidebar-container li {
-    padding: 6px 8px 6px 16px;
-    text-decoration: none;
-    font-size: 25px;
-    color: #818181;
-    display: block;
+#sidebar-container li.dummy {
+  cursor: default;
+  height: 3em; /* subject to change */
 }
-
-.sidebar-container li:hover {
-    color: #f1f1f1;
+#sidebar-container li {
+  padding: 6px 8px 6px 16px;
+  cursor: pointer;
+  
+  background-color: #eee;
+  color: #818181;
+  
+  font-size: 20px;
+  font-family: 'Noto Sans CJK JP Regular';
+  
+  text-decoration: none;
+  text-transform: lowercase;
+  
+  -webkit-transition: color .1s;
+  -webkit-transition: -webkit-transform 70ms, background-color .1s;
+  -webkit-backface-visibility: hidden; /* stops animation flickering */
+  
+  -moz-transition: color .1s;
+  -moz-transition: -moz-transform 70ms, background-color .1s;
+  
+  transition: color .1s;
+  transition: transform 70ms, background-color .1s;
 }
-
-.main {
-    margin-left: 160px; /* Same as the width of the sidebar-container */
-    font-size: 28px; /* Increased text to enable scrolling */
-    padding: 0px 10px;
+#sidebar-container li.selected {
+  /* background-color: #ccc; */
+  transform: scale(1.01);
 }
-
-@media screen and (max-height: 450px) {
-    .sidebar-container {padding-top: 15px;}
-    .sidebar-container li {font-size: 18px;}
+#sidebar-container li:hover:not(.dummy) {
+  /* background-color: #ccc; */
+  transform: scale(1.03);
+}
+#sidebar-container li:hover:not(.dummy) span,
+#sidebar-container li.selected span {
+  color: #000 !important;
+  
 }

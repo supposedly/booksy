@@ -1,21 +1,15 @@
-#content {
+#container {
   display: grid;
-  grid-template-columns: 9fr auto;
-  grid-template-rows: 50px auto 50px;
-  grid-template-areas: "side side" 
-                      "main main"
-                      "header header";
+  grid-template: 35px 1fr / 1fr 2fr;
+  grid-template-areas: "header header"
+                       "side main";
 }
-.spacer {
+#spacer {
   grid-area: header;
-  height: 35px;
 }
-#sidebar {
+.sidebar {
   grid-area: side;
-  width: 300px;
 }
-#main {
+.main {
   grid-area: main;
-  position: relative;
-  margin-left: 250px;
 }
