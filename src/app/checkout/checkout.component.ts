@@ -5,6 +5,7 @@ import { MediaItem } from '../classes';
 import { CheckoutService } from '../checkout.service';
 import { MediaService } from '../media.service';
 import { MemberAuthService } from '../member-auth.service';
+import { Globals } from '../globals';
 
 @Component({
   selector: 'app-checkout',
@@ -20,10 +21,12 @@ export class CheckoutComponent implements OnInit {
     private checkoutService: CheckoutService,
     private mediaService: MediaService,
     private memberAuthService: MemberAuthService,
-  ) { }
+    private globals: Globals
+  ) { console.log('constructed'); }
 
   ngOnInit() {
-    this.isLibrary = this.memberAuthService.isCheckoutAccount;
+    console.log('init');
+    this.isLibrary = this.globals.isCheckoutAccount;
   }
   
   submit(mID): void {
