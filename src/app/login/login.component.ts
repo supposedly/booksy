@@ -30,7 +30,9 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private zone: NgZone
-  ) {}
+  ) {
+    memberAuthService.verify();
+  }
   
   ngOnInit() {
     this.isLocationRegistered = this.memberAuthService.isRegistered;
@@ -38,6 +40,7 @@ export class LoginComponent implements OnInit {
     if (this.memberAuthService.verify()) {
       //this.zone.run(() => window.location.href = this.returnURL);
       //window.location.href = this.returnURL;
+      this.router.navigateByUrl(this.returnURL);
     }
   }
   
@@ -48,6 +51,7 @@ export class LoginComponent implements OnInit {
             // login successful
             //this.zone.run(() => window.location.href = this.returnURL);
             //window.location.href = this.returnURL;
+            this.router.navigateByUrl(this.returnURL);
             this.globals.isLoggedIn = true;
             this.err = false;
             this.msg = 'Thank you! You may now navigate to the HOME tab.';

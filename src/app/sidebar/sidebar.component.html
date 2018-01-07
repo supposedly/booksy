@@ -1,6 +1,6 @@
 <ul *ngIf="buttons" id="sidebar-container">
   <li class="dummy"></li>
-  <li [routerLink]="['/', {outlets: {home: button.hasOwnProperty('dest')?button.dest:button.text}}]"
+  <li [routerLink]="button.hasOwnProperty('dest')?button.dest:button.text"
     routerLinkActive="selected"
     *ngFor="let button of buttons"
     [attr.style]="san(button.hasOwnProperty('color')?'background-color:'+button.color+' !important':'/**/')">

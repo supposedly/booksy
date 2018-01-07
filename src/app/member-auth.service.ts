@@ -75,7 +75,6 @@ export class MemberAuthService {
         this.globals.email = res.me.email;
         this.globals.phone = res.me.phone;
         this.globals.isLoggedIn = true;
-        this.resjson = res.me;
       }
     );
   }
@@ -90,52 +89,55 @@ export class MemberAuthService {
       if (_) {
         this.getInfo()
           .subscribe(res => {
-            this.uID = res.me.user_id;
-            this.globals.uID = this.uID;
-            
-            this.rID = res.me.rid;
-            this.globals.rID = this.rID;
-            
-            this.lID = res.me.lid;
-            this.globals.lID = this.lID;
-            
-            this.isCheckoutAccount = res.me.is_checkout;
-            this.username = res.me.username;
-            this.managesLocation = res.me.manages;
-            this.email = res.me.email;
-            this.phone = res.me.phone;
+            this.globals.uID = res.me.user_id;
+            this.globals.rID = res.me.rid;
+            this.globals.lID = res.me.lid;
+            this.globals.isCheckoutAccount = res.me.is_checkout;
+            this.globals.username = res.me.username;
+            this.globals.managesLocation = res.me.manages;
+            this.globals.email = res.me.email;
+            this.globals.phone = res.me.phone;
             this.globals.isLoggedIn = true;
-            this.resjson = res.me;
           }
         );
-      }
+      } else { this.globals.isLoggedIn = false; }
     });
     return ret;
   }
   
-  verify(): boolean {
+  verify(): any /* boolean */ {
     this.http.get<any>(this.verifyURL).pipe(
-      tap(_ => this.log(`verified current user's access token`)),
-      )
-      .subscribe(resp => this.verified = resp, err => {console.log(err); this.verified = false});
-    if ((!this.verified) || !this.verified['valid']) {
-      this.http.post<any>(this.refreshURL, httpOptions).pipe(
-        tap(_ => this.log(`found expired access token so attempted to refresh it`)),
-        )
-        .subscribe(resp => this.verified = resp, err => {console.log(err); this.verified = false});
-    }
-    this.globals.isLoggedIn = this.verified && (this.verified.access_token || this.verified.valid);
-    return this.globals.isLoggedIn
-  }
-  
-  isLibrary() {
-    return this.http.get<any>(this.infoURL).pipe(
-      tap(_ => this.log(`verified current user's access token`)),
-      )
-      .subscribe(resp => resp.isCheckoutAccount);
+      tap(_ => this.log(`verified current user's access token`)))
+      .subscribe(
+        resp => {
+          this.globals.isLoggedIn = resp && resp.valid;
+          if (this.globals.isLoggedIn) {
+            return true;
+          } else {
+            this.http.post<any>(this.refreshURL, httpOptions).pipe(
+              tap(_ => this.log(`found expired access token so attempted to refresh it`)))
+              .subscribe(
+                resp => {
+                  this.globals.isLoggedIn = resp && (resp.access_token || resp.valid);
+                  return this.globals.isLoggedIn;
+                }, err => {
+                  console.log(err);
+                  this.globals.isLoggedIn = false;
+                  return false;
+                }
+            );
+          }
+        }, err => {
+          console.log(err);
+          this.globals.isLoggedIn = false;
+          return false;
+        }
+    );
+    return this.globals.isLoggedIn; //synchronicity in an async function? yikes (but it works well)
   }
   
   logOut() {
+    this.globals.isLoggedIn = false
     return this.http.post(this.logoutURL, httpOptions).pipe(
       tap(_ => this.log(`logged out`)),
     )
