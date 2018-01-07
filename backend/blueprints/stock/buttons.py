@@ -58,20 +58,20 @@ async def expose_home_sidebar_buttons(rqst, user):
     # calling them directly, heh
     side_buttons = [
       {"text": 'checkout'},
-      {"text": 'find media', "dest": '/media/search'},
-      {"text": 'my dashboard', "dest": '/dashboard'},
-      {"text": 'my account', "dest": '/account'},
+      {"text": 'find media', "dest": 'media/search'},
+      {"text": 'my dashboard', "dest": 'dashboard'},
+      {"text": 'my account', "dest": 'account'},
     ]
     if not user.is_checkout:
         if user.perms.can_generate_reports: # self-documenting!
             side_buttons.append({"text": 'reports', "color": '#97fb97'})
         if user.perms.can_manage_media:
-            side_buttons.append({"text": 'manage media', "dest": '/media', "color": '#ffcaca'})
+            side_buttons.append({"text": 'manage media', "dest": 'media', "color": '#ffcaca'})
         if int(user.perms.bin[0:5]):
             # if has any of the following permissions:
             # Manage Location Info, Manage Accounts, Manage Roles,
             # Create Administrative Roles, Manage Media
-            side_buttons.append({"text": 'manage location', "dest": '/manage', "color": '#ffcaca'})
+            side_buttons.append({"text": 'manage location', "dest": 'manage', "color": '#ffcaca'})
     return sanic.response.json(side_buttons, status=200)
 
 @btn.get('/mgmt-header')

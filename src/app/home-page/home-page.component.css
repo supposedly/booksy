@@ -7,9 +7,9 @@
 #spacer {
   grid-area: header;
 }
-.sidebar {
+app-sidebar {
   grid-area: side;
 }
-.main {
+router-outlet {
   grid-area: main;
 }
