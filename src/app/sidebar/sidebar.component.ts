@@ -13,8 +13,6 @@ export class SidebarComponent /*implements OnInit*/ {
   buttons: SideButton[] = null;
   public san;
   
-  @Input() uID: string;
-  
   constructor(
     private sideButtonService: SideButtonService,
     private sanitizer: DomSanitizer
@@ -22,13 +20,15 @@ export class SidebarComponent /*implements OnInit*/ {
       this.san = sanitizer.bypassSecurityTrustStyle;
   }
   
+  @Input() uID: string;
+  
   ngOnChanges() {
     this.getButtons();
   }
   
   /*
   ngOnInit() {
-    //this.getButtons();
+    this.getButtons();
   }
   */
   
