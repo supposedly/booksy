@@ -11,8 +11,8 @@ import { Globals } from '../globals';
 })
 export class HomePageComponent implements OnInit {
   constructor(
-  public globals: Globals,
-  private memberAuthService: MemberAuthService
+    public globals: Globals,
+    private memberAuthService: MemberAuthService
   ) {}
   
   ngOnInit() {

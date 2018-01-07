@@ -7,13 +7,13 @@ import { of } from 'rxjs/observable/of';
 
 import { LoggingService } from './logging.service';
 
-import { SideButton, HttpOptions } from './classes';
+import { NavButton, HttpOptions } from './classes';
 
 const httpOptions = HttpOptions;
 
 @Injectable()
-export class SideButtonService {
-  private buttonsURL: string = 'stock/buttons/home-sidebar';
+export class MgmtHeaderButtonService {
+  private buttonsURL: string = 'stock/buttons/mgmt-header';
   private rID: string;
   
   constructor(
@@ -22,14 +22,14 @@ export class SideButtonService {
   ) {}
   
   getButtons(uID: string): Observable<any> {
-    return this.http.get<SideButton[]>(this.buttonsURL, {params: {uid: uID}}).pipe(
-      tap(heroes => this.log(`fetch the sidebar buttons from remote server`)),
-      catchError(this.handleError('getting sidebar buttons', []))
+    return this.http.get<NavButton[]>(this.buttonsURL, {params: {uid: uID}}).pipe(
+      tap(heroes => this.log(`fetch the management header buttons from remote server`)),
+      catchError(this.handleError('getting management header buttons', []))
     );
   }
   
   private log(message: string, error?: boolean) {
-    this.loggingService.add(error?'sideButtonService: ':'App just used a SideButtonService to ' + message);
+    this.loggingService.add(error?'mgmtHeaderButtonService: ':'App just used a MgmtHeaderButtonService to ' + message);
   }
     
   private handleError<T> (operation = 'operation', result ?: T) {

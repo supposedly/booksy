@@ -22,10 +22,9 @@ export class CheckoutComponent implements OnInit {
     private mediaService: MediaService,
     private memberAuthService: MemberAuthService,
     private globals: Globals
-  ) { console.log('constructed'); }
+  ) {}
 
   ngOnInit() {
-    console.log('init');
     this.isLibrary = this.globals.isCheckoutAccount;
   }
   

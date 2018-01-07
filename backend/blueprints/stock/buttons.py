@@ -66,7 +66,7 @@ async def expose_home_sidebar_buttons(rqst, user):
         if user.perms.can_generate_reports: # self-documenting!
             side_buttons.append({"text": 'reports', "color": '#97fb97'})
         if user.perms.can_manage_media:
-            side_buttons.append({"text": 'manage media', "dest": 'media', "color": '#ffcaca'})
+            side_buttons.append({"text": 'manage media', "dest": 'media/manage', "color": '#ffcaca'})
         if int(user.perms.bin[0:5]):
             # if has any of the following permissions:
             # Manage Location Info, Manage Accounts, Manage Roles,
@@ -90,17 +90,13 @@ async def expose_management_buttons(rqst, user):
     
     Requires current session's Role ID from client.
     """
-    try:
-        user = await User(rqst.raw_args['uid'], rqst.app)
-    except KeyError:
-        sanic.exceptions.abort(422, 'No role ID given')
     if user.is_checkout:
-        sanic.exceptions.abort(400, 'Only available to user accounts')
+        sanic.exceptions.abort(400, 'Only available to non-checkout accounts')
     head_buttons = []
-    if user.perms.can_manage_locations:
-        head_buttons.append({"text": 'location info', "dest": '/manage/location'})
+    if user.perms.can_manage_location:
+        head_buttons.append({"text": 'location info', "dest": 'location'})
     if user.perms.can_manage_accounts:
-        head_buttons.append({"text": 'create/delete accounts', "dest": '/manage/accounts'})
+        head_buttons.append({"text": 'create/delete accounts', "dest": 'accounts'})
     if user.perms.can_manage_roles:
-        head_buttons.append({"text": 'roles and permissions', "dest": '/manage/roles'})
+        head_buttons.append({"text": 'roles and permissions', "dest": 'roles'})
     return sanic.response.json(head_buttons, status=200)
