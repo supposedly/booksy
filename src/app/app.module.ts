@@ -38,6 +38,11 @@ import { MediaService } from './media.service';
 import { MemberAuthService } from './member-auth.service';
 import { RoleService } from './role.service';
 import { SideButtonService } from './side-button.service';
+import { MgmtHeaderButtonService } from './mgmt-header-button.service';
+import { MgmtHeaderComponent } from './mgmt-header/mgmt-header.component';
+import { MgmtLocationComponent } from './mgmt-location/mgmt-location.component';
+import { MgmtAccountsComponent } from './mgmt-accounts/mgmt-accounts.component';
+import { MgmtRolesPermsComponent } from './mgmt-roles-perms/mgmt-roles-perms.component';
 
 @NgModule({
   declarations: [
@@ -59,6 +64,10 @@ import { SideButtonService } from './side-button.service';
     AboutComponent,
     SignupComponent,
     ReroutingComponent,
+    MgmtHeaderComponent,
+    MgmtLocationComponent,
+    MgmtAccountsComponent,
+    MgmtRolesPermsComponent,
   ],
   imports: [
     BrowserModule,
@@ -78,7 +87,8 @@ import { SideButtonService } from './side-button.service';
     MemberAuthService,
     AuthGuard,
     Globals,
-    HeaderComponent //?
+    HeaderComponent,
+    MgmtHeaderButtonService //?
     ],
   bootstrap: [AppComponent]
 })

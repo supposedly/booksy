@@ -12,10 +12,6 @@ export class SideButton {
   dest?: string;
   color?: string;
 }
-export class ManagePageButton {
-  text: string;
-  dest?: string;
-}
 export class MediaItem {
   mid: string;
   type: string;

@@ -9,7 +9,7 @@ nav {
     left: 0;
     position: fixed;
 }
-.spacer {
+#spacer {
   height: 35px;
 }
 /* nav a {
