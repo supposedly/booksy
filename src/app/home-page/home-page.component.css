@@ -1,6 +1,6 @@
 #container {
   display: grid;
-  grid-template: 35px 1fr / 1fr 2fr;
+  grid-template: 35px 1fr / 1fr 9fr;
   grid-template-areas: "header header"
                        "side main";
 }
@@ -10,6 +10,6 @@
 app-sidebar {
   grid-area: side;
 }
-router-outlet {
+::ng-deep router-outlet + * {
   grid-area: main;
 }

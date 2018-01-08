@@ -9,16 +9,35 @@
   left: 0;
   top: 0;
 }
-#sidebar-container li.dummy {
+li.dummy {
   cursor: default;
   height: 3em; /* subject to change */
 }
-#sidebar-container li {
-  padding: 6px 8px 6px 16px;
+li {
+  position: relative;
+  padding: 5px;
+  z-index: -2;
+}
+li:focus {
+  outline: none;
+}
+li div {
   cursor: pointer;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  bottom: 0px;
+  right: 0px;
+  z-index: -1;
   
-  background-color: #eee;
+  -webkit-transition: -webkit-filter .1s;
+  -moz-transition: -moz-filter .1s;
+  transition: filter .1s;
+}
+li span {
+  background-color: transparent;
   color: #818181;
+  cursor: pointer;
   
   font-size: 20px;
   font-family: 'Noto Sans CJK JP Regular';
@@ -26,26 +45,24 @@
   text-decoration: none;
   text-transform: lowercase;
   
-  -webkit-transition: color .1s;
-  -webkit-transition: -webkit-transform 70ms, background-color .1s;
-  -webkit-backface-visibility: hidden; /* stops animation flickering */
+  -webkit-transition: color .1s, font-size .1s;
+  -webkit-backface-visibility: hidden; /* stops animation jankiness */
   
-  -moz-transition: color .1s;
-  -moz-transition: -moz-transform 70ms, background-color .1s;
-  
-  transition: color .1s;
-  transition: transform 70ms, background-color .1s;
+  -moz-transition: color .1s, font-size .1s;
+  transition: color .1s, font-size .1s;
 }
-#sidebar-container li.selected {
-  /* background-color: #ccc; */
-  transform: scale(1.01);
+li.selected div {
+  filter: brightness(85%);
 }
-#sidebar-container li:hover:not(.dummy) {
-  /* background-color: #ccc; */
-  transform: scale(1.03);
-}
-#sidebar-container li:hover:not(.dummy) span,
-#sidebar-container li.selected span {
+li:hover span,
+li.selected span {
   color: #000 !important;
-  
+  font-size: 21px;
+  /* ^ looks very janky */
+}
+li:not(.dummy):focus span {
+  color: #000 !important;
+  outline: none;
+  font-size: 21px;
+  /* ^ looks very janky */
 }

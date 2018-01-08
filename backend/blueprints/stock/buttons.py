@@ -59,7 +59,7 @@ async def expose_home_sidebar_buttons(rqst, user):
     side_buttons = [
       {"text": 'checkout'},
       {"text": 'find media', "dest": 'media/search'},
-      {"text": 'my dashboard', "dest": 'dashboard'},
+      {"text": 'dashboard'},
       {"text": 'my account', "dest": 'account'},
     ]
     if not user.is_checkout:

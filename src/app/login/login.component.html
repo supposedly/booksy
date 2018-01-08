@@ -16,7 +16,6 @@
       (keyup)="msg=null"
       [(ngModel)]="uID"
       [ngModelOptions]="{updateOn: 'submit'}"
-      [class.invalid]="!numRe.test(uid.value)"
       autocomplete=username
       placeholder="User ID">
     <input #pw

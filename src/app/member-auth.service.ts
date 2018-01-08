@@ -112,6 +112,7 @@ export class MemberAuthService {
         resp => {
           this.globals.isLoggedIn = resp && resp.valid;
           if (this.globals.isLoggedIn) {
+            this.storeMeInfo();
             return true;
           } else {
             this.http.post<any>(this.refreshURL, httpOptions).pipe(
@@ -119,6 +120,7 @@ export class MemberAuthService {
               .subscribe(
                 resp => {
                   this.globals.isLoggedIn = resp && (resp.access_token || resp.valid);
+                  if (this.globals.isLoggedIn) { this.storeMeInfo(); }
                   return this.globals.isLoggedIn;
                 }, err => {
                   console.log(err);

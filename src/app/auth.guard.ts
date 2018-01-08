@@ -13,7 +13,9 @@ export class AuthGuard implements CanActivate {
     private router: Router,
     private globals: Globals,
     private memberAuthService: MemberAuthService
-  ) {}
+  ) {
+    memberAuthService.verify();
+  }
   
   canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
     let href: string = next.url.toString();
@@ -26,7 +28,7 @@ export class AuthGuard implements CanActivate {
       || href.startsWith('signup')
   ) {
       return true;
-    } else if (this.memberAuthService.verify()) {
+    } else if (this.globals.isLoggedIn) {
       return true;
     }
     this.router.navigate(['/login'], {queryParams: state.url==='/'?{}:{returnURL: state.url}})
