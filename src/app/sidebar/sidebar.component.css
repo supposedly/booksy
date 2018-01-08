@@ -51,18 +51,23 @@ li span {
   -moz-transition: color .1s, font-size .1s;
   transition: color .1s, font-size .1s;
 }
+/* TODO: clean these up */
 li.selected div {
-  filter: brightness(85%);
+  filter: brightness(80%);
 }
-li:hover span,
-li.selected span {
+li:hover span {
   color: #000 !important;
   font-size: 21px;
-  /* ^ looks very janky */
+}
+li.selected span {
+  font-size: 21px;
+  color: #fff !important;
 }
 li:not(.dummy):focus span {
   color: #000 !important;
   outline: none;
   font-size: 21px;
-  /* ^ looks very janky */
+}
+li.selected:focus span {
+  color: #fff !important;
 }

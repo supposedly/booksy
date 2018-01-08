@@ -15,17 +15,22 @@ const httpOptions = HttpOptions;
 export class SideButtonService {
   private buttonsURL: string = 'stock/buttons/home-sidebar';
   private rID: string;
+  buttons: Observable<SideButton[]> = null;
   
   constructor(
     private loggingService: LoggingService,
     private http: HttpClient,
   ) {}
   
-  getButtons(uID: string): Observable<any> {
-    return this.http.get<SideButton[]>(this.buttonsURL, {params: {uid: uID}}).pipe(
-      tap(heroes => this.log(`fetch the sidebar buttons from remote server`)),
-      catchError(this.handleError('getting sidebar buttons', []))
-    );
+  getButtons(uID: string): Observable<SideButton[]> {
+    if (!this.buttons) {
+      this.buttons = this.http.get<SideButton[]>(this.buttonsURL, {params: {uid: uID}}).pipe(
+        tap(heroes => this.log(`fetch the sidebar buttons from remote server`)),
+        catchError(this.handleError('getting sidebar buttons', []))
+      )
+      .shareReplay();
+    }
+    return this.buttons;
   }
   
   private log(message: string, error?: boolean) {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 
 @Component({
   selector: 'app-member-acct-info',
@@ -6,9 +6,14 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./member-acct-info.component.css']
 })
 export class MemberAcctInfoComponent implements OnInit {
-
+  
   constructor() { }
-
+  
+  @Input() uID: string;
+  
+  ngOnChanges() {
+  }
+  
   ngOnInit() {
   }
 

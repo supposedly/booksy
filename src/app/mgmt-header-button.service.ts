@@ -14,18 +14,22 @@ const httpOptions = HttpOptions;
 @Injectable()
 export class MgmtHeaderButtonService {
   private buttonsURL: string = 'stock/buttons/mgmt-header';
-  private rID: string;
+  buttons: Observable<NavButton[]> = null;
   
   constructor(
     private loggingService: LoggingService,
     private http: HttpClient,
   ) {}
   
-  getButtons(uID: string): Observable<any> {
-    return this.http.get<NavButton[]>(this.buttonsURL, {params: {uid: uID}}).pipe(
-      tap(heroes => this.log(`fetch the management header buttons from remote server`)),
-      catchError(this.handleError('getting management header buttons', []))
-    );
+  getButtons(uID: string): Observable<NavButton[]> {
+    if (!this.buttons) {
+      this.buttons = this.http.get<NavButton[]>(this.buttonsURL, {params: {uid: uID}}).pipe(
+        tap(heroes => this.log(`fetch the management header buttons from remote server`)),
+        catchError(this.handleError('getting management header buttons', []))
+      )
+      .shareReplay();
+    }
+    return this.buttons;
   }
   
   private log(message: string, error?: boolean) {
