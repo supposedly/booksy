@@ -14,7 +14,7 @@ import { MediaService } from '../media.service';
 export class MediaInfoComponent implements OnInit {
   item: MediaItem;
   
-  @Input() mID: number;
+  @Input() mID: string;
   
   constructor(
     private route: ActivatedRoute,

@@ -64,7 +64,7 @@ __[CONCEPTS]__
          ╠════════════════════╬═══════════╬═══════════╬═════════════╬══════════╬════════════╬══════════════════╬════════════════╬═══════════╬════════════╬═══════╬═══════╣
          ║ BIGSERIAL          ║ TEXT UNIQ ║ BIGINT    ║ TEXT        ║ TEXT     ║ TEXT       ║ BOOL             ║ BIGINT         ║ TEXT      ║ SMALLINT   ║ BINT  ║ BINT  ║
          ║ (unique member ID) ║ DEFAULT   ║ (location ║ (full name) ║ (email   ║ (phone #   ║ (can they manage ║ (ID of this    ║ (bcrypted ║ (user acc  ║ <= 0 for member, 1 for library
-         ║                    ║ NULL      ║ id)       ║             ║ or null) ║ or null)   ║ this location?)  ║ member's role) ║ password) ║ or school) ║ <= `manages' will ALWAYS be false for library accounts
+         ║                    ║ NULL      ║ id)       ║             ║ or null) ║ or null)   ║ this location?)  ║ member's role) ║ password) ║ or school) ║ <= `manages` will ALWAYS be false for library accounts
          ╚════════════════════╩═══════════╩═══════════╩═════════════╩══════════╩════════════╩══════════════════╩════════════════╩═══════════╩════════════╩═══════╩═══════╝
    > items:
       Every single item in every registered library, with records of their

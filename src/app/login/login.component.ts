@@ -48,20 +48,30 @@ export class LoginComponent implements OnInit {
     this.memberAuthService.logIn(this.uID, this.password, this.lID)  // memberAuthService will now send this info, along with the location ID fetched from /auth/me
       .subscribe(
         resp => {
-            // login successful
-            //this.zone.run(() => window.location.href = this.returnURL);
-            //window.location.href = this.returnURL;
-            this.router.navigateByUrl(this.returnURL);
-            this.globals.isLoggedIn = true;
-            this.err = false;
-            this.msg = 'Thank you! You may now navigate to the HOME tab.';
+          if (resp) {
+            this.memberAuthService.getInfo()
+              .subscribe(res => {
+                this.memberAuthService.saveToGlobals(res.me);
+                this.globals.isLoggedIn = true;
+                this.err = false;
+                this.msg = 'Thank you! You may now navigate to the HOME tab.'; // this should never be shown!
+                this.router.navigateByUrl(this.returnURL);
+              }
+            );
+          } else {
+            this.globals.isLoggedIn = false;
+            this.msg = 'Invalid login credentials';
+          }
         },
         err => {
-            // login failed
-            this.err = true;
-            this.msg = 'Invalid login credentials';
-            this.loading = false;
-            this.globals.isLoggedIn = false;
+          // login failed
+          this.err = true;
+          this.msg = 'Invalid login credentials';
+          this.loading = false;
+          this.globals.isLoggedIn = false;
+        },
+        () => { //on completion
+          this.router.navigateByUrl(this.returnURL);
         }
     );
   }

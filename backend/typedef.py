@@ -265,7 +265,7 @@ class Location(AsyncInit, WithLock):
             name, ip, fine_amt, fine_interval, color, image = await conn.fetchrow(query, self.lid)
             query = """SELECT uid FROM members WHERE lid = $1 AND manages = true"""
             uid = await conn.fetchval(query, self.lid)
-        self.owner = await User(uid, self.app, location=self) if owner is None else owner # just for consistency; don't think the else will ever be used though
+        self.owner = await User(uid, self.app, location=self) if owner is None else owner # just for consistency; don't think the `else` will ever be used though
         self.name = name
         self.ip = ip
         self.fine_amt = fine_amt
@@ -281,6 +281,27 @@ class Location(AsyncInit, WithLock):
     
     async def media_type(self, type_name: str):
         return await MediaType(type_name, self, self.app)
+    
+    @staticmethod
+    def gb_image_query(title=None, author=None, isbn=None):
+        """
+        Searches for a book's image using the Google Books API
+        """
+        no_punc = str.maketrans('', '', """!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~""")
+        author = author.translate(no_punc) # strip punctuation
+        title = title.translate(no_punc)
+        isbn = isbn.translate(no_punc)
+        
+        query = 'https://www.googleapis.com/books/v1/volumes?q='
+        end = '&maxResults=1'
+        if not all(title, author) and not isbn:
+            return None
+        if isbn:
+            isbn = ''.join(isbn.split('-')[:2]) # get rid of trailing number and remove hyphens
+            query += f'isbn:{isbn}'
+        else:
+            query += f'intitle:"{title.replace(" ", "+")}"+inauthor:"{author.replace(" ", "+")}"'
+        return query + end
     
     @classmethod
     async def instate(cls, rqst, **kwargs):
@@ -310,37 +331,21 @@ class Location(AsyncInit, WithLock):
         return None
 
     @lockquire(lock=False)
-    async def search(self, conn, title=None, genre=None, author=None, cont=0):
-        search_terms = title, genre, author
+    async def search(self, conn, title=None, genre=None, type_=None, author=None, cont=0):
+        search_terms = title, genre, type_, author
         async with self.__class__._aiolock:
             query = (
-                """SELECT mid FROM items WHERE true """ # stupid hack inbound
+                """SELECT mid FROM items WHERE true """ # stupid hack coming up
                 + ("""AND lower(title) LIKE '%' || lower(${}::text) || '%' """ if title else '')
                 + ("""AND lower(genre) LIKE '%' || lower(${}::text) || '%' """ if genre else '')
                 + ("""AND lower(author) LIKE '%' || lower(${}::text) || '%' """ if author else '')
-                + ("""AND false """ if not any(search_terms) else '') # bc 'WHERE true' otherwise returns everything if not any(search_terms)
+                + ("""AND lower(type) LIKE '%' || lower(${}::text) || '%' """ if type_ else '')
+                + ("""AND false """ if not any(search_terms) else '') # because 'WHERE true' otherwise returns everything if not any(search_terms)
                 + ("""ORDER BY title""") # just to establish a consistent order for `cont' param
                 ).format(*range(1, 1+sum(map(bool, search_terms))))
             results = await conn.fetch(query, *filter(bool, search_terms))
         max_results = 20 # dunno
         return {i: i['mid'] for i in results[cont:cont+max_results]}
-    
-    @staticmethod
-    def gb_image_query(title=None, author=None, isbn=None, *, no_punc=str.maketrans('', '', """!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~""")):
-        author = author.translate(no_punc)
-        title = title.translate(no_punc)
-        isbn = isbn.translate(no_punc)
-        
-        query = 'https://www.googleapis.com/books/v1/volumes?q='
-        end = '&maxResults=1'
-        if not all(title, author) and not isbn:
-            return None
-        if isbn:
-            query += f'isbn:"{isbn}"'
-        else:
-            query += f'intitle:"{title.replace(" ", "+")}"+inauthor:"{author.replace(" ", "+")}"'
-        return query + end
-        
     
     @lockquire()
     async def get_roles(self, conn):
@@ -393,16 +398,16 @@ class Location(AsyncInit, WithLock):
     
     @lockquire(lock=False)
     async def add_media(self, conn, **kwargs):
-        kws = [kwargs.get(i, None) for i in ('title', 'author', 'query')]
-        async with app.sem, app.session.get(self.gb_query(*kws)) as resp:
-            coll = await resp.json()
-            ident = coll.get('industryIdentifiers', None)
-            img = coll.get('imageLinks', '')
+        kwgs = [kwargs.get(i, None) for i in ('title', 'author', 'isbn')]
+        async with app.sem, app.session.get(self.gb_img_query(*kwgs)) as resp:
+            rel = await resp.json()
+        ident = rel.get('industryIdentifiers', None)
+        img = rel.get('imageLinks', '')
         if ident:
             ident, *_ = [sub['identifier'] for sub in ident if 'isbn' in sub['type'].lower()]
         if img:
             img = img.get('smallThumbnail', img.get('thumbnail', ''))
-        kwargs['isbn'] = kwargs['isbn'].replace('-', '') or ident
+        kwargs['isbn'] = kwargs['isbn'] or ident
         
         args = (kwargs[attr] for attr in MediaItem.props)
         async with self.__class__._aiolock:
@@ -480,10 +485,12 @@ class User(AsyncInit, WithLock):
         self.acquire = self.pool.acquire
         self.user_id = self.uid = int(uid)
         async with self.__class__._aiolock, self.acquire() as conn:
-            query = """SELECT username, lid, rid, manages, email, phone, type, perms, maxes, locks FROM members WHERE uid = $1::bigint;"""
-            username, lid, rid, manages, email, phone, self._type, permbin, maxbin, lockbin = await conn.fetchrow(query, self.uid)
+            query = """SELECT username, fullname, lid, rid, manages, email, phone, type, perms, maxes, locks FROM members WHERE uid = $1::bigint;"""
+            username, name, lid, rid, manages, email, phone, self._type, permbin, maxbin, lockbin = await conn.fetchrow(query, self.uid)
         self.location = await Location(lid, self.app) if location is None else location
         self.role = await Role(rid, self.app, location=self.location) if role is None else role
+        self.username = username
+        self.name = name
         self.email = email
         self.phone = phone
         self.manages = manages
@@ -493,8 +500,10 @@ class User(AsyncInit, WithLock):
         self.is_checkout = bool(self._type) # == 1
     
     def to_dict(self) -> dict:
-        props = ['user_id', 'username', 'lid', 'manages', 'rid', 'email', 'phone', 'is_checkout', 'perms', ]
-        return {i: getattr(self, i, None) for i in props}
+        props = ['user_id', 'username', 'name', 'lid', 'manages', 'rid', 'email', 'phone', 'is_checkout', 'perms', ]
+        rel = {i: getattr(self, i, None) for i in props}
+        rel['locname'] = self.location.name
+        return rel
     
     @classmethod
     async def create(cls, app, **kwargs):
@@ -521,8 +530,7 @@ class User(AsyncInit, WithLock):
         and, once found, passes it to __init__())
         """
         async with cls._aiolock, app.pg_pool.acquire() as conn:
-            query = """SELECT uid FROM members WHERE {} = $1::text AND lid = $2::bigint""".format('username' if uid is None else uid)
-            #XXX: if I have the uID then why would I be using from_identifiers??
+            query = """SELECT uid FROM members WHERE {} = $1::text AND lid = $2::bigint""".format('username' if uid is None else uid) #XXX: if I have the uID then why would I be using from_identifiers??
             uid = await conn.fetchval(query, username, lid)
         return await cls(uid, app)
     

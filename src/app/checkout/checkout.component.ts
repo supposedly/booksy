@@ -13,20 +13,31 @@ import { Globals } from '../globals';
   styleUrls: ['./checkout.component.css']
 })
 export class CheckoutComponent implements OnInit {
-  isLibrary: boolean;
-  mid;
-  uid;
+  isCheckoutAccount: boolean;
+  name: string;
+  mid: string;
+  uid: string;
   
   constructor(
     private checkoutService: CheckoutService,
     private mediaService: MediaService,
     private memberAuthService: MemberAuthService,
     private globals: Globals
-  ) {}
-
-  ngOnInit() {
-    this.isLibrary = this.globals.isCheckoutAccount;
+  ) {
+      this.isCheckoutAccount = globals.isCheckoutAccount;
+      if (!this.isCheckoutAccount) {
+        this.uid = globals.uID;
+        if (this.globals.managesLocation) {
+          this.name = globals.locname + ' Admin'
+        } else {
+          this.name = globals.name;
+        }
+      } else {
+        this.name = globals.locname + ' Patron'
+      }
   }
+
+  ngOnInit() {}
   
   submit(mID): void {
     //this.checkoutService.checkOut

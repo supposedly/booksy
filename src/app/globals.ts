@@ -5,7 +5,9 @@ export class Globals {
     uID: string;
     lID: string;
     rID: string;
+    locname: string;
     username: string;
+    name: string;
     email: string;
     phone: string;
     managesLocation: boolean;

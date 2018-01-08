@@ -31,7 +31,7 @@ export class MediaService {
   } 
   */
   
-  getInfo(mid: number): Observable<MediaItem> {
+  getInfo(mid: string): Observable<MediaItem> {
     const mediaInfoURL = '/api/media/info';
     this.http.get<any>(mediaInfoURL, {params: {mid: mid.toString()}}).pipe(
       );

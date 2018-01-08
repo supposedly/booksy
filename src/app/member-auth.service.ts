@@ -63,46 +63,34 @@ export class MemberAuthService {
       .shareReplay();
   }
   
+  saveToGlobals(dts): void {
+    this.globals.uID = dts.user_id;
+    this.globals.rID = dts.rid;
+    this.globals.lID = dts.lid;
+    this.globals.isCheckoutAccount = dts.is_checkout;
+    this.globals.username = dts.username;
+    this.globals.name = dts.name;
+    this.globals.managesLocation = dts.manages;
+    this.globals.locname = dts.locname;
+    this.globals.email = dts.email;
+    this.globals.phone = dts.phone;
+  }
+  
   storeMeInfo(): void {
     this.getInfo()
       .subscribe(res => {
-        this.globals.uID = res.me.user_id;
-        this.globals.rID = res.me.rid;
-        this.globals.lID = res.me.lid;
-        this.globals.isCheckoutAccount = res.me.is_checkout;
-        this.globals.username = res.me.username;
-        this.globals.managesLocation = res.me.manages;
-        this.globals.email = res.me.email;
-        this.globals.phone = res.me.phone;
+        this.saveToGlobals(res.me);
         this.globals.isLoggedIn = true;
       }
     );
   }
   
   logIn(uid: string, password: string, lid?: string) {
-    let ret = this.http.post<any>(this.authURL, {
+    return this.http.post<any>(this.authURL, {
       user_id: uid,
       password: password,
       lid: this.lID ? this.lID : lid,
     }, httpOptions)
-    ret.subscribe(_ => {
-      if (_) {
-        this.getInfo()
-          .subscribe(res => {
-            this.globals.uID = res.me.user_id;
-            this.globals.rID = res.me.rid;
-            this.globals.lID = res.me.lid;
-            this.globals.isCheckoutAccount = res.me.is_checkout;
-            this.globals.username = res.me.username;
-            this.globals.managesLocation = res.me.manages;
-            this.globals.email = res.me.email;
-            this.globals.phone = res.me.phone;
-            this.globals.isLoggedIn = true;
-          }
-        );
-      } else { this.globals.isLoggedIn = false; }
-    });
-    return ret;
   }
   
   verify(): any /* boolean */ {

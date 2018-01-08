@@ -33,10 +33,8 @@ export class SidebarComponent /*implements OnInit*/ {
   */
   
   getButtons(): void {
-    if (!this.buttons) {
-      this.sideButtonService.getButtons(this.uID)
-        .subscribe(buttons => this.buttons = buttons);
-    }
+    this.sideButtonService.getButtons(this.uID)
+      .subscribe(buttons => this.buttons = buttons)
   }
 
 }

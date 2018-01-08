@@ -1,7 +1,10 @@
+#spacer {
+  height: 35px;
+}
 nav {
     display: inline-block;
     background-color: #f7f7f7;
-    box-shadow: 0 1px 1px #ccc;
+    box-shadow: 0 -3px 10px black;
     border-radius: 2px;
     width: 100%;
     z-index: 2;
@@ -9,17 +12,7 @@ nav {
     left: 0;
     position: fixed;
 }
-#spacer {
-  height: 35px;
-}
-/* nav a {
-  color: blue;
-  text-decoration: none;
-  font-size: 600%;
-  cursor: default;
-}
-*/
-nav a {
+a {
     display:inline-block;
     padding: 20px 20px;
     color: #888;
@@ -35,18 +28,18 @@ nav a {
     -moz-transition: background-color .1s, color .1s;
     transition: background-color .1s, color .1s;
 }
-nav a:active {
+a:active {
     background-color: #888;
     color: #f7f7f7;
 }
-nav a.selected {
+a.selected {
   background-color: #bfc8cc !important;
   color: #f7f7f7 !important;
 }
-nav a.logout {
+a.logout {
   float: right;
   background-color: #f3cbcb !important;
 }
-nav a.logout:active {
+a.logout:active {
   background-color: #c34545 !important;
 }
