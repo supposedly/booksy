@@ -128,7 +128,7 @@ async def set_up_dbs(app, loop):
     app.pg_pool = await asyncpg.create_pool(dsn=os.getenv('DATABASE_URL'), max_size=15, loop=loop)
     app.acquire = app.pg_pool.acquire
     
-    [T._init_lock(loop) for T in (Location, Role, MediaItem, MediaType, User)] # to ensure the aiolocks' being set up
+    [T._init_lock(loop) for T in (Location, Role, MediaItem, MediaType, User)] # ensure the aiolocks' being set up
     async with app.acquire() as conn:
         await setup.create_pg_tables(conn)
     if os.getenv('REDIS_URL', None) is None: # can't do nothin bout this

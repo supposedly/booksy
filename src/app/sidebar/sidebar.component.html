@@ -1,9 +1,12 @@
 <ul *ngIf="buttons" id="sidebar-container">
-  <li class="dummy"></li>
-  <li [routerLink]="'./' + (button.hasOwnProperty('dest')?button.dest:button.text)"
-    routerLinkActive="selected"
-    *ngFor="let button of buttons"
-    [attr.style]="san(button.hasOwnProperty('color')?'background-color:'+button.color+' !important':'/**/')">
-      <span>{{button.text}}</span>
-  </li>
+    <li class="dummy"></li>
+    <li *ngFor="let button of buttons"
+      [routerLink]="'./' + (button.hasOwnProperty('dest')?button.dest:button.text)"
+      routerLinkActive="selected">
+        <!-- for darkening color on selected -->
+        <div
+        [attr.style]="san('background-color:'+(button.hasOwnProperty('color')?button.color:'#eee')+' !important')">
+        </div>
+        <span>{{button.text}}</span>
+    </li>
 </ul>

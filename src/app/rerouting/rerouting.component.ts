@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { MemberAuthService } from '../member-auth.service';
+import { Globals } from '../globals';
 
 @Component({
   selector: 'app-rerouting',
@@ -12,7 +12,7 @@ export class ReroutingComponent implements OnInit {
   redirect: string = '/';
   
   constructor(
-    private memberAuthService: MemberAuthService,
+    private globals: Globals,
     private router: Router,
     private route: ActivatedRoute
   ) {
@@ -21,7 +21,7 @@ export class ReroutingComponent implements OnInit {
     }
   }
   ngOnInit() {
-    if (this.memberAuthService.verify()) {
+    if (this.globals.isLoggedIn) {
       this.router.navigate(['home'])
     }
     this.redirect = this.route.snapshot.queryParams['redirect'] || '/';
