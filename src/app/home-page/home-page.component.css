@@ -1,6 +1,6 @@
 #container {
   display: grid;
-  grid-template: 35px 1fr / 1fr 9fr;
+  grid-template: 35px 1fr / 10% 90%;
   grid-template-areas: "header header"
                        "side main";
 }
