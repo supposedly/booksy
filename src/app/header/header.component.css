@@ -43,3 +43,6 @@ a.logout {
 a.logout:active {
   background-color: #c34545 !important;
 }
+@media only screen and (max-width: 450px) {
+  a { font-size: 10px; padding: 10px; }
+}
