@@ -134,6 +134,8 @@ __[CONCEPTS]__
       3rd byte: MAX RENEWALS
            The maximum amount of due-date renewals afforded to this role.
            Can also customize per media category.
+      4th byte: MAX HOLDS
+           The maximum amount of holds this role is allowed to use.
       *__Further bytes are reserved for future use.__*
       __Ergo:__ A value of ???, binary [00000011 00000001], in
       the first three bytes would mean that:
@@ -148,7 +150,7 @@ __[CONCEPTS]__
      NOTE also again that 
       1st byte: CHECKOUT THRESHOLD
          Maximum amount of items this role may check out at a time
-         before being barred from further borrowing.
+         before being barred from checking out new media.
       2nd byte: FINE THRESHOLD (USD)
          Maximum amount of USD in fines allowed before an account with
          this role is barred from checking out new media.

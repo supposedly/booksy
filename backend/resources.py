@@ -24,7 +24,7 @@ class Maxes(PackedBigIntMixin):
     _names = [
       'checkout_duration',
       'renewals',
-      False,
+      'holds',
       False,
       False,
       False,

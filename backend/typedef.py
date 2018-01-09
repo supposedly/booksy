@@ -178,9 +178,9 @@ class MediaItem(AsyncInit, WithLock):
         
         self.location = await Location(self.lid, self.app)
         self.available = not self._issued_uid
-        self.issued_to = await User(self._issued_uid, self.app)
+        self.issued_to = None if self._issued_uid is None else await User(self._issued_uid, self.app)
         self.type = await MediaType(self._type, self.lid, self.app)
-        self.maxes = Maxes(self.maxes)
+        self.maxes = None if self.maxes is None else Maxes(self.maxes)
     
     def __str__(self):
         return str(self.mid)
@@ -213,18 +213,18 @@ class MediaItem(AsyncInit, WithLock):
         return resp
     
     @lockquire(lock=False)
-    async def check_in(self, conn, user):
+    async def issue_to(self, conn, user):
         async with self.__class__._aiolock:
             query = """
             UPDATE items
-               SET issued_to = $1, -- uid given as param
-                   due_date = current_date + $2, -- time-allowed parameter calculated in python bc would be awful to do in plpgsql
+               SET issued_to = $1::bigint, -- uid given as param
+                   due_date = current_date + $2::int, -- time-allowed parameter calculated in python bc would be awful to do in plpgsql
                    fines = 0
-             WHERE mid = $3;
+             WHERE mid = $3::bigint;
             """
-            await conn.execute(user.uid, 7*user.maxes['checkout duration'], self.mid)
+            await conn.execute(query, user.uid, 7*user.maxes.checkout_duration, self.mid)
         self.issued_to = user
-        self.due_date = dt.datetime.utcnow() + dt.timedelta(weeks=user.maxes['checkout duration'])
+        self.due_date = dt.datetime.utcnow() + dt.timedelta(weeks=user.maxes.checkout_duration)
         self.fines = 0
         self.available = False
     
@@ -235,9 +235,9 @@ class MediaItem(AsyncInit, WithLock):
            SET issued_to = NULL,
                due_date = NULL,
                fines = NULL
-         WHERE mid = $1;
+         WHERE mid = $1::bigint;
         """
-        await conn.execte(uid, self.mid)
+        await conn.execute(query, self.mid)
         self.available = True
     
     async def remove(self):
@@ -331,21 +331,31 @@ class Location(AsyncInit, WithLock):
         return None
 
     @lockquire(lock=False)
-    async def search(self, conn, title=None, genre=None, type_=None, author=None, cont=0):
+    async def search(self, conn, *, title=None, genre=None, type_=None, author=None, cont=0, max_results=20, where_taken=None):
         search_terms = title, genre, type_, author
         async with self.__class__._aiolock:
             query = (
-                """SELECT mid FROM items WHERE true """ # stupid hack coming up
+                """SELECT DISTINCT ON (lower(title)) title, mid, author, genre, type FROM items WHERE true """ # stupid hack coming up
                 + ("""AND lower(title) LIKE '%' || lower(${}::text) || '%' """ if title else '')
                 + ("""AND lower(genre) LIKE '%' || lower(${}::text) || '%' """ if genre else '')
                 + ("""AND lower(author) LIKE '%' || lower(${}::text) || '%' """ if author else '')
                 + ("""AND lower(type) LIKE '%' || lower(${}::text) || '%' """ if type_ else '')
                 + ("""AND false """ if not any(search_terms) else '') # because 'WHERE true' otherwise returns everything if not any(search_terms)
+                + ("""WHERE issued_to IS {} NULL""".format(('', 'NOT')[where_taken]) if where_taken is not None else '')
                 + ("""ORDER BY title""") # just to establish a consistent order for `cont' param
-                ).format(*range(1, 1+sum(map(bool, search_terms))))
+                ).format(*range(1, 1+sum(map(bool, search_terms)))) \
+                + ("""LIMIT {} OFFSET {}""").format(max_results, cont)
             results = await conn.fetch(query, *filter(bool, search_terms))
-        max_results = 20 # dunno
-        return {i: i['mid'] for i in results[cont:cont+max_results]}
+        if where_taken is not None: # this means I'm calling it from in here and so I probably want an actual MediaItem or at least no junk
+            if max_results == 1:
+                return await MediaItem(*results)
+            return [i['mid'] for i in results]
+        # I'd have liked to provide a full MediaItem for each result,
+        # but that would take so so so so so unbearably long on Heroku's DB speeds,
+        # not to mention being just pretty inefficient all around.
+        # Instead I'll have to have the app shoot a GET request to /media/info
+        # for the pertinent mID after the user clicks on a given link.
+        return {i['mid']: {j: i[j] for j in ('author', 'genre', 'type')} for i in results}
     
     @lockquire()
     async def get_roles(self, conn):
@@ -487,8 +497,13 @@ class User(AsyncInit, WithLock):
         async with self.__class__._aiolock, self.acquire() as conn:
             query = """SELECT username, fullname, lid, rid, manages, email, phone, type, perms, maxes, locks FROM members WHERE uid = $1::bigint;"""
             username, name, lid, rid, manages, email, phone, self._type, permbin, maxbin, lockbin = await conn.fetchrow(query, self.uid)
+            query = """SELECT count(*) FROM holds WHERE uid = $1::bigint"""
+            holds = await conn.fetchval(query, self.uid)
+            query = """SELECT count(*) FROM items WHERE issued_to = $1::bigint"""
+            self.num_checkouts = await conn.fetchval(query, self.uid)
         self.location = await Location(lid, self.app) if location is None else location
         self.role = await Role(rid, self.app, location=self.location) if role is None else role
+        self.holds = holds
         self.username = username
         self.name = name
         self.email = email
@@ -504,6 +519,25 @@ class User(AsyncInit, WithLock):
         rel = {i: getattr(self, i, None) for i in props}
         rel['locname'] = self.location.name
         return rel
+    
+    @property
+    def cannot_check_out(self):
+        if self.maxes.checkout_duration and self.checkouts_left:
+            # success
+            return False
+        ret = 'User is forbidden from checking out.'
+        + ('' if able[0] else ' (currently using {} of {} allowed concurrent '
+                                    'checkouts)'.format(self.num_checkouts,
+                                                        self.locks.checkouts)
+               )
+        + '' if able[1] else ' (allowed to check out for 0 weeks)'
+        return ret
+    
+    async def edit_perms(self, **new):
+        return self.perms.edit(**new) # returns None
+    
+    async def edit_perms_from_seq(self, **new):
+        return self.perms.edit_from_seq(**new) # returns None
     
     @classmethod
     async def create(cls, app, **kwargs):
@@ -535,41 +569,30 @@ class User(AsyncInit, WithLock):
         return await cls(uid, app)
     
     @lockquire()
+    async def hold(self, conn, *, item=None, title=None):
+        if item is None:
+            item = await self.location.search(title=title, max_results=1, where_available=False)
+        if await conn.fetchval("""SELECT count(*) FROM members WHERE lower(title) = $1::text AND issued_to IS NULL""", title):
+            return 'Item is already available!'
+        query = """
+        INSERT INTO holds
+          (uid, mid, created)
+        SELECT $1::bigint, $2::bigint, current_date
+        """
+        await conn.execute(query, self.uid, item.mid)
+    
+    @lockquire()
     async def edit(self, conn, to_edit, new):
         query = f"""
         UPDATE members
-           SET {to_edit} = $1::textd
+           SET {to_edit} = $1::text
          WHERE lid = $2
         """
         await conn.execute(query, new, self.lid)
     
-    async def edit_perms(self, **new):
-        return self.perms.edit(**new) # returns None
-    
-    async def edit_perms_from_seq(self, **new):
-        return self.perms.edit_from_seq(**new) # returns None
-    
-    def can_check_out(self):
-        able = self.maxes.checkout_duration, self.locks.checkout_threshold
-        if all(able):
-            # success
-            return None
-        ret = 'User is forbidden from checking out.'
-        + ('' if able[0] else ' (currently using {} of {} allowed concurrent '
-                                    'checkouts)'.format(self.num_checkouts,
-                                                        self.locks.checkout_threshold)
-               )
-        + '' if able[1] else ' (allowed to check out for 0 weeks)'
-        return ret
-    
-    @lockquire()
-    async def num_checkouts(self) -> int:
-        query = """SELECT count(*) FROM items WHERE uid = $1::bigint"""
-        return await conn.fetchval(self.uid)
-    
     @property
-    async def checkouts_left(self) -> int:
-        return self.locks.checkout_threshold - self.num_checkouts
+    def checkouts_left(self) -> int:
+        return self.locks.checkouts - self.num_checkouts
     
     @property
     def perms(self):

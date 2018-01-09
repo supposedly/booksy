@@ -43,7 +43,7 @@ def lockquire(lock=True, db=True, sem=False, file=False):
             if file: await self.app.filesem.acquire()
             try:
                 # get return value here
-                value = await func(conn, *args, **kwargs)
+                value = await func(self=self, conn=conn, *args, **kwargs)
             except:
                 # do nothing, let it propagate
                 raise
