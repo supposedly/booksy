@@ -8,7 +8,25 @@ from .import Location, Role, MediaType, MediaItem, User
 
 media = sanic.Blueprint('media_api', url_prefix='/media')
 
+@media.post('/hold')
+@rqst_get('user', 'title')
+@jwtdec.protected()
+async def put_item_on_hold(rqst, user, title):
+    if user.cannot_check_out:
+        sanic.exceptions.abort(403, "You aren't allowed to place holds.")
+    if user.holds > user.maxes.holds:
+        sanic.exceptions.abort(403, "You aren't allowed to place any more holds.")
+    err = await user.hold(title=title)
+    if err:
+        sanic.exceptions.abort(403, err)
+    return sanic.response.raw('', status=204)
+
 @media.get('/check')
+@rqst_get('item')
+async def get_bool_available(rqst, item):
+    return sanic.response.json({'available': item.available, 'issuedTo': item._issued_uid}, status=200)
+
+@media.get('/check/verbose')
 @rqst_get('item')
 async def get_media_status(rqst, item):
     return sanic.response.json(item.status, status=200)
@@ -17,23 +35,19 @@ async def get_media_status(rqst, item):
 @rqst_get('user', 'item')
 @jwtdec.protected()
 async def issue_item(rqst, user, item):
-    forbidden = user.perms.can_check_out
-    if forbidden is not None:
-        # `forbidden' will be None if everything's good
-        # and a string w/ missing permissions otherwise
-        # so if it's nonempty we know someth went wrong
-        sanic.exceptions.abort(403, 'Unauthorized to check out.')
-    await item.issue_to(user)
-    return sanic.response.json({'checked': 'out', 'title': item.title, 'author': item.author, 'image': item.image_url}, status=200)
+    if user.cannot_check_out:
+        sanic.exceptions.abort(403, "You aren't allowed to check out.")
+    await item.issue_to(user=user)
+    return sanic.response.json({'checked': 'out', 'title': item.title, 'author': item.author, 'image': item.image}, status=200)
 
 @media.post('/check/in')
 @rqst_get('user', 'item')
 @jwtdec.protected()
 async def return_item(rqst, user, item):
     if not user.perms.can_return_items:
-        sanic.exceptions.abort(403, 'Unauthorized to return items.')
+        sanic.exceptions.abort(403, "You aren't allowed to return items.")
     await item.check_in()
-    return sanic.response.json('', status=204)
+    return sanic.response.raw('', status=204)
 
 @media.get('/info')
 @rqst_get('item')

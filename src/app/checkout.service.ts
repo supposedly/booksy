@@ -1,29 +1,39 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { LoggingService } from './logging.service';
 import { MemberAuthService } from './member-auth.service';
+import { LoggingService } from './logging.service';
+import { HttpOptions } from './classes';
+import { Globals } from './globals';
 
 import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
 
+const httpOptions = HttpOptions;
+
 @Injectable()
 export class CheckoutService {
-  private infoURL: string = '/media/check';
-  private checkoutURL: string = '/media/check/out';
-  private checkinURL: string = '/media/check/in';
+  private checkoutURL: string = '/api/media/check/out';
+  private checkinURL: string = '/api/media/check/in';
   
   constructor(
     private http: HttpClient,
+    private globals: Globals,
     private memberAuthService: MemberAuthService
   ) { }
   
-  checkStatus(mid): Observable<any> {
-    return //this.http.get<any>
+  checkOut(mID, uID) {
+    return this.http.post<any>(this.checkoutURL, {
+      uid: uID,
+      mid: mID,
+    }, httpOptions)
   }
   
-  checkOut(mid) {
-    return //this.http.post
+  checkIn(mID, uID) {
+    return this.http.post<any>(this.checkinURL, {
+      uid: uID,
+      mid: mID,
+    }, httpOptions)
   }
 
 }

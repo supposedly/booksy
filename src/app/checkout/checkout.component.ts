@@ -14,6 +14,7 @@ import { Globals } from '../globals';
 })
 export class CheckoutComponent implements OnInit {
   isCheckoutAccount: boolean;
+  msg: string = null;
   name: string;
   mid: string;
   uid: string;
@@ -40,6 +41,15 @@ export class CheckoutComponent implements OnInit {
   ngOnInit() {}
   
   submit(mID): void {
-    //this.checkoutService.checkOut
+    this.mediaService.getStatus(mID)
+      .subscribe(
+        stat => {
+          if (stat.available) {
+            this.checkoutService.checkOut(mID, this.uid).subscribe(resp => this.msg = 'Checked out!', err => this.msg = 'Error checking out');
+          } else if (stat.issuedTo == this.uid) {
+            this.checkoutService.checkIn(mID, this.uid).subscribe(resp => this.msg = 'Checked in!', err => this.msg = 'Error checking in');
+          }
+        }
+      );
   }
 }

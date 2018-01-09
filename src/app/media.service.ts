@@ -13,6 +13,8 @@ const httpOptions = HttpOptions;
 
 @Injectable()
 export class MediaService {
+  private infoURL = '/api/media/info';
+  private statusURL = '/api/media/check';
 
   constructor(
     private http: HttpClient
@@ -31,11 +33,13 @@ export class MediaService {
   } 
   */
   
-  getInfo(mid: string): Observable<MediaItem> {
+  getStatus(mID: string): Observable<any> {
+    return this.http.get<any>(this.statusURL, {params: {mid: mID}});
+  }
+  
+  getInfo(mID: string): Observable<MediaItem> {
     const mediaInfoURL = '/api/media/info';
-    this.http.get<any>(mediaInfoURL, {params: {mid: mid.toString()}}).pipe(
-      );
-    return null;
+    return this.http.get<any>(this.infoURL, {params: {mid: mID}});
   }
   
 }
