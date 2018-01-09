@@ -1,5 +1,5 @@
-<ul *ngIf="buttons" id="sidebar-container">
-    <li class="dummy"></li>
+<ul *ngIf="buttons" id="sidebar" [class.hide]="globals.hide">
+    <div id="toggler" (click)="globals.hide=!globals.hide" [class.grow]="globals.hide"></div>
     <li *ngFor="let button of buttons"
       [routerLink]="'./' + (button.hasOwnProperty('dest')?button.dest:button.text)"
       routerLinkActive="selected">

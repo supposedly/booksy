@@ -3,6 +3,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 
 import { SideButton } from '../classes';
 import { SideButtonService } from '../side-button.service';
+import { Globals } from '../globals';
 
 @Component({
   selector: 'app-sidebar',
@@ -11,9 +12,11 @@ import { SideButtonService } from '../side-button.service';
 })
 export class SidebarComponent /*implements OnInit*/ {
   buttons: SideButton[] = null;
+  /* public hide: boolean = false; */
   public san;
   
   constructor(
+    private globals: Globals,
     private sideButtonService: SideButtonService,
     private sanitizer: DomSanitizer
   ) {
