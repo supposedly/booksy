@@ -145,12 +145,19 @@ async def close_dbs(app, loop):
     """
     Sign off by gracefully closing the connection with the env's DBs and other acquired connections.
     """
+    print('Shutting down.')
     await app.pg_pool.close()
     app.rd_pool.close()
     await app.rd_pool.wait_closed()
     await app.session.close()
-    print('Shutting down.')
 
+@app.middleware('request')
+async def force_https(rqst):
+    if not rqst.url.startswith('https'):
+        securl = rqst.url.replace('http://', 'https://')
+                  if rqst.url.startswith('http://') # "http://whatever" -> "https://whatever"
+                  else 'https://' + rqst.url        # "whatever" -> "https://whatever"
+        return sanic.response.redirect(securl)
 
 @app.route('/')
 async def handle_homepage(rqst):

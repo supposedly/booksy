@@ -10,25 +10,19 @@ mbrs = sanic.Blueprint('location_members_api', url_prefix='/members')
 
 @mbrs.post('/add')
 @uid_get('location', user=True)
+@rqst_get('data')
 @jwtdec.protected()
-async def add_member_to_location(rqst, user, location, role):
-    try:
-        userdata = rqst.form['data']
-    except KeyError:
-        sanic.exceptions.abort(422, 'No user data given')
+async def add_member_to_location(rqst, user, location, data):
     if not user.perms.can_manage_members:
         sanic.exceptions.abort(401, 'Unauthorized to add members')
     return await location.add_member(**userdata)
 
 @mbrs.post('/remove')
 @uid_get('location', user=True)
+@rqst_get('toRemove')
 @jwtdec.protected()
-async def remove_member_from_location(rqst, user, location, role):
-    try:
-        to_remove = rqst.form['toRemove']
-    except KeyError:
-        sanic.exceptions.abort(422, 'No user data given')
+async def remove_member_from_location(rqst, user, location, to_remove):
     if not user.perms.can_manage_members:
         sanic.exceptions.abort(401, 'Unauthorized to remove members')
-    await location.remove_member(toRemove)
+    await location.remove_member(to_remove)
     return sanic.response.raw('', 204)

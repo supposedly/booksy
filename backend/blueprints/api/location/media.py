@@ -10,39 +10,33 @@ media = sanic.Blueprint('location_media_api', url_prefix='/media')
 
 @media.get('/search')
 @uid_get('location')
+@rqst_get('query')
 @jwtdec.protected()
-async def search_location_media(rqst, location):
-    try:
-        query = rqst.raw_args['query']
-    except KeyError:
-        sanic.exceptions.abort(422, 'Missing query')
-    return await location.search_media(query)
+async def search_location_media(rqst, location, query):
+    return sanic.response.json(await location.search_media(query), status=200)
 
 @media.get('/types')
 @uid_get('location')
 @jwtdec.protected()
 async def get_location_media_types(rqst, location):
-    return sanic.response.json(await location.media_types())
+    return sanic.response.json(await location.media_types(), status=200)
 
 @media.post('/types/<action:(add|remove)>')
 @uid_get('location', user=True)
+@rqst_get('name')
 @jwtdec.protected()
-async def edit_location_media_types(rqst, user, location, role, action):
-    try:
-        type_name = rqst.json['name']
-    except KeyError:
-        sanic.exceptions.abort(422, 'Missing media type name')
+async def edit_location_media_types(rqst, user, location, type_name, action):
     if not user.perms.can_manage_media:
-        sanic.exceptions.abort(401, 'Unauthorized to manage media')
+        sanic.exceptions.abort(401, 'Unauthorized to manage media.')
     if action == 'add':
         return sanic.response.json(
           await location.add_media_type(type_name),
           status=200)
     await location.remove_media_type(type_name)
-    return sanic.response.raw(status=204)
+    return sanic.response.raw('', status=204)
 
 @media.post('/add')
-@uid_get('location') # too many decorators ??? They're all necessary but still...
+@uid_get('location')
 @rqst_get('data', 'user')
 @jwtdec.protected()
 async def add_media_item_to_db(rqst, location, data, user):
