@@ -541,8 +541,8 @@ class User(AsyncInit, WithLock):
         self.acquire = self.pool.acquire
         self.user_id = self.uid = int(uid)
         async with self.__class__._aiolock, self.acquire() as conn:
-            query = """SELECT username, fullname, lid, rid, manages, email, phone, type, perms, maxes, locks, recent FROM members WHERE uid = $1::bigint;"""
-            username, name, lid, rid, manages, email, phone, self._type, permbin, maxbin, lockbin = await conn.fetchrow(query, self.uid)
+            query = """SELECT username, fullname, lid, rid, manages, email, phone, type, recent, perms, maxes, locks FROM members WHERE uid = $1::bigint;"""
+            username, name, lid, rid, manages, email, phone, self._type, recent, permbin, maxbin, lockbin = await conn.fetchrow(query, self.uid)
             query = """SELECT count(*) FROM holds WHERE uid = $1::bigint"""
             holds = await conn.fetchval(query, self.uid)
             query = """SELECT count(*) FROM items WHERE issued_to = $1::bigint"""
@@ -555,6 +555,7 @@ class User(AsyncInit, WithLock):
         self.email = email
         self.phone = phone
         self.manages = manages
+        self.recent = recent
         self._permnum = permbin
         self._maxnum = maxbin
         self._locknum = lockbin
@@ -571,19 +572,13 @@ class User(AsyncInit, WithLock):
         if self.maxes.checkout_duration and self.checkouts_left:
             # success
             return False
-        ret = 'User is forbidden from checking out.'
+        ret = "You can't check anything out at the moment."
         + ('' if able[0] else ' (currently using {} of {} allowed concurrent '
                                     'checkouts)'.format(self.num_checkouts,
                                                         self.locks.checkouts)
                )
         + '' if able[1] else ' (allowed to check out for 0 weeks)'
         return ret
-    
-    async def edit_perms(self, **new):
-        return self.perms.edit(**new) # returns None
-    
-    async def edit_perms_from_seq(self, **new):
-        return self.perms.edit_from_seq(**new) # returns None
     
     @classmethod
     async def create(cls, app, **kwargs):
@@ -613,6 +608,35 @@ class User(AsyncInit, WithLock):
             query = """SELECT uid FROM members WHERE {} = $1::text AND lid = $2::bigint""".format('username' if uid is None else uid) #XXX: if I have the uID then why would I be using from_identifiers??
             uid = await conn.fetchval(query, username, lid)
         return await cls(uid, app)
+    
+    async def edit_perms(self, **new):
+        return self.perms.edit(**new) # returns None
+    
+    async def edit_perms_from_seq(self, **new):
+        return self.perms.edit_from_seq(**new) # returns None
+    
+    @lockquire()
+    async def notifs(self, conn):
+        # could probably do this in one line
+        holds = await conn.fetchval("""SELECT count(*) FROM holds WHERE uid = $1::bigint""", self.uid)
+        fines = await conn.fetchval("""SELECT sum(fines) AS fines FROM items WHERE issued_to = $1::bigint""", self.uid)
+        overdue = await conn.fetchval("""SELECT count(*) AS overdue FROM items WHERE due_date < current_date;""")
+        
+        response = []
+        def add(type_, message):
+            response.append({"type": type_, "text": message})
+        
+        if holds or True:
+            add('notification', f'You have {holds} holds available.')
+        if overdue:
+            add('warning', f'You have {overdue} overdue items.')
+        if fines:
+            add('warning', f'You have ${fines} in overdue fines.')
+        if self.cannot_check_out:
+            add('alert', self.cannot_check_out)
+        for i, v in enumerate(response):
+            v["index"] = i # For easy removal of these messages on the front end
+        return response
     
     @lockquire()
     async def hold(self, conn, *, item=None, title=None):
