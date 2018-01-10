@@ -22,4 +22,6 @@ export class Globals {
   // gets reloaded when this happens, so it wouldn't be
   // feasible to keep it there.
   hide: boolean = false;
+  // messages displayed on checkout; same deal
+  checkoutMessages = null;
 }

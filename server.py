@@ -154,9 +154,7 @@ async def close_dbs(app, loop):
 @app.middleware('request')
 async def force_https(rqst):
     if not rqst.url.startswith('https'):
-        securl = rqst.url.replace('http://', 'https://')
-                  if rqst.url.startswith('http://') # "http://whatever" -> "https://whatever"
-                  else 'https://' + rqst.url        # "whatever" -> "https://whatever"
+        securl = rqst.url.replace('http://', 'https://') if rqst.url.startswith('http://') else 'https://' + rqst.url 
         return sanic.response.redirect(securl)
 
 @app.route('/')

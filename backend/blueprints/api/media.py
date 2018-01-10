@@ -57,7 +57,7 @@ async def issue_item(rqst, user, item):
 @rqst_get('user', 'item')
 @jwtdec.protected()
 async def return_item(rqst, user, item):
-    if not user.perms.can_return_items:
+    if user.is_checkout or not user.perms.can_return_items:
         sanic.exceptions.abort(403, "You aren't allowed to return items.")
     await item.check_in()
     return sanic.response.raw(b'', status=204)
@@ -66,5 +66,4 @@ async def return_item(rqst, user, item):
 @rqst_get('item')
 @jwtdec.protected()
 async def get_media_info(rqst, item):
-    print(item.image, type(item.image))
     return sanic.response.json({'info': item.to_dict()}, status=200)

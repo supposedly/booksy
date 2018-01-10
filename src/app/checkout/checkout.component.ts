@@ -46,10 +46,10 @@ export class CheckoutComponent implements OnInit {
         status => {
           if (status.available) {
             this.checkoutService.checkOut(mID, this.uid).subscribe(resp => this.msg = 'Checked out!', err => this.msg = err.error?err.error:'Error checking out');
-          } else if (status.issuedUid == this.uid) {
+          } else if (status.issuedUid == this.uid && !this.isCheckoutAccount) {
             this.checkoutService.checkIn(mID, this.uid).subscribe(resp => this.msg = 'Checked in!', err => this.msg = err.error?err.error:'Error checking in');
           } else {
-            this.msg = 'Item is already checked out to ' + status.issuedTo.toString() + '!';
+            this.msg = 'Item is checked out to ' + status.issuedTo.toString() + '!';
           }
         },
         err => this.msg = err.error?err.error:'Error checking out'
