@@ -347,15 +347,15 @@ class Location(AsyncInit, WithLock):
         async with self.__class__._aiolock:
             query = (
                 """SELECT DISTINCT ON (lower(title)) title, mid, author, genre, type FROM items WHERE true """ # stupid hack coming up
-                + ("""AND lower(title) LIKE '%' || lower(${}::text) || '%' """ if title else '')
-                + ("""AND lower(genre) LIKE '%' || lower(${}::text) || '%' """ if genre else '')
-                + ("""AND lower(author) LIKE '%' || lower(${}::text) || '%' """ if author else '')
-                + ("""AND lower(type) LIKE '%' || lower(${}::text) || '%' """ if type_ else '')
+                + ("""AND title ILIKE '%' || ${}::text || '%' """ if title else '')
+                + ("""AND genre ILIKE '%' || ${}::text || '%' """ if genre else '')
+                + ("""AND author ILIKE '%' || ${}::text || '%' """ if author else '')
+                + ("""AND type ILIKE '%' || ${}::text || '%' """ if type_ else '')
                 + ("""AND false """ if not any(search_terms) else '') # because 'WHERE true' otherwise returns everything if not any(search_terms)
                 + ("""WHERE issued_to IS {} NULL""".format(('', 'NOT')[where_taken]) if where_taken is not None else '')
                 + ("""ORDER BY title""") # just to establish a consistent order for `cont' param
                 ).format(*range(1, 1+sum(map(bool, search_terms)))) \
-                + ("""LIMIT {} OFFSET {}""").format(max_results, cont)
+                + ("""LIMIT {} OFFSET {}""").format(max_results, cont) # these are ok not to parameterize because they're internal
             results = await conn.fetch(query, *filter(bool, search_terms))
         if where_taken is not None: # this means I'm calling it from in here and so I probably want an actual MediaItem or at least no junk
             if max_results == 1:
@@ -365,7 +365,7 @@ class Location(AsyncInit, WithLock):
         # but that would take so so so so so unbearably long on Heroku's DB speeds,
         # not to mention being just pretty inefficient all around.
         # Instead I'll have to have the app shoot a GET request to /media/info
-        # for the pertinent mID after the user clicks on a given link.
+        # for the pertinent mID when one specific item is requested.
         return {i['mid']: {j: i[j] for j in ('author', 'genre', 'type')} for i in results}
     
     @lockquire()
@@ -374,12 +374,32 @@ class Location(AsyncInit, WithLock):
         SELECT rid FROM roles WHERE lid = $1
         """
         return [await Role(i['rid'], self.app) for i in await query.fetch(self.lid)]
-
+    
+    @lockquire()
+    async def add_role(self, conn, name, *, kws=None, seqs=None):
+        perms, maxes, locks = Role.attrs_from(seqs=seqs, kws=kws)
+        query = """
+        INSERT INTO roles (
+                      lid, name,
+                      permissions, maxes, locks
+                      )
+             SELECT $1::bigint, $2::text,
+                    $3::smallint, $4::bigint, $5::bigint;
+        SELECT currval(pg_get_serial_sequence('roles', 'rid'))
+        """
+        rid = await conn.fetchval(query, self.lid, name, perms.raw, maxes.raw, locks.raw)
+        return await Role(rid)
+    
+    @lockquire()
+    async def delete_role(self, conn, rid):
+        query = """DELETE FROM roles WHERE rid = $1::bigint"""
+        await conn.execute(query, rid)
+    
     @lockquire()
     async def edit(self, conn, to_edit, new):
         """
-        to_edit: What row to edit with new info; can be anything, this
-        func will handle type automatically
+        :to_edit: can be any value; this method
+        handles typecasting on its own.
         """
         query = f"""
         UPDATE locations
@@ -455,8 +475,8 @@ class Location(AsyncInit, WithLock):
         DELETE FROM items
         WHERE mid = $1
         """
-        return await conn.execute(query, item.mid) ###
-
+        return await conn.execute(query, item.mid)
+    
 class Role(AsyncInit, WithLock):
     async def __init__(self, rid, app, *, location=None):
         self.app = app
@@ -490,6 +510,18 @@ class Role(AsyncInit, WithLock):
     def __str__(self):
         return str(self.rid)
     
+    @staticmethod
+    def attrs_from_seqs(*, seqs=None, kws=None):
+        if kws is None:
+            perms = Perms.from_seq(seqs['perms'])
+            maxes = Maxes.from_seq(seqs['maxes'])
+            locks = Locks.from_seq(seqs['locks'])
+        else:
+            perms = Perms.from_kwargs(**kws['perms'])
+            maxes = Maxes.from_kwargs(**kws['maxes'])
+            locks = Locks.from_kwargs(**kws['locks'])
+        return perms, maxes, locks
+    
     @property
     def perms(self):
         return Perms(self._permbin)
@@ -509,7 +541,7 @@ class User(AsyncInit, WithLock):
         self.acquire = self.pool.acquire
         self.user_id = self.uid = int(uid)
         async with self.__class__._aiolock, self.acquire() as conn:
-            query = """SELECT username, fullname, lid, rid, manages, email, phone, type, perms, maxes, locks FROM members WHERE uid = $1::bigint;"""
+            query = """SELECT username, fullname, lid, rid, manages, email, phone, type, perms, maxes, locks, recent FROM members WHERE uid = $1::bigint;"""
             username, name, lid, rid, manages, email, phone, self._type, permbin, maxbin, lockbin = await conn.fetchrow(query, self.uid)
             query = """SELECT count(*) FROM holds WHERE uid = $1::bigint"""
             holds = await conn.fetchval(query, self.uid)
@@ -529,7 +561,7 @@ class User(AsyncInit, WithLock):
         self.is_checkout = bool(self._type) # == 1
     
     def to_dict(self) -> dict:
-        props = ['user_id', 'username', 'name', 'lid', 'manages', 'rid', 'email', 'phone', 'is_checkout', 'perms', ]
+        props = ['user_id', 'username', 'name', 'lid', 'manages', 'rid', 'email', 'phone', 'is_checkout', 'perms', 'recent']
         rel = {i: getattr(self, i, None) for i in props}
         rel['locname'] = self.location.name
         return rel

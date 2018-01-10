@@ -43,6 +43,7 @@ import { MgmtHeaderComponent } from './mgmt-header/mgmt-header.component';
 import { MgmtLocationComponent } from './mgmt-location/mgmt-location.component';
 import { MgmtAccountsComponent } from './mgmt-accounts/mgmt-accounts.component';
 import { MgmtRolesPermsComponent } from './mgmt-roles-perms/mgmt-roles-perms.component';
+import { MemberService } from './member.service';
 
 @NgModule({
   declarations: [
@@ -88,7 +89,8 @@ import { MgmtRolesPermsComponent } from './mgmt-roles-perms/mgmt-roles-perms.com
     AuthGuard,
     Globals,
     HeaderComponent,
-    MgmtHeaderButtonService //?
+    MgmtHeaderButtonService,
+    MemberService //?
     ],
   bootstrap: [AppComponent]
 })

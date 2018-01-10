@@ -1,3 +1,11 @@
-<p>
-  member-acct-info works!
-</p>
+<ul>
+  <li *ngFor="let msg of messages" [ngClass]="msg.type">
+    <span>{{msg.text}}</span>
+    <!--
+      class can be any of:
+        `alert` (unauthorized to check out),
+        `warning` (fines, overdue media), or
+        `notification` (hold has become available)
+    -->
+  </li>
+</ul>
