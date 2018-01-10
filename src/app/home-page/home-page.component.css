@@ -12,4 +12,5 @@ app-sidebar {
 }
 ::ng-deep router-outlet + * {
   grid-area: main;
+  font-weight: 300;
 }

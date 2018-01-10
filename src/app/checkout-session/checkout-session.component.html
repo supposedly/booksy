@@ -1,3 +1,12 @@
-<p>
-  checkout-session works!
-</p>
+<ul>
+  <li *ngFor="let item of items.slice().reverse()" [ngClass]="item.available?'out':'in'">
+    <div class="text"> <!--XXX: div inside li lol yikes -->
+      <aside class="action">{{item.available?'Borrowed':'Returned'}}</aside>
+      <span class="title">{{item.title}}</span>
+      <br>
+      <span class="author">{{item.author}}</span>
+      <aside class="barcode">{{item.mid}}</aside>
+    </div>
+      <img *ngIf="item.image && item.image != 'None'" [src]="item.image" [alt]="item.title">
+  </li>
+</ul>

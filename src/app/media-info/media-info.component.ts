@@ -27,7 +27,7 @@ export class MediaInfoComponent implements OnInit {
   
   getItem(): void {
     this.mediaService.getInfo(this.mID)
-      .subscribe(item => this.item = item);
+      .subscribe(item => this.item = item.info);
   }
 
 }

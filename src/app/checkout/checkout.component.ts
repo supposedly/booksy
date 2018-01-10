@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 
 import { MediaItem } from '../classes';
 import { CheckoutService } from '../checkout.service';
@@ -17,7 +17,7 @@ export class CheckoutComponent implements OnInit {
   msg: string = null;
   name: string;
   mid: string;
-  uid: string;
+  uid: string = null;
   
   constructor(
     private checkoutService: CheckoutService,
@@ -43,13 +43,16 @@ export class CheckoutComponent implements OnInit {
   submit(mID): void {
     this.mediaService.getStatus(mID)
       .subscribe(
-        stat => {
-          if (stat.available) {
-            this.checkoutService.checkOut(mID, this.uid).subscribe(resp => this.msg = 'Checked out!', err => this.msg = 'Error checking out');
-          } else if (stat.issuedTo == this.uid) {
-            this.checkoutService.checkIn(mID, this.uid).subscribe(resp => this.msg = 'Checked in!', err => this.msg = 'Error checking in');
+        status => {
+          if (status.available) {
+            this.checkoutService.checkOut(mID, this.uid).subscribe(resp => this.msg = 'Checked out!', err => this.msg = err.error?err.error:'Error checking out');
+          } else if (status.issuedUid == this.uid) {
+            this.checkoutService.checkIn(mID, this.uid).subscribe(resp => this.msg = 'Checked in!', err => this.msg = err.error?err.error:'Error checking in');
+          } else {
+            this.msg = 'Item is already checked out to ' + status.issuedTo.toString() + '!';
           }
-        }
+        },
+        err => this.msg = err.error?err.error:'Error checking out'
       );
   }
 }

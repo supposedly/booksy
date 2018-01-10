@@ -6,10 +6,6 @@ from .typedef import Location, Role, MediaType, MediaItem, User
 
 def uid_get(*attrs, user=False):
     def decorator(func):
-        """
-        To be placed directly after the sanic routing deco
-        so that it can make use of the request info
-        """
         @wraps(func)
         async def wrapper(rqst, *args, **kwargs):
             """
@@ -19,12 +15,11 @@ def uid_get(*attrs, user=False):
             """
             try:
                 uid = getattr(rqst, 'json' if rqst.method == 'POST' else 'raw_args')['uid']
-                user = await User(uid, rqst.app)
+                user_obj = await User(uid, rqst.app)
             except KeyError:
                 sanic.exceptions.abort(422, 'No user ID given')
-            vals = [user] if user or not attrs else []
-            if attrs:
-                vals += [getattr(user, i) for i in attrs]
+            vals = [user_obj] if user or not attrs else []
+            vals += [getattr(user_obj, i) for i in attrs]
             return await func(rqst, *vals, *args, **kwargs)
         return wrapper
     return decorator
@@ -44,7 +39,9 @@ def rqst_get(*attrs):
             try:
                 vals = [await maps[i][0](container[maps[i][1]], rqst.app) if i in maps else container[i] for i in attrs]
             except KeyError:
-                sanic.exceptions.abort(422, 'Missing requested attributes')
+                sanic.exceptions.abort(422, 'Missing required attributes.')
+            except TypeError as obj:
+                sanic.exceptions.abort(404, f'{str(obj).title()} does not exist.')
             return await func(rqst, *vals, *args, **kwargs)
         return wrapper
     return decorator

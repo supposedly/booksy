@@ -151,11 +151,11 @@ class MediaType(AsyncInit, WithLock):
     
 
 class MediaItem(AsyncInit, WithLock):
-    props = ['type', 'genre',
+    props = ['mid', 'type', 'genre',
              'isbn', 'lid', 
              'title', 'author', 'published', 
-             'issued_to', 'due_date', 'fines',
-             'acquired', 'maxes',
+           # 'issued_to', 'due_date', 'fines',
+           # 'acquired', 'maxes',
              'image']
     async def __init__(self, mid, app):
         self.mid = int(mid)
@@ -168,14 +168,16 @@ class MediaItem(AsyncInit, WithLock):
              FROM items
             WHERE mid = $1::bigint
             """
-            # this is so ugly
-            self._type, self.isbn, self.lid, \
-            self.author, self.title,         \
-            self.published, self.genre,      \
-            self._issued_uid, self.due_date, \
-            self.fines, self.acquired,       \
-            self.maxes, self.image = await conn.fetchrow(query, self.mid)
-        
+            try:
+                # this is so ugly
+                self._type, self.isbn, self.lid, \
+                self.author, self.title,         \
+                self.published, self.genre,      \
+                self._issued_uid, self.due_date, \
+                self.fines, self.acquired,       \
+                self.maxes, self.image = await conn.fetchrow(query, self.mid)
+            except TypeError:
+                raise TypeError('item')
         self.location = await Location(self.lid, self.app)
         self.available = not self._issued_uid
         self.issued_to = None if self._issued_uid is None else await User(self._issued_uid, self.app)
@@ -185,8 +187,11 @@ class MediaItem(AsyncInit, WithLock):
     def __str__(self):
         return str(self.mid)
     
-    def to_dict(self):
-        retdir = {attr: str(getattr(self, attr, None)) for attr in self.props}
+    def to_dict(self, verbose=False):
+        if not verbose:
+          retdir = {attr: str(getattr(self, attr, None)) for attr in self.props}
+        else:
+          pass ###
         retdir['available'] = not self.issued_to
         return retdir
     
@@ -214,17 +219,23 @@ class MediaItem(AsyncInit, WithLock):
     
     @lockquire(lock=False)
     async def issue_to(self, conn, user):
+        infinite = user.maxes.checkout_duration >= 255
         async with self.__class__._aiolock:
             query = """
             UPDATE items
                SET issued_to = $1::bigint, -- uid given as param
-                   due_date = current_date + $2::int, -- time-allowed parameter calculated in python bc would be awful to do in plpgsql
+                   due_date = {}, -- time-allowed parameter calculated in python bc would be awful to do in plpgsql
                    fines = 0
-             WHERE mid = $3::bigint;
-            """
-            await conn.execute(query, user.uid, 7*user.maxes.checkout_duration, self.mid)
+             WHERE mid = $2::bigint;
+            """.format("'Infinity'::date" if infinite else 'current_date + $3::int')
+            # as many weeks as specified UNLESS the user has no restrictions on checkout time
+            # in which case infinity (which postgres allows in date fields, handily enough)
+            params = [query, user.uid, self.mid]
+            if not infinite:
+                params.append(7*user.maxes.checkout_duration)
+            await conn.execute(*params)
         self.issued_to = user
-        self.due_date = dt.datetime.utcnow() + dt.timedelta(weeks=user.maxes.checkout_duration)
+        self.due_date = 'Infinity' if infinite else dt.datetime.utcnow() + dt.timedelta(weeks=user.maxes.checkout_duration)
         self.fines = 0
         self.available = False
     
@@ -454,7 +465,10 @@ class Role(AsyncInit, WithLock):
         self.rid = int(rid)
         async with self.__class__._aiolock, self.acquire() as conn:
             query = """SELECT lid, name, permissions, maxes, locks FROM roles WHERE rid = $1::bigint"""
-            lid, name, permbin, maxbin, lockbin = await conn.fetchrow(query, self.rid)
+            try:
+                lid, name, permbin, maxbin, lockbin = await conn.fetchrow(query, self.rid)
+            except TypeError:
+                raise TypeError('role')
         self.location = await Location(lid, self.app) if location is None else location
         self.name = name
         self._permbin = permbin

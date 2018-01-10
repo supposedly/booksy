@@ -15,9 +15,11 @@ export class Globals {
   isCheckoutAccount: boolean;
   isLoggedIn: boolean = false;
   
-  // whether to hide the homepage sidebar.
-  // It's here instead of in sidebar.component.ts so that the
-  // setting persists even when the user switches to/from any
-  // of the three main tabs.
+  // Whether to hide the homepage sidebar.
+  // It's here instead of in sidebar.component.ts because the
+  // setting should persist when the user switches between any
+  // two of the three main header tabs; sidebar.component.ts
+  // gets reloaded when this happens, so it wouldn't be
+  // feasible to keep it there.
   hide: boolean = false;
 }
