@@ -1,35 +1,13 @@
-ul {
-  list-style: none;
+div {
   padding-left: 0;
   width: 20em;
-}
-li {
-  display: flex;
-  justify-content: space-between;
-  margin: 3px auto;
   padding: 10px;
   font-size: 16px;
+  color: #fb9a00;
   border: solid;
   border-width: 1px;
   border-radius: 3px;
-}
-li.alert {
-  border-color: #ff2929;
-  color: #ff2929;
-  background-color: #fef0ed;
-}
-li.warning {
   border-color: #ffc871;
-  color: #fb9a00;
   background-color: #fff6b1;
 }
-li.notification {
-  border-color: #00c516;
-  color: #009811;
-  background-color: #edfeee;
-}
-li .x {
-  cursor: pointer;
-  color: #000;
-  font-style: monospace;
-}
+

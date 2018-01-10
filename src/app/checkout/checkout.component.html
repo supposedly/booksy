@@ -1,5 +1,5 @@
 <h2>Welcome, {{name}}</h2><br/>
-<app-member-acct-info [uID]="uid"></app-member-acct-info>
+<app-notifications [uID]="uid"></app-notifications>
 <p *ngIf="msg">{{msg}}</p>
 <form (ngSubmit)="submit(mID.value); mID.value=''; msg=null">
 <div *ngIf="isCheckoutAccount">
