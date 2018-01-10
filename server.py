@@ -151,11 +151,13 @@ async def close_dbs(app, loop):
     await app.rd_pool.wait_closed()
     await app.session.close()
 
+'''
 @app.middleware('request')
 async def force_https(rqst):
     if not rqst.url.startswith('https'):
         securl = rqst.url.replace('http://', 'https://') if rqst.url.startswith('http://') else 'https://' + rqst.url 
         return sanic.response.redirect(securl)
+'''
 
 @app.route('/')
 async def handle_homepage(rqst):
@@ -166,12 +168,6 @@ async def redirect_to_index(rqst, path):
     """
     A jury-rigged solution to the problem with Angular's PathLocationStrategy
     routing.
-    The app won't load if you don't redirect to /index.html, but then
-    /index.html doesn't match any routes within the app... so one has 
-    to add a redirect router within the app from /index.html to the
-    home component and then have said component redirect to whatever
-    is listed in the ?redirect= parameter (a feat in itself!). Sort
-    of shamefully proud of this.
     """
     return sanic.response.redirect(f'/index.html/?redirect={urllib.parse.quote(path)}')
 

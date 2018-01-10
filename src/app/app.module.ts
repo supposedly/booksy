@@ -44,6 +44,7 @@ import { MgmtLocationComponent } from './mgmt-location/mgmt-location.component';
 import { MgmtAccountsComponent } from './mgmt-accounts/mgmt-accounts.component';
 import { MgmtRolesPermsComponent } from './mgmt-roles-perms/mgmt-roles-perms.component';
 import { MemberService } from './member.service';
+import { NotificationsComponent } from './notifications/notifications.component';
 
 @NgModule({
   declarations: [
@@ -69,6 +70,7 @@ import { MemberService } from './member.service';
     MgmtLocationComponent,
     MgmtAccountsComponent,
     MgmtRolesPermsComponent,
+    NotificationsComponent,
   ],
   imports: [
     BrowserModule,
