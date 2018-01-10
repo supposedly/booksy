@@ -1,0 +1,41 @@
+ul {
+  list-style: none;
+}
+li {
+  display: flex;
+  justify-content: space-between;
+  
+  margin: 3px auto;
+  padding: 10px;
+  font-size: 16px;
+  border: solid;
+  border-width: 1px;
+  border-radius: 3px;
+}
+li img {
+  display: inline-block;
+  height: 128px;
+  width: auto;
+}
+li .text {
+  display: inline-block;
+}
+li.out {
+  border-color: #00c516;
+  background-color: #edfeee;
+}
+li.out .text .action {
+  color: #00c516;
+}
+li.in {
+  border-color: #29bdff;
+  background-color: #edf7fe;
+}
+li.in .text .action {
+  color: #888;
+}
+li .text .barcode {
+  padding-top: 5px;
+  font-size: 13px;
+  color: #555;
+}

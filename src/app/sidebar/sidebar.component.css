@@ -73,8 +73,9 @@ li span {
   color: #818181;
   cursor: pointer;
   
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
   font-size: 20px;
-  font-family: 'Noto Sans CJK JP Regular';
   
   text-decoration: none;
   text-transform: lowercase;
@@ -104,4 +105,10 @@ li:not(.dummy):focus span {
 }
 li.selected:focus span {
   color: #fff !important;
+}
+@media only screen and (max-width: 450px) {
+  li:hover span,
+  li.selected span,
+  li:not(.dummy):focus span { font-size: 16px; }
+  li span { font-size: 15px; }
 }

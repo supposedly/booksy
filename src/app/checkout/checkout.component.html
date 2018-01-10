@@ -1,10 +1,12 @@
 <h2>Welcome, {{name}}</h2><br/>
 <app-member-acct-info [uID]="uid"></app-member-acct-info>
 <p *ngIf="msg">{{msg}}</p>
+<form (ngSubmit)="submit(mID.value); mID.value=''; msg=null">
 <div *ngIf="isCheckoutAccount">
-   <input [(ngModel)]="uid" [ngModelOptions]="{updateOn: 'submit'}" placeholder="Your ID" #uID><br/>
+   <input name="user-id" [(ngModel)]="uid" [ngModelOptions]="{updateOn: 'submit'}" placeholder="Your ID" #uID><br/>
 </div>
-<input [(ngModel)]="mid" [ngModelOptions]="{updateOn: 'submit'}" placeholder="Barcode" #mID>
-<button (click)="submit(mID.value); mID.value=''; msg=null">Submit</button><br/>
+<input name="item-id" [(ngModel)]="mid" [ngModelOptions]="{updateOn: 'submit'}" placeholder="Barcode" #mID>
+<button type="submit">Submit</button><br/>
+</form>
 <app-media-info [mID]="mid"></app-media-info>
-<app-checkout-session></app-checkout-session>
+<app-checkout-session [newItem]="mid"></app-checkout-session>

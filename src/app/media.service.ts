@@ -6,7 +6,7 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
 
-import { MediaItem, HttpOptions } from './classes';
+import { MediaItem, MediaItemProxy, HttpOptions } from './classes';
 import { LoggingService } from './logging.service';
 
 const httpOptions = HttpOptions;
@@ -37,9 +37,9 @@ export class MediaService {
     return this.http.get<any>(this.statusURL, {params: {mid: mID}});
   }
   
-  getInfo(mID: string): Observable<MediaItem> {
+  getInfo(mID: string): Observable<MediaItemProxy> {
     const mediaInfoURL = '/api/media/info';
-    return this.http.get<any>(this.infoURL, {params: {mid: mID}});
+    return this.http.get<MediaItemProxy>(this.infoURL, {params: {mid: mID}});
   }
   
 }

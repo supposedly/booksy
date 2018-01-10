@@ -15,14 +15,16 @@ export class SideButton {
 export class MediaItem {
   mid: string;
   type: string;
+  genre: string;
   isbn: string;
   lid: string;
   title: string;
   author: string;
   published: string;
   acquired?: string;
+  image?: string;
 }
-export class PersonalItem {
+export class MediaItemVerbose {
   mid: string;
   lid: string;
   type: string;
@@ -34,6 +36,9 @@ export class PersonalItem {
   issuedto: string;
   due: string;
   fines: string;
+}
+export class MediaItemProxy {
+  info: MediaItem;
 }
 export class Member {
   uid: string;
