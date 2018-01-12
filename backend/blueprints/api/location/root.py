@@ -28,8 +28,8 @@ async def is_location_registered(rqst):
     else:
         return sanic.response.json({'registered': False, 'reason': 'Not found in DB'})
 
-@root.get('/report')
-@rqst_get('do')
+@root.put('/reports')
+@rqst_get('get')
 @uid_get('location', 'perms')
 @jwtdec.protected()
 async def serve_a_report(rqst, location, perms, do):

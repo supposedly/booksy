@@ -27,4 +27,7 @@ export class Globals {
   checkoutMessages = null;
   // the Perms, Maxes, and Locks attributes of a role
   attrs: Object;
+  
+  // report data received from server
+  reportData = null;
 }

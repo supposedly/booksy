@@ -190,16 +190,16 @@ class MediaItem(AsyncInit, WithLock):
     
     @lockquire(lock=False)
     async def status(self, conn, *, resp = {'issued_to': None, 'due_date': None, 'fines': None}):
-        async with self.__class__._aiolock:
-            query = """
-            SELECT
-                  CASE
-                    WHEN issued_to IS NOT NULL
-                    THEN (issued_to, due_date, fines)
-                  END
-             FROM items
-            """
-            check = await conn.fetchrow(query)
+        #async with self.__class__._aiolock:
+        query = """
+        SELECT
+              CASE
+                WHEN issued_to IS NOT NULL
+                THEN (issued_to, due_date, fines)
+              END
+         FROM items
+        """
+        check = await conn.fetchrow(query)
         try:
             issued_to, due_date, fines = check
         except ValueError:
@@ -213,27 +213,27 @@ class MediaItem(AsyncInit, WithLock):
     @lockquire(lock=False)
     async def issue_to(self, conn, user):
         infinite = user.maxes.checkout_duration >= 255
-        async with self.__class__._aiolock:
-            query = """
-            UPDATE members
-               SET recent = $2::text
-             WHERE uid = $1::bigint;
-            """
-            await conn.execute(query, user.uid, self.genre)
-            
-            query = """
-            UPDATE items
-               SET issued_to = $1::bigint, -- uid given as param
-                   due_date = {}, -- time-allowed parameter calculated in python bc would be awful to do in plpgsql
-                   fines = 0
-             WHERE mid = $2::bigint;
-            """.format("'Infinity'::date" if infinite else 'current_date + $4::int')
-            # as many weeks as specified UNLESS the user has no restrictions on checkout time
-            # in which case infinity (which postgres allows in date fields, handily enough)
-            params = [query, user.uid, self.mid]
-            if not infinite:
-                params.append(7*user.maxes.checkout_duration)
-            await conn.execute(*params)
+        #async with self.__class__._aiolock:
+        query = """
+        UPDATE members
+           SET recent = $2::text
+         WHERE uid = $1::bigint;
+        """
+        await conn.execute(query, user.uid, self.genre)
+        
+        query = """
+        UPDATE items
+           SET issued_to = $1::bigint, -- uid given as param
+               due_date = {}, -- time-allowed parameter calculated in python bc would be awful to do in plpgsql
+               fines = 0
+         WHERE mid = $2::bigint;
+        """.format("'Infinity'::date" if infinite else 'current_date + $4::int')
+        # as many weeks as specified UNLESS the user has no restrictions on checkout time
+        # in which case infinity (which postgres allows in date fields, handily enough)
+        params = [query, user.uid, self.mid]
+        if not infinite:
+            params.append(7*user.maxes.checkout_duration)
+        await conn.execute(*params)
             
         self.issued_to = user
         self.due_date = dt.datetime.max if infinite else dt.datetime.utcnow() + dt.timedelta(weeks=user.maxes.checkout_duration)
@@ -359,86 +359,89 @@ class Location(AsyncInit, WithLock):
         holds = do.pop('holds', False)
         items = do.pop('type_totals', False)
         
-        all_to_search = await self.roles()
-        all_users = await self.users()
+        all_roles = await self.roles()
+        all_users = await self.users(roles=False)
         res = {}
         
         if checkouts:
-            res['checkouts'] = {}
-            to_search = all_roles if checkouts == 'per_role' else all_users if checkouts == 'per_user' else {}
+            to_search = all_roles if checkouts == 'per_role' else all_users if checkouts == 'per_user' else [{}]
+            column = 'checkouts', checkouts
             key = 'name' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
             param = 'rid' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
             query = """
-            SELECT count(*)/2
+            SELECT DISTINCT ON (items.mid) items.title
               FROM members, items
              WHERE items.issued_to IS NOT NULL
-               AND (
-                     SELECT {}
-                       FROM members
-                      WHERE uid = items.issued_to
-                   ) {} $1::bigint
-            """.format('uid' if checkouts == 'per_user' else 'rid', '=' if items else 'IS NOT')
-            for item in to_search:
-                res['checkouts'].append({item.get(key, None): await conn.fetch(query, item.get(param, None))})
-        
+            """
         if overdues:
-            res['overdues'] = {}
-            to_search = all_roles if overdues == 'per_role' else all_users if overdues == 'per_user' else {}
+            to_search = all_roles if overdues == 'per_role' else all_users if overdues == 'per_user' else [{}]
+            column = 'overdues', overdues
             key = 'name' if overdues == 'per_role' else 'username' if overdues == 'per_user' else None
             param = 'rid' if overdues == 'per_role' else 'username' if overdues == 'per_user' else None
             query = """
-            SELECT count(*)/2
+            SELECT DISTINCT ON (items.mid) items.title
               FROM members, items
              WHERE items.issued_to IS NOT NULL
                AND items.due_date < current_date
-               AND (
-                     SELECT {}
-                       FROM members
-                      WHERE uid = items.issued_to
-                   ) {} $1::bigint
-            """.format('uid' if overdues == 'per_user' else 'rid', '=' if items else 'IS NOT')
-            for item in to_search:
-                res['overdues'].append({item.get(key, None): await conn.fetch(query, item.get(param, None))})
+            """
         
         if fines:
-            res['fines'] = {}
-            to_search = all_roles if fines == 'per_role' else all_users if fines == 'per_user' else {}
+            to_search = all_roles if fines == 'per_role' else all_users if fines == 'per_user' else [{}]
+            column = 'fines', fines
             key = 'name' if fines == 'per_role' else 'username' if fines == 'per_user' else None
             param = 'rid' if fines == 'per_role' else 'username' if fines == 'per_user' else None
             query = """
             SELECT sum(items.fines)
               FROM members, items
              WHERE items.issued_to IS NOT NULL
-               AND (
-                     SELECT {}
-                       FROM members
-                      WHERE uid = items.issued_to
-                   ) {} $1::bigint
-            """.format('uid' if fines == 'per_user' else 'rid', '=' if items else 'IS NOT')
-            for item in to_search:
-                res['fines'].append({item.get(key, None): await conn.fetch(query, item.get(param, None))})
+            """
         
         if holds:
-            res['holds'] = {}
-            to_search = all_roles if holds == 'per_role' else all_users if holds == 'per_user' else {}
+            to_search = all_roles if holds == 'per_role' else all_users if holds == 'per_user' else [{}]
+            column = 'holds', holds
             key = 'name' if holds == 'per_role' else 'username' if holds == 'per_user' else None
             param = 'rid' if holds == 'per_role' else 'username' if holds == 'per_user' else None
             query = """
-            SELECT count(*)
-              FROM members, holds
+            SELECT DISTINCT ON (items.mid) items.title
+              FROM members, holds, items
              WHERE (SELECT lid FROM members WHERE uid = holds.uid) = $2::bigint
-               AND (
-                     SELECT {}
-                       FROM members
-                      WHERE uid = holds.uid
-                   ) {} $1::bigint
-            """.format('uid' if holds == 'per_user' else 'rid', '=' if items else 'IS NOT')
-            for item in to_search:
-                res['holds'].append({item.get(key, None): await conn.fetch(query, item.get(param, None), self.lid)})
+            """
         
+        if any((checkouts, overdues, fines, holds)):
+            res[column[0]] = []
+            query += ("""
+             AND (
+                   SELECT username
+                     FROM members
+                    WHERE uid = items.issued_to
+                 ) = $1::text
+            """ if column[1] == 'per_user' else """
+             AND (
+                   SELECT rid
+                     FROM members
+                    WHERE uid = items.issued_to
+                 ) = $1::bigint
+            """ if column[1] == 'per_role' else """
+             AND (
+                   SELECT username
+                     FROM members
+                    WHERE uid = items.issued_to
+                 ) IS NOT NULL
+            """)
+            for item in to_search:
+                search = (
+                  conn.fetch(query, item.get(param, None), self.lid) if holds else
+                  conn.fetch(query, item.get(param, None)) if column[1] != 'all' else
+                  conn.fetch(query)
+                )
+                res[column[0]].append({'ident': item.get(key, None), 'res': await search})
+        
+        # eh
         if items:
             res['items'] = {await conn.fetch("""SELECT count(*) FROM items WHERE lid = $1::bigint""", self.lid)}
+            print(res['items'])
         
+        print(res)
         return res
         
     
@@ -452,41 +455,46 @@ class Location(AsyncInit, WithLock):
         args: fines, items, holds
         """
         if 'fines' in do:
-            pass
+            return
     
     @lockquire(lock=False)
     async def get_user(self, conn, username: str):
-        async with self.__class__._aiolock:
-            query = """SELECT uid FROM members WHERE username = $1::text AND lid = $2::bigint AND type = 0"""
-            uid = await conn.fetchval(query)
+        #async with self.__class__._aiolock:
+        query = """SELECT uid FROM members WHERE username = $1::text AND lid = $2::bigint AND type = 0"""
+        uid = await conn.fetchval(query)
         return await User(uid)
     
     @lockquire(lock=False)
-    async def users(self, conn, roles=True, *, cont=0, max_results=20):
+    async def users(self, conn, roles=True, *, limit=True, cont=0, max_results=20):
         users = []
-        async with self.__class__._aiolock:
-            for role in await self.get_roles():
+        #async with self.__class__._aiolock:
+        if roles:
+            for role in await self.roles():
                 query = """SELECT uid, username, fullname FROM members WHERE lid = $1::bigint AND rid = $2::bigint AND type = 0""" \
-                        """LIMIT {} OFFSET {}""".format(max_results, cont)
-                users.append({role.name: await conn.fetch(query, self.lid)})
-        return {res: [{j: i[j] for j in ('uid', 'username', 'fullname')} for i in users[res]] for res in users}
+                        + ("""LIMIT {} OFFSET {}""".format(max_results, cont) if limit else '')
+                users.append({role['name']: await conn.fetch(query, self.lid, role['rid'])})
+            return {res: [{j: i[j] for j in ('uid', 'username', 'fullname')} for i in res] for res in users} #FIXME
+        # else #
+        query = """SELECT uid, username, fullname FROM members WHERE lid = $1::bigint AND type = 0""" \
+                + ("""LIMIT {} OFFSET {}""".format(max_results, cont) if limit else '')
+        return [{j: i[j] for j in ('uid', 'username', 'fullname')} for i in await conn.fetch(query, self.lid)]
     
     @lockquire(lock=False)
     async def search(self, conn, *, title=None, genre=None, type_=None, author=None, cont=0, max_results=20, where_taken=None):
         search_terms = title, genre, type_, author
-        async with self.__class__._aiolock:
-            query = (
-                """SELECT DISTINCT ON (lower(title)) title, mid, author, genre, type FROM items WHERE true """ # stupid hack coming up
-                + ("""AND title ILIKE '%' || ${}::text || '%' """ if title else '')
-                + ("""AND genre ILIKE '%' || ${}::text || '%' """ if genre else '')
-                + ("""AND author ILIKE '%' || ${}::text || '%' """ if author else '')
-                + ("""AND type ILIKE '%' || ${}::text || '%' """ if type_ else '')
-                + ("""AND false """ if not any(search_terms) else '') # because 'WHERE true' otherwise returns everything if not any(search_terms)
-                + ("""WHERE issued_to IS {} NULL""".format(('', 'NOT')[where_taken]) if where_taken is not None else '')
-                + ("""ORDER BY title""") # just to establish a consistent order for `cont' param
-                ).format(*range(1, 1+sum(map(bool, search_terms)))) \
-                + ("""LIMIT {} OFFSET {}""").format(max_results, cont) # these are ok not to parameterize because they're internal
-            results = await conn.fetch(query, *filter(bool, search_terms))
+        #async with self.__class__._aiolock:
+        query = (
+            """SELECT DISTINCT ON (lower(title)) title, mid, author, genre, type FROM items WHERE true """ # stupid hack coming up
+            + ("""AND title ILIKE '%' || ${}::text || '%' """ if title else '')
+            + ("""AND genre ILIKE '%' || ${}::text || '%' """ if genre else '')
+            + ("""AND author ILIKE '%' || ${}::text || '%' """ if author else '')
+            + ("""AND type ILIKE '%' || ${}::text || '%' """ if type_ else '')
+            + ("""AND false """ if not any(search_terms) else '') # because 'WHERE true' otherwise returns everything if not any(search_terms)
+            + ("""WHERE issued_to IS {} NULL""".format(('', 'NOT')[where_taken]) if where_taken is not None else '')
+            + ("""ORDER BY title""") # just to establish a consistent order for `cont' param
+            ).format(*range(1, 1+sum(map(bool, search_terms)))) \
+            + ("""LIMIT {} OFFSET {}""").format(max_results, cont) # these are ok not to parameterize because they're internal
+        results = await conn.fetch(query, *filter(bool, search_terms))
         if where_taken is not None: # this means I'm calling it from in here and so I probably want an actual MediaItem or at least no junk
             if max_results == 1:
                 return await MediaItem(*results)
@@ -500,11 +508,11 @@ class Location(AsyncInit, WithLock):
     
     @lockquire(lock=False)
     async def roles(self, conn):
-        async with self.__class__._aiolock:
-            query = """
-            SELECT rid, name, permissions AS perms, maxes, locks FROM roles WHERE lid = $1
-            """
-            res = [{j: i[j] for j in ('rid', 'name', 'perms', 'maxes', 'locks')} for i in await conn.fetch(query, self.lid)]
+        #async with self.__class__._aiolock:
+        query = """
+        SELECT rid, name, permissions AS perms, maxes, locks FROM roles WHERE lid = $1
+        """
+        res = [{j: i[j] for j in ('rid', 'name', 'perms', 'maxes', 'locks')} for i in await conn.fetch(query, self.lid)]
         for i in res:
             i['perms'] = Perms(i['perms']).all
             i['maxes'] = Maxes(i['maxes']).all
@@ -587,22 +595,22 @@ class Location(AsyncInit, WithLock):
         kwargs['isbn'] = kwargs['isbn'] or ident
         
         args = (kwargs[attr] for attr in MediaItem.props)
-        async with self.__class__._aiolock:
-            query = """
-            INSERT INTO items (
-                          type, genre,
-                          isbn, lid, 
-                          title, author, published,
-                          acquired, maxes,
-                          image
-                          )
-                 SELECT $2::text, $3::text,
-                        $4::text, $5::bigint,
-                        $6::text, $7::text, $8::date,
-                        current_date, $9::bigint,
-                        $1::text;
-            """
-            await conn.execute(query, img, *args)
+        #async with self.__class__._aiolock:
+        query = """
+        INSERT INTO items (
+                      type, genre,
+                      isbn, lid, 
+                      title, author, published,
+                      acquired, maxes,
+                      image
+                      )
+             SELECT $2::text, $3::text,
+                    $4::text, $5::bigint,
+                    $6::text, $7::text, $8::date,
+                    current_date, $9::bigint,
+                    $1::text;
+        """
+        await conn.execute(query, img, *args)
     
     @lockquire()
     async def remove_item(self, conn, item):
@@ -812,6 +820,13 @@ class User(AsyncInit, WithLock):
          WHERE lid = $2
         """
         await conn.execute(query, new, self.lid)
+    
+    @lockquire()
+    async def items(self, conn):
+        query = """
+        SELECT mid, title, author, genre FROM items WHERE issued_to = $1::bigint
+        """
+        return await conn.fetch(query, self.uid)
     
     @property
     def checkouts_left(self) -> int:

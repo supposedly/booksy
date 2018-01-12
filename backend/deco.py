@@ -14,7 +14,7 @@ def uid_get(*attrs, user=False):
             requested info out of it.
             """
             try:
-                uid = getattr(rqst, 'json' if rqst.method == 'POST' else 'raw_args')['uid']
+                uid = getattr(rqst, 'raw_args' if rqst.method == 'GET' else 'json')['uid']
                 user_obj = await User(uid, rqst.app)
             except KeyError:
                 sanic.exceptions.abort(422, 'No user ID given')
@@ -35,7 +35,7 @@ def rqst_get(*attrs):
             the text
             """
             maps = {'item': (MediaItem, 'mid'), 'location': (Location, 'lid'), 'role': (Role, 'rid'), 'user': (User, 'uid')}
-            container = getattr(rqst, 'json' if rqst.method == 'POST' else 'raw_args')
+            container = getattr(rqst, 'raw_args' if rqst.method == 'GET' else 'json')
             try:
                 vals = [await maps[i][0](container[maps[i][1]], rqst.app) if i in maps else container[i] for i in attrs]
             except KeyError:

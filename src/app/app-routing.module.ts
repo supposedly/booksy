@@ -21,6 +21,7 @@ import { ReportsComponent } from './reports/reports.component';
 import { ReroutingComponent } from './rerouting/rerouting.component';
 import { SignupComponent } from './signup/signup.component';
 import { RoleDetailComponent } from './role-detail/role-detail.component';
+import { ReportViewComponent } from './report-view/report-view.component';
 
 const routes: Routes = [
   /* Signup is not needed for the FBLA demo */
@@ -39,6 +40,7 @@ const routes: Routes = [
     {path: 'dashboard', component: DashboardComponent},
     {path: 'account', component: MemberAcctInfoComponent},
     {path: 'reports', component: ReportsComponent},
+    {path: 'view-report', component: ReportViewComponent},
     {path: 'manage', component: LocationMgmtComponent, children: [
       {path: '', redirectTo: 'location', pathMatch: 'full'},
       {path: 'location', component: MgmtLocationComponent},
