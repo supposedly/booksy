@@ -119,9 +119,9 @@ class PackedByteFieldMixin:
     def __init__(self, num):
         self.raw = num
         self.bin = format(int(self.raw), f'0{7}b') #XXX: 7 is magic number >:(
-        self.seq = map(int, tuple(self.bin))
-        #print(self.raw, list(self.seq))
+        self.seq = list(map(int, tuple(self.bin)))
         self.names = {name: bool(value) for name, value in zip(self._names, self.seq)}
+        self.all = {'raw': self.raw, 'bin': self.bin, 'seq': self.seq, 'names': self.names}
         for k, v in self.names.items():
             # Allow, for example, obj.manage_location instead of obj.names['manage_location']
             setattr(self, f'can_{k}', v)
@@ -130,6 +130,10 @@ class PackedByteFieldMixin:
     def from_kwargs(cls, **kwargs):
         # raise NotImplementedError("Don't think I actually need this because this class won't be accessed by app")
         return cls(int(''.join(str(i) for i in map(int, (kwargs.get(name, False) for name in cls._names))), 2))
+    
+    @classmethod
+    def from_seq(cls, seq):
+        return cls(int(''.join(seq), 2))
     
     def edit(self, **kwargs):
         """
@@ -180,6 +184,7 @@ class PackedBigIntMixin:
         self.raw = num
         self.seq = struct.unpack('8B', struct.pack('<q', int(self.raw)))
         self.names = {name: value for name, value in zip(filter(bool, self._names), self.seq)}
+        self.all = {'raw': self.raw, 'seq': self.seq, 'names': self.names}
         for k, v in self.names.items():
             setattr(self, k, v)
     
@@ -193,6 +198,10 @@ class PackedBigIntMixin:
         """
         # raise NotImplementedError("Don't think I actually need this because this class won't be accessed by app")
         return cls(struct.unpack('q', struct.pack('8B', *(kwargs.get(i, filler) for i in cls._names)))[0])
+    
+    @classmethod
+    def from_seq(cls, seq):
+        return cls(struct.unpack('q', struct.pack('8B', seq)))
     
     def edit(self, **kwargs):
         self.names = {name: kwargs.get(name, self.names[name]) for name in filter(bool, self._names)}

@@ -12,6 +12,11 @@ export class SideButton {
   dest?: string;
   color?: string;
 }
+export class Role {
+  perms: number[];
+  maxes: number[];
+  locks: number[];
+}
 export class MediaItem {
   mid: string;
   type: string;

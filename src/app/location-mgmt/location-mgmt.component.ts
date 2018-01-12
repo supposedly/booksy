@@ -16,7 +16,5 @@ export class LocationMgmtComponent implements OnInit {
   ) {}
   
   ngOnInit() {
-    /* will have already happened in HomePageComponent */
-    //this.memberAuthService.storeMeInfo();
   }
 }

@@ -8,23 +8,24 @@ from .import Location, Role, MediaType, MediaItem, User
 
 roles = sanic.Blueprint('role_attrs_api', url_prefix='/roles')
 
-@roles.get('/my-attrs')
-@uid_get('role')
+@roles.get('/me')
+@uid_get()
 @jwtdec.protected()
-async def provide_role_attrs(rqst, role):
+async def provide_me_attrs(rqst, user):
     """
     Provides all attributes - permissions, maxes, and lock thresholds -
-    for current role.
+    for current user.
     
     Requires current session's Role ID from client.
     """
-    resp = {'id': role.rid, 'perms': role.perms, 'maxes': role.maxes, 'locks': role.locks}
+  # resp = {'rid': user.role.rid, 'perms': user.perms, 'maxes': user.maxes, 'locks': user.locks}
+    resp = {i: getattr(user, i) for i in ('perms', 'maxes', 'locks')}
     return sanic.response.json(resp, status=200)
 
-@roles.get('/my-attrs/<attr:(perms|maxes|locks)>')
-@uid_get('role')
+@roles.get('/me/<attr:(perms|maxes|locks)>')
+@uid_get()
 @jwtdec.protected()
-async def provide_specific_role_attr(rqst, role, attr):
+async def provide_specific_me_attr(rqst, user, attr):
     """
     Provides a specific attribute of the three above for current role.
     
@@ -33,5 +34,25 @@ async def provide_specific_role_attr(rqst, role, attr):
     if attr not in ('perms', 'maxes', 'locks'):
         # won't ever be called, for obvious reason
         sanic.exceptions.abort(422)
-    resp = getattr(role, attr)
+    resp = getattr(user, attr)
     return sanic.response.json(resp, status=200)
+
+@roles.post('/edit')
+@rqst_get('role', 'user', 'seqs')
+@jwtdec.protected()
+async def edit_role(rqst, role, user, seqs):
+    if not user.perms.can_manage_roles:
+        sanic.exceptions.abort(403, "You aren't allowed to modify roles.")
+    await role.set_attrs(*Role.attrs_from(kws=seqs))
+    return sanic.response.raw(b'', status=204)
+
+@roles.get('/detail')
+@rqst_get('role', 'user')
+@jwtdec.protected()
+async def provide_specific_role(rqst, role, user):
+    """
+    Provides attributes for a requested role.
+    """
+    if not user.perms.can_manage_roles:
+        sanic.exceptions.abort(403, "You aren't allowed to modify roles.")
+    return sanic.response.json(role.to_dict(), status=200)

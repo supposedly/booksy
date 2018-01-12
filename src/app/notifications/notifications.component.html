@@ -1,5 +1,5 @@
 <ul>
-  <li *ngFor="let msg of globals.checkoutMessages" [ngClass]="msg.type">
+  <li *ngFor="let msg of globals.checkoutMessages; let i = index;" [ngClass]="msg.type">
     <span>{{msg.text}}</span>
     <!--
       class can be any of:
@@ -7,6 +7,6 @@
         `warning` (fines, overdue media), or
         `notification` (hold has become available)
     -->
-    <span class="x" (click)="this.globals.checkoutMessages.splice(msg.index, 1)">ⓧ</span>
+    <span class="x" (click)="this.globals.checkoutMessages.splice(i, 1)">ⓧ</span>
   </li>
 </ul>

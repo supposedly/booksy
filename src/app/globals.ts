@@ -12,6 +12,7 @@ export class Globals {
   email: string;
   phone: string;
   managesLocation: boolean;
+  canReturnItems: boolean;
   isCheckoutAccount: boolean;
   isLoggedIn: boolean = false;
   
@@ -24,4 +25,6 @@ export class Globals {
   hide: boolean = false;
   // messages displayed on checkout; same deal
   checkoutMessages = null;
+  // the Perms, Maxes, and Locks attributes of a role
+  attrs: Object;
 }

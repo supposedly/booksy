@@ -1,0 +1,17 @@
+input:not([type=submit]) {
+  margin: 2px;
+  border-style: solid;
+  border-color: #dcdcdc;
+  border-radius: 5px;
+  border-width: 1px;
+  padding: 10px;
+}
+input[type=submit] {
+  color: white;
+  background-color: #43ba2e;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+input[type=submit]:hover {
+  opacity: 0.8;
+}

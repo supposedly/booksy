@@ -2,7 +2,7 @@
 Just a bunch of type definitions :)
 """
 import asyncio
-import aiofiles
+import csv
 import datetime as dt
 from asyncio import iscoroutinefunction as is_coro
 
@@ -98,6 +98,9 @@ class MediaType(AsyncInit, WithLock):
         self.pool = app.pg_pool
         self.acquire = self.pool.acquire
         self.location = location if isinstance(location, Location) else await Location(int(location), self.app)
+        async with self.app.pg_pool.acquire() as conn:
+            maxnum = await conn.fetchval("""SELECT maxes FROM items WHERE type = $1::text""", self.name)
+        self.maxes = None if maxnum is None else Maxes(maxnum)
     
     def __str__(self):
         return self.name
@@ -116,38 +119,16 @@ class MediaType(AsyncInit, WithLock):
         return await conn.fetch(query, self.name, self.lid)
     
     @lockquire()
-    async def locks(self, conn):
-        query = """SELECT locks FROM items WHERE media_type = $1::text"""
-        locknum = await conn.fetch(query, self.name)
-        return Locks(locknum)
-    
-    @lockquire()
-    async def maxes(self, conn):
-        query = """SELECT maxes FROM items WHERE media_type = $1::text"""
-        maxnum = await conn.fetchval(query, self.name)
-        return Maxes(maxnum)
-    
-    @lockquire()
-    async def set_locks(self, conn, newlocks):
-        if not isinstance(newlocks, Locks):
-            raise TypeError('Argument must be of type Locks')
-        query = """
-        UPDATE items
-           SET locks = $1::bigint
-         WHERE media_type = $2::text
-        """
-        await conn.execute(query, newlocks.num, self.name)    
-    
-    @lockquire()
     async def set_maxes(self, conn, newmaxes: Maxes):
         if not isinstance(newmaxes, Maxes):
             raise TypeError('Argument must be of type Maxes')
         query = """
         UPDATE items
            SET maxes = $1::bigint
-         WHERE media_type = $1::text
+         WHERE media_type = $2::text
         """
         await conn.execute(query, newmaxes.num, self.name)
+        self.maxes = newmaxes
     
 
 class MediaItem(AsyncInit, WithLock):
@@ -195,6 +176,18 @@ class MediaItem(AsyncInit, WithLock):
         retdir['available'] = not self.issued_to
         return retdir
     
+    @lockquire()
+    async def set_maxes(self, conn, newmaxes: Maxes, *, mid=True):
+        if not isinstance(newmaxes, Maxes):
+            raise TypeError('Argument must be of type Maxes')
+        query = """
+        UPDATE items
+           SET maxes = $1::bigint
+         WHERE {}
+        """.format('mid = $2::bigint' if mid else "title ILIKE '%' || $2::text || '%' AND author ILIKE '%' || $3::text || '%'")
+        await conn.execute(query, newmaxes.num, *([self.mid] if mid else [self.title, self.author]))
+        self.maxes = newmaxes
+    
     @lockquire(lock=False)
     async def status(self, conn, *, resp = {'issued_to': None, 'due_date': None, 'fines': None}):
         async with self.__class__._aiolock:
@@ -222,20 +215,28 @@ class MediaItem(AsyncInit, WithLock):
         infinite = user.maxes.checkout_duration >= 255
         async with self.__class__._aiolock:
             query = """
+            UPDATE members
+               SET recent = $2::text
+             WHERE uid = $1::bigint;
+            """
+            await conn.execute(query, user.uid, self.genre)
+            
+            query = """
             UPDATE items
                SET issued_to = $1::bigint, -- uid given as param
                    due_date = {}, -- time-allowed parameter calculated in python bc would be awful to do in plpgsql
                    fines = 0
              WHERE mid = $2::bigint;
-            """.format("'Infinity'::date" if infinite else 'current_date + $3::int')
+            """.format("'Infinity'::date" if infinite else 'current_date + $4::int')
             # as many weeks as specified UNLESS the user has no restrictions on checkout time
             # in which case infinity (which postgres allows in date fields, handily enough)
             params = [query, user.uid, self.mid]
             if not infinite:
                 params.append(7*user.maxes.checkout_duration)
             await conn.execute(*params)
+            
         self.issued_to = user
-        self.due_date = 'Infinity' if infinite else dt.datetime.utcnow() + dt.timedelta(weeks=user.maxes.checkout_duration)
+        self.due_date = dt.datetime.max if infinite else dt.datetime.utcnow() + dt.timedelta(weeks=user.maxes.checkout_duration)
         self.fines = 0
         self.available = False
     
@@ -325,7 +326,7 @@ class Location(AsyncInit, WithLock):
           ]
         args = [kwargs.get(attr, rqst.ip if attr=='ip' else None) for attr in props]
         async with cls._aiolock, rqst.app.pg_pool.acquire() as conn:
-            lid = await conn.fetchval(REGISTER_LOCATION, *args) # returns LID
+            lid = await conn.fetchval(REGISTER_LOCATION, *args) # returns lID
         return cls(lid, rqst.app)
     
     @classmethod
@@ -340,7 +341,136 @@ class Location(AsyncInit, WithLock):
         if result:
             return cls(result, rqst.app)
         return None
-
+    
+    @lockquire()
+    async def report(self, conn, **do):
+        """
+        Total current checkouts / per role, total current overdues / per role,
+        total current overdue fines / per role,
+        current holds / per role, current available vs. unavailable holds,
+        qty of each media type checked out, qty of each media type in library...
+        
+        Args: checkouts, overdues, fines, holds, hold_ratio, types_out, type_totals
+        - each can be assigned either a bool or the string value 'per_role'
+        """
+        checkouts = do.pop('checkouts', False)
+        overdues = do.pop('overdues', False)
+        fines = do.pop('fines', False)
+        holds = do.pop('holds', False)
+        items = do.pop('type_totals', False)
+        
+        all_to_search = await self.roles()
+        all_users = await self.users()
+        res = {}
+        
+        if checkouts:
+            res['checkouts'] = {}
+            to_search = all_roles if checkouts == 'per_role' else all_users if checkouts == 'per_user' else {}
+            key = 'name' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
+            param = 'rid' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
+            query = """
+            SELECT count(*)/2
+              FROM members, items
+             WHERE items.issued_to IS NOT NULL
+               AND (
+                     SELECT rid
+                       FROM members
+                      WHERE uid = items.issued_to
+                   ) {} $1::bigint
+            """.format('=' if items else 'IS NOT')
+            for item in to_search:
+                res['checkouts'].append({item.get(key, None): await conn.fetch(query, item.get(param, None))})
+        
+        if overdues:
+            res['overdues'] = {}
+            to_search = all_roles if checkouts == 'per_role' else all_users if checkouts == 'per_user' else {}
+            key = 'name' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
+            param = 'rid' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
+            query = """
+            SELECT count(*)/2
+              FROM members, items
+             WHERE items.issued_to IS NOT NULL
+               AND items.due_date < current_date
+               AND (
+                     SELECT rid
+                       FROM members
+                      WHERE uid = items.issued_to
+                   ) {} $1::bigint
+            """.format('=' if items else 'IS NOT')
+            for item in to_search:
+                res['overdues'].append({item.get(key, None): await conn.fetch(query, item.get(param, None))})
+        
+        if fines:
+            res['fines'] = {}
+            to_search = all_roles if checkouts == 'per_role' else all_users if checkouts == 'per_user' else {}
+            key = 'name' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
+            param = 'rid' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
+            query = """
+            SELECT sum(items.fines)
+              FROM members, items
+             WHERE items.issued_to IS NOT NULL
+               AND (
+                     SELECT rid
+                       FROM members
+                      WHERE uid = items.issued_to
+                   ) {} $1::bigint
+            """.format('=' if items else 'IS NOT')
+            for item in to_search:
+                res['fines'].append({item.get(key, None): await conn.fetch(query, item.get(param, None))})
+        
+        if holds:
+            res['holds'] = {}
+            to_search = all_roles if checkouts == 'per_role' else all_users if checkouts == 'per_user' else {}
+            key = 'name' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
+            param = 'rid' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
+            query = """
+            SELECT count(*)
+              FROM members, holds
+             WHERE (SELECT lid FROM members WHERE uid = holds.uid) = $2::bigint
+               AND (
+                     SELECT rid
+                       FROM members
+                      WHERE uid = holds.uid
+                   ) {} $1::bigint
+            """.format('=' if items else 'IS NOT')
+            for item in to_search:
+                res['holds'].append({item.get(key, None): await conn.fetch(query, item.get(param, None), self.lid)})
+        
+        if items:
+            res['items'] = {await conn.fetch("""SELECT count(*) FROM items WHERE lid = $1::bigint""", self.lid)}
+        
+        return res
+        
+    
+    @lockquire()
+    async def report_names(self, do):
+        """
+        Current overdue fines, items per member;
+        current holds available per member
+        (only usernames)
+        
+        args: fines, items, holds
+        """
+        if 'fines' in do:
+            pass
+    
+    @lockquire(lock=False)
+    async def get_user(self, conn, username: str):
+        async with self.__class__._aiolock:
+            query = """SELECT uid FROM members WHERE username = $1::text AND lid = $2::bigint AND type = 0"""
+            uid = await conn.fetchval(query)
+        return await User(uid)
+    
+    @lockquire(lock=False)
+    async def users(self, conn, roles=True, *, cont=0, max_results=20):
+        users = []
+        async with self.__class__._aiolock:
+            for role in await self.get_roles():
+                query = """SELECT uid, username, fullname FROM members WHERE lid = $1::bigint AND rid = $2::bigint AND type = 0""" \
+                        """LIMIT {} OFFSET {}""".format(max_results, cont)
+                users.append({role.name: await conn.fetch(query, self.lid)})
+        return {res: [{j: i[j] for j in ('uid', 'username', 'fullname')} for i in users[res]] for res in users}
+    
     @lockquire(lock=False)
     async def search(self, conn, *, title=None, genre=None, type_=None, author=None, cont=0, max_results=20, where_taken=None):
         search_terms = title, genre, type_, author
@@ -363,17 +493,23 @@ class Location(AsyncInit, WithLock):
             return [i['mid'] for i in results]
         # I'd have liked to provide a full MediaItem for each result,
         # but that would take so so so so so unbearably long on Heroku's DB speeds,
-        # not to mention being just pretty inefficient all around.
+        # not to mention being just pretty all-around inefficient.
         # Instead I'll have to have the app shoot a GET request to /media/info
         # for the pertinent mID when one specific item is requested.
-        return {i['mid']: {j: i[j] for j in ('author', 'genre', 'type')} for i in results}
+        return [{j: i[j] for j in ('mid', 'author', 'genre', 'type')} for i in results]
     
-    @lockquire()
-    async def get_roles(self, conn):
-        query = """
-        SELECT rid FROM roles WHERE lid = $1
-        """
-        return [await Role(i['rid'], self.app) for i in await query.fetch(self.lid)]
+    @lockquire(lock=False)
+    async def roles(self, conn):
+        async with self.__class__._aiolock:
+            query = """
+            SELECT rid, name, permissions AS perms, maxes, locks FROM roles WHERE lid = $1
+            """
+            res = [{j: i[j] for j in ('rid', 'name', 'perms', 'maxes', 'locks')} for i in await conn.fetch(query, self.lid)]
+        for i in res:
+            i['perms'] = Perms(i['perms']).all
+            i['maxes'] = Maxes(i['maxes']).all
+            i['locks'] = Locks(i['locks']).all
+        return res
     
     @lockquire()
     async def add_role(self, conn, name, *, kws=None, seqs=None):
@@ -510,8 +646,22 @@ class Role(AsyncInit, WithLock):
     def __str__(self):
         return str(self.rid)
     
+    def to_dict(self) -> dict:
+        return {'name': self.name, 'perms': self.perms.all, 'maxes': self.maxes.all, 'locks': self.locks.all}
+    
+    async def set_attrs(self, perms, maxes, locks):
+        async with self.__class__._aiolock, self.app.pg_pool.acquire() as conn:
+            query = """
+            UPDATE roles
+               SET permissions = $2::smallint,
+                   maxes = $3::bigint,
+                   locks = $4::bigint
+             WHERE rid = $1::bigint
+            """
+            await conn.execute(query, self.rid, perms.raw, maxes.raw, locks.raw)
+    
     @staticmethod
-    def attrs_from_seqs(*, seqs=None, kws=None):
+    def attrs_from(*, seqs=None, kws=None):
         if kws is None:
             perms = Perms.from_seq(seqs['perms'])
             maxes = Maxes.from_seq(seqs['maxes'])
@@ -521,6 +671,7 @@ class Role(AsyncInit, WithLock):
             maxes = Maxes.from_kwargs(**kws['maxes'])
             locks = Locks.from_kwargs(**kws['locks'])
         return perms, maxes, locks
+    
     
     @property
     def perms(self):
@@ -565,6 +716,7 @@ class User(AsyncInit, WithLock):
         props = ['user_id', 'username', 'name', 'lid', 'manages', 'rid', 'email', 'phone', 'is_checkout', 'perms', 'recent']
         rel = {i: getattr(self, i, None) for i in props}
         rel['locname'] = self.location.name
+        rel['can_return_items'] = self.perms.can_return_items
         return rel
     
     @property
@@ -598,15 +750,17 @@ class User(AsyncInit, WithLock):
         return await cls(uid, app)
     
     @classmethod
-    async def from_identifiers(cls, app, *, username=None, lid=None, uid=None):
+    async def from_identifiers(cls, username=None, location=None, lid=None, *, app):
         """
         Returns a new User instance, given a username and location ID.
         (More specifically, it grabs the user's ID from the above combo
         and, once found, passes it to __init__())
         """
+        if lid and location is None:
+            location = await Location(int(lid), app)
         async with cls._aiolock, app.pg_pool.acquire() as conn:
-            query = """SELECT uid FROM members WHERE {} = $1::text AND lid = $2::bigint""".format('username' if uid is None else uid) #XXX: if I have the uID then why would I be using from_identifiers??
-            uid = await conn.fetchval(query, username, lid)
+            query = """SELECT uid FROM members WHERE username = $1::text AND lid = $2::bigint"""
+            uid = await conn.fetchval(query, username, location.lid)
         return await cls(uid, app)
     
     async def edit_perms(self, **new):
@@ -626,7 +780,7 @@ class User(AsyncInit, WithLock):
         def add(type_, message):
             response.append({"type": type_, "text": message})
         
-        if holds or True:
+        if holds:
             add('notification', f'You have {holds} holds available.')
         if overdue:
             add('warning', f'You have {overdue} overdue items.')
@@ -634,8 +788,6 @@ class User(AsyncInit, WithLock):
             add('warning', f'You have ${fines} in overdue fines.')
         if self.cannot_check_out:
             add('alert', self.cannot_check_out)
-        for i, v in enumerate(response):
-            v["index"] = i # For easy removal of these messages on the front end
         return response
     
     @lockquire()
