@@ -1,3 +1,25 @@
-<p>
-  reports works!
-</p>
+<h1>What data would you like to see?</h1>
+<label *ngFor="let btn of buttons; let i = index">
+  <input type="radio"
+    name="report-type"
+    (change)="onTypeChange(i, $event)"/>
+  {{btn.name}}
+  <br/>
+</label>
+<br/><br/>
+<input #perMember
+  type="radio"
+  name="sort-by"
+  (change)="onSortChange(perMember.value, 'per_user')">
+Per user<br/>
+<input #perRole
+  type="radio"
+  name="sort-by"
+  (change)="onSortChange(perRole.value, 'per_role')">
+Per role<br/>
+<input #total
+  type="radio"
+  name="sort-by"
+  (change)="onSortChange(total.value, 'all')">
+Total<br/>
+<button (click)="getReport()">Submit</button>

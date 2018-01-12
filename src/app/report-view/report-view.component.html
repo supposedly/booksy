@@ -1,0 +1,14 @@
+<button (click)="location.back()">Go back</button>
+{{data | json}}
+<h1>{{key}}</h1>
+<ul>
+  <li *ngFor="let dtm of data">
+    <b>{{dtm.ident}}</b>
+    <br/>
+    <ul>
+      <li *ngFor="let item of dtm">
+        {{item}}
+      </li>
+    </ul>
+  </li>
+</ul>

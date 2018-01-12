@@ -7,8 +7,6 @@ import { Globals } from './globals';
 
 import { AuthGuard } from './auth.guard';
 
-//import { ErrorInterceptorProvider } from './error.interceptor';
-
 import { AboutComponent } from './about/about.component';
 import { AppComponent } from './app.component';
 import { CheckoutComponent } from './checkout/checkout.component';
@@ -49,6 +47,7 @@ import { RoleDetailComponent } from './role-detail/role-detail.component';
 import { MgmtMediaComponent } from './mgmt-media/mgmt-media.component';
 import { SetupService } from './setup.service';
 import { ReportsService } from './reports.service';
+import { ReportViewComponent } from './report-view/report-view.component';
 
 @NgModule({
   declarations: [
@@ -77,6 +76,7 @@ import { ReportsService } from './reports.service';
     NotificationsComponent,
     RoleDetailComponent,
     MgmtMediaComponent,
+    ReportViewComponent,
   ],
   imports: [
     BrowserModule,
@@ -85,7 +85,6 @@ import { ReportsService } from './reports.service';
     HttpClientModule
   ],
   providers: [
-    //ErrorInterceptorProvider,
     MediaService,
     CurrentMediaSessionService,
     RoleService,
@@ -100,7 +99,7 @@ import { ReportsService } from './reports.service';
     MgmtHeaderButtonService,
     MemberService,
     SetupService,
-    ReportsService //?
+    ReportsService
     ],
   bootstrap: [AppComponent]
 })

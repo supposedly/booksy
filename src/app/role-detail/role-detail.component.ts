@@ -32,6 +32,7 @@ export class RoleDetailComponent implements OnInit {
   }
   
   keys(obj) {
+    /* unused */
     if (obj) { return Object.keys(obj); }
   }
   
