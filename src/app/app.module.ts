@@ -48,6 +48,7 @@ import { NotificationsComponent } from './notifications/notifications.component'
 import { RoleDetailComponent } from './role-detail/role-detail.component';
 import { MgmtMediaComponent } from './mgmt-media/mgmt-media.component';
 import { SetupService } from './setup.service';
+import { ReportsService } from './reports.service';
 
 @NgModule({
   declarations: [
@@ -98,7 +99,8 @@ import { SetupService } from './setup.service';
     HeaderComponent,
     MgmtHeaderButtonService,
     MemberService,
-    SetupService //?
+    SetupService,
+    ReportsService //?
     ],
   bootstrap: [AppComponent]
 })
