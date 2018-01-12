@@ -38,12 +38,12 @@ async def provide_specific_me_attr(rqst, user, attr):
     return sanic.response.json(resp, status=200)
 
 @roles.post('/edit')
-@rqst_get('role', 'user', 'seqs')
+@rqst_get('role', 'user', 'name', 'seqs')
 @jwtdec.protected()
-async def edit_role(rqst, role, user, seqs):
+async def edit_role(rqst, role, user, name, seqs):
     if not user.perms.can_manage_roles:
         sanic.exceptions.abort(403, "You aren't allowed to modify roles.")
-    await role.set_attrs(*Role.attrs_from(kws=seqs))
+    await role.set_attrs(*Role.attrs_from(kws=seqs), name=name)
     return sanic.response.raw(b'', status=204)
 
 @roles.get('/detail')

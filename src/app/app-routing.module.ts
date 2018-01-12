@@ -31,12 +31,12 @@ const routes: Routes = [
   {path: 'home', canActivate: [AuthGuard], component: HomePageComponent, children: [
     // routed to by the sidebar
     {path: '', redirectTo: 'checkout', pathMatch: 'full'},
+    {path: 'media/search', component: MediaSearchComponent},
+    {path: 'media/manage', component: MgmtMediaComponent},
     {path: 'media/:mID', component: MediaInfoComponent},
     {path: 'roles/:rID', component: RoleDetailComponent},
     {path: 'checkout', component: CheckoutComponent},
     {path: 'dashboard', component: DashboardComponent},
-    {path: 'media/search', component: MediaSearchComponent},
-    {path: 'media/manage', component: MgmtMediaComponent},
     {path: 'account', component: MemberAcctInfoComponent},
     {path: 'reports', component: ReportsComponent},
     {path: 'manage', component: LocationMgmtComponent, children: [

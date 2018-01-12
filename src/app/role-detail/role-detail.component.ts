@@ -49,7 +49,7 @@ export class RoleDetailComponent implements OnInit {
   
   submit() {
     console.log(this.permArr); console.log(this.lockArr); console.log(this.maxArr);
-    this.roleService.modify(this.rID, this.permArr.names, this.maxArr.names, this.lockArr.names)
+    this.roleService.modify(this.rID, this.roleName, this.permArr.names, this.maxArr.names, this.lockArr.names)
       .subscribe(_ => this.msg = "Successfully edited.", err => err.error?err.error:"Not allowed!");
   }
 }

@@ -21,15 +21,15 @@ export class RoleService {
   ) {}
   
   getAll(): Observable<any> {
-    return this.http.get<any>(this.allRolesURL, {params: {uid: this.globals.uID}})
+    return this.http.get<any>(this.allRolesURL, {params: {uid: this.globals.uID}});
   }
   
   getArrs(rID): Observable<any> {
     return this.http.get<any>(this.roleInfoURL, {params: {rid: rID, uid: this.globals.uID}});
   }
   
-  modify(rID, perms, maxes, locks) {
-    return this.http.post(this.roleEditURL, {uid: this.globals.uID, rid: rID, seqs: {perms: perms, maxes: maxes, locks: locks}}, httpOptions);
+  modify(rID, name, perms, maxes, locks) {
+    return this.http.post(this.roleEditURL, {uid: this.globals.uID, rid: rID, name: name, seqs: {perms: perms, maxes: maxes, locks: locks}}, httpOptions);
   }
   
 }

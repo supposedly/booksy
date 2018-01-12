@@ -373,66 +373,66 @@ class Location(AsyncInit, WithLock):
               FROM members, items
              WHERE items.issued_to IS NOT NULL
                AND (
-                     SELECT rid
+                     SELECT {}
                        FROM members
                       WHERE uid = items.issued_to
                    ) {} $1::bigint
-            """.format('=' if items else 'IS NOT')
+            """.format('uid' if checkouts == 'per_user' else 'rid', '=' if items else 'IS NOT')
             for item in to_search:
                 res['checkouts'].append({item.get(key, None): await conn.fetch(query, item.get(param, None))})
         
         if overdues:
             res['overdues'] = {}
-            to_search = all_roles if checkouts == 'per_role' else all_users if checkouts == 'per_user' else {}
-            key = 'name' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
-            param = 'rid' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
+            to_search = all_roles if overdues == 'per_role' else all_users if overdues == 'per_user' else {}
+            key = 'name' if overdues == 'per_role' else 'username' if overdues == 'per_user' else None
+            param = 'rid' if overdues == 'per_role' else 'username' if overdues == 'per_user' else None
             query = """
             SELECT count(*)/2
               FROM members, items
              WHERE items.issued_to IS NOT NULL
                AND items.due_date < current_date
                AND (
-                     SELECT rid
+                     SELECT {}
                        FROM members
                       WHERE uid = items.issued_to
                    ) {} $1::bigint
-            """.format('=' if items else 'IS NOT')
+            """.format('uid' if overdues == 'per_user' else 'rid', '=' if items else 'IS NOT')
             for item in to_search:
                 res['overdues'].append({item.get(key, None): await conn.fetch(query, item.get(param, None))})
         
         if fines:
             res['fines'] = {}
-            to_search = all_roles if checkouts == 'per_role' else all_users if checkouts == 'per_user' else {}
-            key = 'name' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
-            param = 'rid' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
+            to_search = all_roles if fines == 'per_role' else all_users if fines == 'per_user' else {}
+            key = 'name' if fines == 'per_role' else 'username' if fines == 'per_user' else None
+            param = 'rid' if fines == 'per_role' else 'username' if fines == 'per_user' else None
             query = """
             SELECT sum(items.fines)
               FROM members, items
              WHERE items.issued_to IS NOT NULL
                AND (
-                     SELECT rid
+                     SELECT {}
                        FROM members
                       WHERE uid = items.issued_to
                    ) {} $1::bigint
-            """.format('=' if items else 'IS NOT')
+            """.format('uid' if fines == 'per_user' else 'rid', '=' if items else 'IS NOT')
             for item in to_search:
                 res['fines'].append({item.get(key, None): await conn.fetch(query, item.get(param, None))})
         
         if holds:
             res['holds'] = {}
-            to_search = all_roles if checkouts == 'per_role' else all_users if checkouts == 'per_user' else {}
-            key = 'name' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
-            param = 'rid' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
+            to_search = all_roles if holds == 'per_role' else all_users if holds == 'per_user' else {}
+            key = 'name' if holds == 'per_role' else 'username' if holds == 'per_user' else None
+            param = 'rid' if holds == 'per_role' else 'username' if holds == 'per_user' else None
             query = """
             SELECT count(*)
               FROM members, holds
              WHERE (SELECT lid FROM members WHERE uid = holds.uid) = $2::bigint
                AND (
-                     SELECT rid
+                     SELECT {}
                        FROM members
                       WHERE uid = holds.uid
                    ) {} $1::bigint
-            """.format('=' if items else 'IS NOT')
+            """.format('uid' if holds == 'per_user' else 'rid', '=' if items else 'IS NOT')
             for item in to_search:
                 res['holds'].append({item.get(key, None): await conn.fetch(query, item.get(param, None), self.lid)})
         
@@ -649,16 +649,17 @@ class Role(AsyncInit, WithLock):
     def to_dict(self) -> dict:
         return {'name': self.name, 'perms': self.perms.all, 'maxes': self.maxes.all, 'locks': self.locks.all}
     
-    async def set_attrs(self, perms, maxes, locks):
+    async def set_attrs(self, perms, maxes, locks, name):
         async with self.__class__._aiolock, self.app.pg_pool.acquire() as conn:
             query = """
             UPDATE roles
-               SET permissions = $2::smallint,
-                   maxes = $3::bigint,
-                   locks = $4::bigint
+               SET name = $2::text,
+                   permissions = $3::smallint,
+                   maxes = $4::bigint,
+                   locks = $5::bigint
              WHERE rid = $1::bigint
             """
-            await conn.execute(query, self.rid, perms.raw, maxes.raw, locks.raw)
+            await conn.execute(query, self.rid, name, perms.raw, maxes.raw, locks.raw)
     
     @staticmethod
     def attrs_from(*, seqs=None, kws=None):

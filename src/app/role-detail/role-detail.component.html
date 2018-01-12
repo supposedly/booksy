@@ -1,6 +1,7 @@
 <p>{{msg}}</p>
 <button (click)="location.back()">Go back</button>
 <h2>{{roleName}}</h2>
+<input type="text" [value]="roleName" [(ngModel)]="roleName"/>
 <form name="tes" (ngSubmit)="submit()" *ngIf="rID">
     <h3>Permissions</h3>
     <label *ngFor="let name of keys(permArr.names); let i = index">

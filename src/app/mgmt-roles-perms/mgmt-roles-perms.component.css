@@ -1,6 +1,19 @@
 ul {
   list-style: none;
+  padding-left: 0;
 }
 li {
   cursor: pointer;
+  display: inline-block;
+  margin: 2px 5px;
+  padding: 10px;
+  border: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  border-color: #666;
+  transition: background-color 0.1s;
+}
+li:focus, li:active {
+  outline: none;
+  background-color: #ddd;
 }
