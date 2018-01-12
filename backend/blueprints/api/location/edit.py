@@ -15,9 +15,6 @@ async def edit_location_info(rqst, location, action):
     """
     Catch-all endpoint for updating a location's info
     """
-    try:
-        new = rqst.json['new']
-    except KeyError:
-        sanic.exceptions.abort(422, 'Missing new info')
+    sanic.exceptions.abort(501, "Left unimplemented for FBLA demo")
     await location.edit(action, new)
     return sanic.response.raw(status=204)

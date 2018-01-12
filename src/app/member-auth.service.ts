@@ -68,6 +68,7 @@ export class MemberAuthService {
     this.globals.rID = dts.rid;
     this.globals.lID = dts.lid;
     this.globals.isCheckoutAccount = dts.is_checkout;
+    this.globals.canReturnItems = dts.can_return_items;
     this.globals.username = dts.username;
     this.globals.name = dts.name;
     this.globals.managesLocation = dts.manages;
@@ -123,7 +124,7 @@ export class MemberAuthService {
           return false;
         }
     );
-    return this.globals.isLoggedIn; //synchronicity in an async function? yikes (but it works well)
+    return this.globals.isLoggedIn; //synchronicity in an async function? uh oh (but it works for reasons)
   }
   
   logOut() {

@@ -16,12 +16,14 @@ import { MemberAcctInfoComponent } from './member-acct-info/member-acct-info.com
 import { MgmtLocationComponent } from './mgmt-location/mgmt-location.component';
 import { MgmtAccountsComponent } from './mgmt-accounts/mgmt-accounts.component';
 import { MgmtRolesPermsComponent } from './mgmt-roles-perms/mgmt-roles-perms.component';
+import { MgmtMediaComponent } from './mgmt-media/mgmt-media.component';
 import { ReportsComponent } from './reports/reports.component';
 import { ReroutingComponent } from './rerouting/rerouting.component';
 import { SignupComponent } from './signup/signup.component';
+import { RoleDetailComponent } from './role-detail/role-detail.component';
 
 const routes: Routes = [
-  // Signup is not important for the FBLA demo
+  /* Signup is not needed for the FBLA demo */
   //{path: 'signup/:type', component: SignupComponent},
   {path: 'login', component: LoginComponent},
   {path: '', redirectTo: 'home', pathMatch: 'full', canActivate: [AuthGuard]},
@@ -29,10 +31,12 @@ const routes: Routes = [
   {path: 'home', canActivate: [AuthGuard], component: HomePageComponent, children: [
     // routed to by the sidebar
     {path: '', redirectTo: 'checkout', pathMatch: 'full'},
+    {path: 'media/:mID', component: MediaInfoComponent},
+    {path: 'roles/:rID', component: RoleDetailComponent},
     {path: 'checkout', component: CheckoutComponent},
     {path: 'dashboard', component: DashboardComponent},
     {path: 'media/search', component: MediaSearchComponent},
-    {path: 'media/:mID', component: MediaInfoComponent},
+    {path: 'media/manage', component: MgmtMediaComponent},
     {path: 'account', component: MemberAcctInfoComponent},
     {path: 'reports', component: ReportsComponent},
     {path: 'manage', component: LocationMgmtComponent, children: [

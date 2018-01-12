@@ -45,6 +45,9 @@ import { MgmtAccountsComponent } from './mgmt-accounts/mgmt-accounts.component';
 import { MgmtRolesPermsComponent } from './mgmt-roles-perms/mgmt-roles-perms.component';
 import { MemberService } from './member.service';
 import { NotificationsComponent } from './notifications/notifications.component';
+import { RoleDetailComponent } from './role-detail/role-detail.component';
+import { MgmtMediaComponent } from './mgmt-media/mgmt-media.component';
+import { SetupService } from './setup.service';
 
 @NgModule({
   declarations: [
@@ -71,6 +74,8 @@ import { NotificationsComponent } from './notifications/notifications.component'
     MgmtAccountsComponent,
     MgmtRolesPermsComponent,
     NotificationsComponent,
+    RoleDetailComponent,
+    MgmtMediaComponent,
   ],
   imports: [
     BrowserModule,
@@ -92,7 +97,8 @@ import { NotificationsComponent } from './notifications/notifications.component'
     Globals,
     HeaderComponent,
     MgmtHeaderButtonService,
-    MemberService //?
+    MemberService,
+    SetupService //?
     ],
   bootstrap: [AppComponent]
 })

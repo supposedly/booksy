@@ -55,7 +55,7 @@ async def authenticate(rqst, *args, **kwargs):
             # (we shouldn't specify which of pw/username is invalid lest an attacker
             # use the info to enumerate possible passwords/usernames)
             return False # unverified
-    return await User.from_identifiers(rqst.app, lid=lid, username=username)
+    return await User.from_identifiers(username=username, lid=lid, app=rqst.app)
 
 async def retrieve_user(rqst, payload, *args, **kwargs):
     """/auth/me"""
@@ -151,18 +151,22 @@ async def close_dbs(app, loop):
     await app.rd_pool.wait_closed()
     await app.session.close()
 
-'''
 @app.middleware('request')
-async def force_https(rqst):
-    if not rqst.url.startswith('https'):
-        securl = rqst.url.replace('http://', 'https://') if rqst.url.startswith('http://') else 'https://' + rqst.url 
-        return sanic.response.redirect(securl)
-'''
+async def force_angular(rqst):
+    safe = ('?', '.html', '.js', '.ts', '/auth', 'auth/' 'api/', 'stock/')
+    url = rqst.url[3+rqst.url.find('://'):]
+    if not any(i in url for i in safe): # XXX: this whole operation is quite slow
+        try:
+            path = urllib.parse.quote(url.split('/', 1)[1])
+            return sanic.response.redirect(f'/index.html/?redirect={path}')
+        except IndexError:
+            return sanic.response.redirect('/index.html')
 
 @app.route('/')
 async def handle_homepage(rqst):
     return sanic.response.redirect('/index.html')
 
+'''
 @app.route('/<path:[^?]+>')
 async def redirect_to_index(rqst, path):
     """
@@ -170,6 +174,7 @@ async def redirect_to_index(rqst, path):
     routing.
     """
     return sanic.response.redirect(f'/index.html/?redirect={urllib.parse.quote(path)}')
+'''
 
 # more than 1 worker and you get too many DB connections :((
 app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)), debug=True, workers=1)

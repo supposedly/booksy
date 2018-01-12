@@ -29,6 +29,7 @@ async def create_location(rqst):
       in from here -- that way, we can infer their location ID and
       spare them from having to keep entering it to sign in!
     """
+    sanic.exceptions.abort(501, "Left unimplemented for FBLA demo.")
     kwargs = rqst.json
     app_loop = asyncio.get_event_loop()
     kwargs['pwhash'] = await app_loop.run_in_executor(app.ppe, bcrypt.hashpw, kwargs['password'], bcrypt.gensalt(15))
@@ -38,6 +39,6 @@ async def create_location(rqst):
 
 @signup.post('/member')
 async def member_signup(rqst):
-    sanic.exceptions.abort(404)
+    sanic.exceptions.abort(501, "Left unimplemented for FBLA demo.")
     return None
     # hmm

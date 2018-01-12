@@ -31,7 +31,7 @@ def rqst_get(*attrs):
             """
             Another try-except abstraction.
             Grabs any requested info from a request and, if matching
-            the keywords, converts it to an Object; else just gives
+            some keyword, converts it to its object; else just gives
             the text
             """
             maps = {'item': (MediaItem, 'mid'), 'location': (Location, 'lid'), 'role': (Role, 'rid'), 'user': (User, 'uid')}
