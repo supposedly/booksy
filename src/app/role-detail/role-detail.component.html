@@ -2,36 +2,41 @@
 <button (click)="location.back()">Go back</button>
 <h2>{{roleName}}</h2>
 <input type="text" [value]="roleName" [(ngModel)]="roleName"/>
-<form name="tes" (ngSubmit)="submit()" *ngIf="rID">
-    <h3>Permissions</h3>
-    <label *ngFor="let name of keys(permArr.names); let i = index">
-      <input [name]="name"
-        type="checkbox"
-        [value]="permArr.names[name]"
-        [(ngModel)]="permArr.names[name]"/>
-      {{globals.attrs.perms[i]}}
-      <br/>
-    </label>
-    
-    <h3>Maxes</h3>
-    <label *ngFor="let name of keys(maxArr.names); let i = index">
-      <input [name]="name"
-        type="number"
-        [value]="maxArr.names[name]"
-        [(ngModel)]="maxArr.names[name]"/>
-      {{globals.attrs.maxes[i]}}
-      <br/>
-    </label>
-    
-    <h3>Locks</h3>
-    <label *ngFor="let name of keys(lockArr.names); let i = index">
-      <input [name]="name"
-        type="number"
-        [value]="lockArr.names[name]"
-        [(ngModel)]="lockArr.names[name]"/>
-      {{globals.attrs.locks[i]}}
-      <br/>
-    </label>
-    
-    <input type="submit" value="Submit"/>
-</form>
+<div *ngIf="permArr && maxArr && lockArr">
+  <form name="tes" (ngSubmit)="submit()" *ngIf="rID">
+      <h3>Permissions</h3>
+      <label *ngFor="let name of keys(permArr.names); let i = index">
+        <input [name]="name"
+          type="checkbox"
+          [value]="permArr.names[name]"
+          [(ngModel)]="permArr.names[name]"/>
+        {{globals.attrs.perms[i]}}
+        <br/>
+      </label>
+      
+      <h3>Maxes</h3>
+      <aside>Note that a value of 255 in any numeric field represents <i>infinity</i>.</aside>
+      <label *ngFor="let name of keys(maxArr.names); let i = index">
+        <input [name]="name"
+          type="number"
+          [value]="maxArr.names[name]"
+          min="0" max="255"
+          [(ngModel)]="maxArr.names[name]"/>
+        {{globals.attrs.maxes[i]}}
+        <br/>
+      </label>
+      
+      <h3>Locks</h3>
+      <label *ngFor="let name of keys(lockArr.names); let i = index">
+        <input [name]="name"
+          type="number"
+          [value]="lockArr.names[name]"
+          min="0" max="255"
+          [(ngModel)]="lockArr.names[name]"/>
+        {{globals.attrs.locks[i]}}
+        <br/>
+      </label>
+      
+      <input type="submit" value="Submit"/>
+  </form>
+</div>

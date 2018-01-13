@@ -14,6 +14,7 @@ const httpOptions = HttpOptions;
 @Injectable()
 export class MemberService {
   private notifURL: string = '/api/member/notifications';
+  private membersURL: string = '/api/location/members';
   
   constructor(
     private http: HttpClient,
@@ -22,6 +23,10 @@ export class MemberService {
   
   getNotifs(uID?: string): Observable<any> {
     return this.http.get<any>(this.notifURL, {params: {uid: uID?uID:this.globals.uID}}).shareReplay();
+  }
+  
+  getAll(cont): Observable<any> {
+    return this.http.get(this.membersURL, {params: {uid: this.globals.uID, cont: cont}});
   }
   
 }

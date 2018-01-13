@@ -46,6 +46,17 @@ async def edit_role(rqst, role, user, name, seqs):
     await role.set_attrs(*Role.attrs_from(kws=seqs), name=name)
     return sanic.response.raw(b'', status=204)
 
+@roles.put('/delete')
+@rqst_get('role', 'user')
+@jwtdec.protected()
+async def delete_role(rqst, role, user):
+    if await role.num_members():
+        sanic.exceptions.abort("You can't delete a role with members assigned to it.")
+    if role.name.lower() in ('admin', 'organizer', 'subscriber'): # sorta useless because they can change the name (I should've put a flag in the DB for this)
+        sanic.exceptions.abort("Default roles cannot be deleted.")
+    await role.delete()
+    return sanic.response.raw('', status=204)
+
 @roles.get('/detail')
 @rqst_get('role', 'user')
 @jwtdec.protected()

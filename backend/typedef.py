@@ -360,7 +360,8 @@ class Location(AsyncInit, WithLock):
         items = do.pop('type_totals', False)
         
         all_roles = await self.roles()
-        all_users = await self.users(roles=False)
+        all_users = await self.members(by_role=False)
+        print(all_users)
         res = {}
         
         if checkouts:
@@ -404,8 +405,8 @@ class Location(AsyncInit, WithLock):
             query = """
             SELECT DISTINCT ON (items.mid) items.title
               FROM members, holds, items
-             WHERE (SELECT lid FROM members WHERE uid = holds.uid) = $2::bigint
-            """
+             WHERE (SELECT lid FROM members WHERE uid = holds.uid) = ${}::bigint
+            """.format(1 if holds == 'all' else 2)
         
         if any((checkouts, overdues, fines, holds)):
             res[column[0]] = []
@@ -430,16 +431,16 @@ class Location(AsyncInit, WithLock):
             """)
             for item in to_search:
                 search = (
+                  conn.fetch(query, self.lid) if holds and holds == 'all' else
                   conn.fetch(query, item.get(param, None), self.lid) if holds else
                   conn.fetch(query, item.get(param, None)) if column[1] != 'all' else
                   conn.fetch(query)
                 )
                 res[column[0]].append({'ident': item.get(key, None), 'res': await search})
         
-        # eh
+        # unused
         if items:
             res['items'] = {await conn.fetch("""SELECT count(*) FROM items WHERE lid = $1::bigint""", self.lid)}
-            print(res['items'])
         
         print(res)
         return res
@@ -465,16 +466,15 @@ class Location(AsyncInit, WithLock):
         return await User(uid)
     
     @lockquire(lock=False)
-    async def users(self, conn, roles=True, *, limit=True, cont=0, max_results=20):
-        users = []
+    async def members(self, conn, by_role=True, *, limit=True, cont=0, max_results=15):
+        roles = {}
         #async with self.__class__._aiolock:
-        if roles:
+        if by_role:
             for role in await self.roles():
                 query = """SELECT uid, username, fullname FROM members WHERE lid = $1::bigint AND rid = $2::bigint AND type = 0""" \
                         + ("""LIMIT {} OFFSET {}""".format(max_results, cont) if limit else '')
-                users.append({role['name']: await conn.fetch(query, self.lid, role['rid'])})
-            return {res: [{j: i[j] for j in ('uid', 'username', 'fullname')} for i in res] for res in users} #FIXME
-        # else #
+                roles[role['name']] = await conn.fetch(query, self.lid, role['rid'])
+            return [{'role': role, 'data': [{j: i[j] for j in ('uid', 'username', 'fullname')} for i in user]} for role, user in roles.items()]
         query = """SELECT uid, username, fullname FROM members WHERE lid = $1::bigint AND type = 0""" \
                 + ("""LIMIT {} OFFSET {}""".format(max_results, cont) if limit else '')
         return [{j: i[j] for j in ('uid', 'username', 'fullname')} for i in await conn.fetch(query, self.lid)]
@@ -529,15 +529,10 @@ class Location(AsyncInit, WithLock):
                       )
              SELECT $1::bigint, $2::text,
                     $3::smallint, $4::bigint, $5::bigint;
-        SELECT currval(pg_get_serial_sequence('roles', 'rid'))
         """
-        rid = await conn.fetchval(query, self.lid, name, perms.raw, maxes.raw, locks.raw)
-        return await Role(rid)
-    
-    @lockquire()
-    async def delete_role(self, conn, rid):
-        query = """DELETE FROM roles WHERE rid = $1::bigint"""
-        await conn.execute(query, rid)
+        await conn.execute(query, self.lid, name, perms.raw, maxes.raw, locks.raw)
+        rid = await conn.fetchval("""SELECT currval(pg_get_serial_sequence('roles', 'rid'))""")
+        return await Role(rid, self.app)
     
     @lockquire()
     async def edit(self, conn, to_edit, new):
@@ -681,6 +676,16 @@ class Role(AsyncInit, WithLock):
             locks = Locks.from_kwargs(**kws['locks'])
         return perms, maxes, locks
     
+    
+    @lockquire()
+    async def delete(self, conn):
+        query = """DELETE FROM roles WHERE rid = $1::bigint"""
+        await conn.execute(query, self.rid)
+    
+    @lockquire()
+    async def num_members(self, conn):
+        query = """SELECT count(*) FROM members WHERE rid = $1::bigint"""
+        return await conn.fetchval(query, self.rid)
     
     @property
     def perms(self):

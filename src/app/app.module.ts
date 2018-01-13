@@ -48,6 +48,7 @@ import { MgmtMediaComponent } from './mgmt-media/mgmt-media.component';
 import { SetupService } from './setup.service';
 import { ReportsService } from './reports.service';
 import { ReportViewComponent } from './report-view/report-view.component';
+import { PersonalInfoComponent } from './personal-info/personal-info.component';
 
 @NgModule({
   declarations: [
@@ -77,6 +78,7 @@ import { ReportViewComponent } from './report-view/report-view.component';
     RoleDetailComponent,
     MgmtMediaComponent,
     ReportViewComponent,
+    PersonalInfoComponent,
   ],
   imports: [
     BrowserModule,

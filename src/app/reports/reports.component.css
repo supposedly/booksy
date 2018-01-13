@@ -1,0 +1,7 @@
+button.invalid {
+  opacity: 0.5;
+  cursor: default;
+}
+button.invalid:active, button.invalid:focus {
+  outline: none;
+}

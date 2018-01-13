@@ -1,0 +1,10 @@
+li ul {
+  list-style: disc;
+}
+li ul li {
+  text-decoration: underline;
+  cursor: pointer;
+}
+li ul li:hover {
+  text-decoration: none;
+}

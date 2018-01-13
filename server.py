@@ -153,20 +153,20 @@ async def close_dbs(app, loop):
 
 @app.middleware('request')
 async def force_angular(rqst):
-    safe = ('?', '.html', '.js', '.ts', '/auth', 'auth/' 'api/', 'stock/')
-    url = rqst.url[3+rqst.url.find('://'):]
-    if not any(i in url for i in safe): # XXX: this whole operation is quite slow
+    safe = ('?', '.html', '.js', '.ts', '/auth', 'auth/', 'api/', 'stock/')
+    if not any(i in rqst.url for i in safe):
         try:
+            url = rqst.url[3+rqst.url.find('://'):]
             path = urllib.parse.quote(url.split('/', 1)[1])
             return sanic.response.redirect(f'/index.html/?redirect={path}')
         except IndexError:
             return sanic.response.redirect('/index.html')
 
+'''
 @app.route('/')
 async def handle_homepage(rqst):
     return sanic.response.redirect('/index.html')
 
-'''
 @app.route('/<path:[^?]+>')
 async def redirect_to_index(rqst, path):
     """

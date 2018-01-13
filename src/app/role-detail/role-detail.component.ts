@@ -28,7 +28,11 @@ export class RoleDetailComponent implements OnInit {
   
   ngOnInit() {
     this.rID = this.route.snapshot.paramMap.get('rID');
-    this.getArrs();
+    if (this.rID == 'create') {
+      this.makeArrs();
+    } else {
+      this.getArrs();
+    }
   }
   
   keys(obj) {
@@ -48,9 +52,41 @@ export class RoleDetailComponent implements OnInit {
       );
   }
   
+  makeArrs() {
+    this.permArr = {
+      names: {
+        manage_location: false,
+        manage_accounts: false,
+        manage_roles: false,
+        create_admin_roles: false,
+        manage_media: false,
+        generate_reports: false,
+        return_items: false
+      }
+    }
+    this.maxArr = {
+      names: {
+        checkout_duration: 0,
+        renewals: 0,
+        holds: 0
+      }
+    }
+    this.lockArr = {
+      names: {
+        checkouts: 0,
+        fines: 0
+      }
+    }
+    this.roleName = 'New role';
+  }
+  
   submit() {
-    console.log(this.permArr); console.log(this.lockArr); console.log(this.maxArr);
-    this.roleService.modify(this.rID, this.roleName, this.permArr.names, this.maxArr.names, this.lockArr.names)
-      .subscribe(_ => this.msg = "Successfully edited.", err => err.error?err.error:"Not allowed!");
+    if (this.rID == 'create') {
+      this.roleService.create(this.roleName, this.permArr.names, this.maxArr.names, this.lockArr.names)
+        .subscribe(_ => this.msg = "Successfully edited.", err => this.msg = err.error?err.error:"Not allowed!");
+    } else {
+      this.roleService.modify(this.rID, this.roleName, this.permArr.names, this.maxArr.names, this.lockArr.names)
+        .subscribe(_ => this.msg = "Successfully edited.", err => this.msg = err.error?err.error:"Not allowed!");
+    }
   }
 }

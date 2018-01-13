@@ -13,6 +13,8 @@ import { Globals } from './globals';
 export class RoleService {
   private roleInfoURL = '/api/roles/detail';
   private roleEditURL = '/api/roles/edit';
+  private roleDelURL = '/api/roles/delete';
+  private roleCreateURL = '/api/location/roles/add';
   private allRolesURL = '/api/location/roles';
   
   constructor(
@@ -30,6 +32,14 @@ export class RoleService {
   
   modify(rID, name, perms, maxes, locks) {
     return this.http.post(this.roleEditURL, {uid: this.globals.uID, rid: rID, name: name, seqs: {perms: perms, maxes: maxes, locks: locks}}, httpOptions);
+  }
+  
+  create(name, perms, maxes, locks) {
+    return this.http.post(this.roleCreateURL, {uid: this.globals.uID, name: name, seqs: {perms: perms, maxes: maxes, locks: locks}}, httpOptions);
+  }
+  
+  delete(rID) {
+    return this.http.put(this.roleDelURL, {uid: this.globals.uID, rid: rID});
   }
   
 }

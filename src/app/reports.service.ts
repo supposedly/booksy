@@ -17,8 +17,8 @@ export class ReportsService {
     private http: HttpClient
   ) {}
   
-  getReport(chks?, ovds?, fins?, hlds?, itms?) {
-    return this.http.put( // I need to be able to send json, but this is really a GET request
+  getReport(chks=false, ovds=false, fins=false, hlds=false, itms=false) {
+    return this.http.put( // This is really just a GET request, but I need to be able to send it as json
       this.reportsURL, {
         uid: this.globals.uID,
         get: {

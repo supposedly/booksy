@@ -30,4 +30,8 @@ export class Globals {
   
   // report data received from server
   reportData = null;
+  reportDataSortedBy = null;
+  
+  // to determine whether to edit or add a role
+  roleAction = 'edit';
 }

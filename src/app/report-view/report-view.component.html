@@ -1,14 +1,16 @@
 <button (click)="location.back()">Go back</button>
-{{data | json}}
-<h1>{{key}}</h1>
+<h1>{{key | titlecase}}</h1>
+<h3>{{sort.replace('_', ' ') | titlecase}}</h3>
 <ul>
-  <li *ngFor="let dtm of data">
-    <b>{{dtm.ident}}</b>
-    <br/>
-    <ul>
-      <li *ngFor="let item of dtm">
-        {{item}}
-      </li>
-    </ul>
-  </li>
+  <span *ngFor="let dtm of data">
+    <li *ngIf="dtm.res.length && (dtm.res.length==1?dtm.res[0]!='0':true)">
+      <b>{{dtm.ident}}</b>
+      <br/>
+      <ul>
+        <li *ngFor="let item of dtm.res">
+          {{item}}
+        </li>
+      </ul>
+    </li>
+  </span>
 </ul>
