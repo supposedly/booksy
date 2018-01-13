@@ -476,17 +476,17 @@ class Location(AsyncInit, WithLock):
     
     @lockquire(lock=False)
     async def search(self, conn, *, title=None, genre=None, type_=None, author=None, cont=0, max_results=20, where_taken=None):
-        search_terms = title, genre, type_, author
+        search_terms = title, genre, author, type_
         #async with self.__class__._aiolock:
         query = (
-            """SELECT DISTINCT ON (lower(title)) title, mid, author, genre, type FROM items WHERE true """ # stupid hack coming up
+            """SELECT DISTINCT ON (lower(title)) title, mid, author, genre, type, image FROM items WHERE true """ # stupid hack coming up
             + ("""AND title ILIKE '%' || ${}::text || '%' """ if title else '')
             + ("""AND genre ILIKE '%' || ${}::text || '%' """ if genre else '')
             + ("""AND author ILIKE '%' || ${}::text || '%' """ if author else '')
             + ("""AND type ILIKE '%' || ${}::text || '%' """ if type_ else '')
             + ("""AND false """ if not any(search_terms) else '') # because 'WHERE true' otherwise returns everything if not any(search_terms)
             + ("""WHERE issued_to IS {} NULL""".format(('', 'NOT')[where_taken]) if where_taken is not None else '')
-            + ("""ORDER BY title""") # just to establish a consistent order for `cont' param
+            + ("""ORDER BY lower(title) """) # just to establish a consistent order for `cont' param
             ).format(*range(1, 1+sum(map(bool, search_terms)))) \
             + ("""LIMIT {} OFFSET {}""").format(max_results, cont) # these are ok not to parameterize because they're internal
         results = await conn.fetch(query, *filter(bool, search_terms))
@@ -499,7 +499,7 @@ class Location(AsyncInit, WithLock):
         # not to mention being just pretty all-around inefficient.
         # Instead I'll have to have the app shoot a GET request to /media/info
         # for the pertinent mID when one specific item is requested.
-        return [{j: i[j] for j in ('mid', 'author', 'genre', 'type')} for i in results]
+        return [{j: i[j] for j in ('mid', 'title', 'author', 'genre', 'type', 'image')} for i in results]
     
     @lockquire(lock=False)
     async def roles(self, conn):
@@ -561,10 +561,13 @@ class Location(AsyncInit, WithLock):
     @lockquire(lock=False, db=False)
     async def image(self):
         raise NotImplementedError
+        # ... and will likely not be
+        # for the foreseeable future
     
     @lockquire()
     async def media_types(self, conn):
-        query = """SELECT media_types FROM locations WHERE lid = $1"""
+        query = """SELECT media_types FROM locations WHERE lid = $1::bigint"""
+        # fetchval because it's an array (not a bunch of records)
         return await conn.fetchval(query, self.lid)
     
     @lockquire()
@@ -586,6 +589,13 @@ class Location(AsyncInit, WithLock):
         """
         await conn.execute(query, type_name, self.lid)
         return 'success' ###
+    
+    @lockquire()
+    async def genres(self, conn):
+        query = """
+        SELECT DISTINCT lower(genre) AS genre FROM items WHERE lid = $1::bigint ORDER BY lower(genre)
+        """
+        return [i['genre'] for i in await conn.fetch(query, self.lid)]
     
     @lockquire(lock=False)
     async def add_media(self, conn, **kwargs):

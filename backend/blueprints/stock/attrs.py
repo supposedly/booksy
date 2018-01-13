@@ -10,7 +10,8 @@ from ...resources import Perms, Maxes, Locks
 attrs = sanic.Blueprint('attr_stock', url_prefix='/attrs')
 
 @attrs.get('/names')
-async def serve_attr_names(rqst):
+@uid_get('perms')
+async def serve_attr_names(rqst, perms):
     # return sanic.response.json({i.__name__.lower(): filter(bool, i._names) for i in (Perms, Maxes, Locks)}, status=200)
     res = {
       'perms': [
@@ -18,7 +19,7 @@ async def serve_attr_names(rqst):
         'Manage accounts (edit names, usernames and passwords)',
         'Manage media (add items, edit metadata)',
         'Manage roles (edit permissions and names)',
-        'Create administrative roles (i.e. ones that can create other administrative roles and give them the "Mange location" permission)',
+       # Create administrative roles (yada yada)
         'Generate & view reports',
         'Return items',
         ],
@@ -32,6 +33,12 @@ async def serve_attr_names(rqst):
         'Maximum $USD in fines allowed at a time',
       ]
     }
+    if perms.can_manage_location:
+        res['perms'].insert(3, 
+          'Create administrative roles '
+          '(ones that can provide other roles with '
+          'the "Manage location" permission)'
+          )
     return sanic.response.json(res, status=200)
 
 @attrs.get('/signup-form')

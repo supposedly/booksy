@@ -18,7 +18,6 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.memberAuthService.verify();
-    this.setupService.getNames();
   }
 
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 import { LoggingService } from './logging.service';
+import { SetupService } from './setup.service';
 
 import { Location, HttpOptions } from './classes';
 import { Globals } from './globals';
@@ -44,6 +45,7 @@ export class MemberAuthService {
   constructor(
     private globals: Globals,
     private http: HttpClient,
+    private setupService: SetupService,
     private loggingService: LoggingService
   ) {
       this.isLocationRegistered()
@@ -75,6 +77,12 @@ export class MemberAuthService {
     this.globals.locname = dts.locname;
     this.globals.email = dts.email;
     this.globals.phone = dts.phone;
+    
+    if (dts.user_id) {
+      this.setupService.getNames(dts.user_id);
+      this.setupService.getMediaTypes(dts.user_id);
+      this.setupService.getGenres(dts.user_id);
+    }
   }
   
   storeMeInfo(): void {

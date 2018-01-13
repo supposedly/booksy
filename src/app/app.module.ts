@@ -50,6 +50,7 @@ import { ReportsService } from './reports.service';
 import { RoleService } from './role.service';
 import { SetupService } from './setup.service';
 import { SideButtonService } from './side-button.service';
+import { MediaEditComponent } from './media-edit/media-edit.component';
 
 
 @NgModule({
@@ -81,6 +82,7 @@ import { SideButtonService } from './side-button.service';
     MgmtMediaComponent,
     ReportViewComponent,
     PersonalInfoComponent,
+    MediaEditComponent,
   ],
   imports: [
     BrowserModule,
