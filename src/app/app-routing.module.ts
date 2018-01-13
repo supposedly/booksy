@@ -10,13 +10,16 @@ import { HomePageComponent } from './home-page/home-page.component';
 import { HelpComponent } from './help/help.component';
 import { LocationMgmtComponent } from './location-mgmt/location-mgmt.component';
 import { LoginComponent } from './login/login.component';
-import { MediaSearchComponent } from './media-search/media-search.component';
+import { MediaEditComponent } from'./media-edit/media-edit.component';
 import { MediaInfoComponent } from './media-info/media-info.component';
+import { MediaSearchComponent } from './media-search/media-search.component';
 import { MemberAcctInfoComponent } from './member-acct-info/member-acct-info.component';
 import { MgmtLocationComponent } from './mgmt-location/mgmt-location.component';
 import { MgmtAccountsComponent } from './mgmt-accounts/mgmt-accounts.component';
 import { MgmtRolesPermsComponent } from './mgmt-roles-perms/mgmt-roles-perms.component';
 import { MgmtMediaComponent } from './mgmt-media/mgmt-media.component';
+import { MyHoldsComponent } from './my-holds/my-holds.component';
+import { MyItemsComponent } from './my-items/my-items.component';
 import { PersonalInfoComponent } from './personal-info/personal-info.component';
 import { ReportsComponent } from './reports/reports.component';
 import { ReportViewComponent } from './report-view/report-view.component';
@@ -35,6 +38,7 @@ const routes: Routes = [
     {path: '', redirectTo: 'checkout', pathMatch: 'full'},
     {path: 'media/search', component: MediaSearchComponent},
     {path: 'media/manage', component: MgmtMediaComponent},
+    {path: 'media/edit/:mID', component: MediaEditComponent},
     {path: 'media/:mID', component: MediaInfoComponent},
     {path: 'roles/:rID', component: RoleDetailComponent},
     {path: 'account', component: PersonalInfoComponent},

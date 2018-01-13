@@ -39,3 +39,10 @@ li .text .barcode {
   font-size: 13px;
   color: #555;
 }
+.link {
+  text-decoration: underline;
+  cursor: pointer;
+}
+.link:hover {
+  text-decoration: none;
+}

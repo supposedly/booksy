@@ -22,16 +22,18 @@ export class CheckoutService {
     private memberAuthService: MemberAuthService
   ) { }
   
-  checkOut(mID, uID) {
+  checkOut(mID, username) {
     return this.http.post<any>(this.checkoutURL, {
-      uid: uID,
+      username: username,
+      lid: this.globals.lID,
       mid: mID,
     }, httpOptions)
   }
   
-  checkIn(mID, uID) {
+  checkIn(mID, username) {
     return this.http.post<any>(this.checkinURL, {
-      uid: uID,
+      username: username,
+      lid: this.globals.lID,
       mid: mID,
     }, httpOptions)
   }

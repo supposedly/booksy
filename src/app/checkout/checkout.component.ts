@@ -17,7 +17,7 @@ export class CheckoutComponent implements OnInit {
   msg: string = null;
   name: string;
   mid: string;
-  uid: string = null;
+  username: string = null;
   
   constructor(
     private checkoutService: CheckoutService,
@@ -27,7 +27,7 @@ export class CheckoutComponent implements OnInit {
   ) {
       this.isCheckoutAccount = globals.isCheckoutAccount;
       if (!this.isCheckoutAccount) {
-        this.uid = globals.uID;
+        this.username = globals.username;
         if (this.globals.managesLocation) {
           this.name = globals.locname + ' Admin'
         } else {
@@ -45,9 +45,22 @@ export class CheckoutComponent implements OnInit {
       .subscribe(
         status => {
           if (status.available) {
-            this.checkoutService.checkOut(mID, this.uid).subscribe(resp => this.msg = 'Checked out!', err => {console.log(err); this.msg = err.error?err.error:'Error checking out'});
-          } else if (this.globals.canReturnItems || (status.issuedUid == this.uid && !this.isCheckoutAccount)) {
-            this.checkoutService.checkIn(mID, this.uid).subscribe(resp => this.msg = 'Checked in!', err => {console.log(err);this.msg = err.error?err.error:'Error checking in'});
+            this.checkoutService.checkOut(mID, this.username).subscribe(
+              resp => this.msg = 'Checked out!',
+              err => {
+                console.log(err);
+                this.msg = err.error?err.error:'Error checking out';
+              }
+            );
+          } else if (this.globals.canReturnItems || (status.issuedTo == this.username && !this.isCheckoutAccount)) {
+            this.checkoutService.checkIn(mID, this.username)
+              .subscribe(
+                resp => this.msg = 'Checked in!',
+                err => {
+                  console.log(err);
+                  this.msg = err.error?err.error:'Error checking in'
+                }
+              );
           } else {
             this.msg = 'Item is checked out to ' + status.issuedTo.toString() + '.';
           }

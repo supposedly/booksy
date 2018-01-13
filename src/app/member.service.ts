@@ -26,8 +26,8 @@ export class MemberService {
     return this.http.get(this.membersURL, {params: {uid: this.globals.uID, cont: cont}});
   }
   
-  getNotifs(uID?: string): Observable<any> {
-    return this.http.get<any>(this.notifURL, {params: {uid: uID?uID:this.globals.uID}}).shareReplay();
+  getNotifs(username?: string): Observable<any> {
+    return this.http.get<any>(this.notifURL, {params: {username: username?username:this.globals.username, lid: this.globals.lID}}).shareReplay();
   }
   
   getSuggestions(): Observable<any> {

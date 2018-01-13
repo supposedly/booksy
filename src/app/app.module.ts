@@ -53,6 +53,7 @@ import { SideButtonService } from './side-button.service';
 import { MediaEditComponent } from './media-edit/media-edit.component';
 import { MyItemsComponent } from './my-items/my-items.component';
 import { MyHoldsComponent } from './my-holds/my-holds.component';
+import { DashHeaderComponent } from './dash-header/dash-header.component';
 
 
 @NgModule({
@@ -87,6 +88,7 @@ import { MyHoldsComponent } from './my-holds/my-holds.component';
     MediaEditComponent,
     MyItemsComponent,
     MyHoldsComponent,
+    DashHeaderComponent,
   ],
   imports: [
     BrowserModule,

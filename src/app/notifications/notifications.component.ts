@@ -16,13 +16,13 @@ export class NotificationsComponent implements OnInit {
     private memberService: MemberService
   ) {}
   
-  @Input() uID: string;
+  @Input() username: string;
   
   ngOnChanges() { }
   
   ngOnInit() {
     if (this.globals.checkoutMessages === null) {
-      this.memberService.getNotifs(this.uID)
+      this.memberService.getNotifs(this.username)
         .subscribe(resp => this.globals.checkoutMessages = resp);
     }
   }

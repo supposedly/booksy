@@ -4,6 +4,8 @@ import { MediaService } from '../media.service';
 
 import { MediaItem } from '../classes';
 
+import { Globals } from '../globals';
+
 @Component({
   selector: 'app-checkout-session',
   templateUrl: './checkout-session.component.html',
@@ -12,7 +14,10 @@ import { MediaItem } from '../classes';
 export class CheckoutSessionComponent implements OnInit {
   items: MediaItem[] = [];
   
-  constructor(private mediaService: MediaService) { }
+  constructor(
+    public globals: Globals,
+    private mediaService: MediaService
+  ) {}
   
   @Input() newItem: number;
   

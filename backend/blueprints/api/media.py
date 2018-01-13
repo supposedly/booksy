@@ -16,6 +16,8 @@ async def put_item_on_hold(rqst, user, item):
         sanic.exceptions.abort(403, "You aren't allowed to place holds.")
     if user.holds > user.maxes.holds:
         sanic.exceptions.abort(403, "You aren't allowed to place any more holds.")
+    if not item._issued_uid:
+        sanic.exceptions.abort(409, "This item is already available.")
     err = await user.hold(title=item.title, author=item.author, genre=item.genre)
     if err:
         sanic.exceptions.abort(403, err)
@@ -47,10 +49,9 @@ async def get_media_status(rqst, item):
     return sanic.response.json(item.status, status=200)
 
 @media.post('/check/out')
-@rqst_get('item')
-@uid_get('username', 'location')
+@rqst_get('item', 'username', 'location')
 @jwtdec.protected()
-async def issue_item(rqst, username, location, item):
+async def issue_item(rqst, item, username, location):
     user = await User.from_identifiers(username, location, app=rqst.app)
     if user.cannot_check_out:
         sanic.exceptions.abort(403, "You aren't allowed to check out.")
@@ -61,9 +62,10 @@ async def issue_item(rqst, username, location, item):
     return sanic.response.json({'checked': 'out', 'title': item.title, 'author': item.author, 'image': item.image}, status=200)
 
 @media.post('/check/in')
-@rqst_get('user', 'item')
+@rqst_get('item', 'username', 'location')
 @jwtdec.protected()
-async def return_item(rqst, user, item):
+async def return_item(rqst, item, username, location):
+    user = await User.from_identifiers(username, location, app=rqst.app)
     if user.is_checkout or not user.perms.can_return_items:
         sanic.exceptions.abort(403, "You aren't allowed to return items.")
     await item.check_in()

@@ -1,0 +1,7 @@
+<div id="spacer">
+<nav>
+  <a [routerLink]="'./' + (button.hasOwnProperty('dest')?button.dest:button.text)"
+    routerLinkActive="selected"
+    *ngFor="let button of buttons">{{button.text}}</a>
+</nav>
+</div>
