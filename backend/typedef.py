@@ -361,7 +361,6 @@ class Location(AsyncInit, WithLock):
         
         all_roles = await self.roles()
         all_users = await self.members(by_role=False)
-        print(all_users)
         res = {}
         
         if checkouts:
@@ -437,15 +436,11 @@ class Location(AsyncInit, WithLock):
                   conn.fetch(query)
                 )
                 res[column[0]].append({'ident': item.get(key, None), 'res': await search})
-        
         # unused
         if items:
             res['items'] = {await conn.fetch("""SELECT count(*) FROM items WHERE lid = $1::bigint""", self.lid)}
-        
-        print(res)
         return res
         
-    
     @lockquire()
     async def report_names(self, do):
         """
@@ -473,8 +468,8 @@ class Location(AsyncInit, WithLock):
             for role in await self.roles():
                 query = """SELECT uid, username, fullname FROM members WHERE lid = $1::bigint AND rid = $2::bigint AND type = 0""" \
                         + ("""LIMIT {} OFFSET {}""".format(max_results, cont) if limit else '')
-                roles[role['name']] = await conn.fetch(query, self.lid, role['rid'])
-            return [{'role': role, 'data': [{j: i[j] for j in ('uid', 'username', 'fullname')} for i in user]} for role, user in roles.items()]
+                roles[role['name']] = (role['rid'], await conn.fetch(query, self.lid, role['rid']))
+            return [{'name': role, 'rid': rid, 'data': [{j: i[j] for j in ('uid', 'username', 'fullname')} for i in user]} for role, (rid, user) in roles.items()]
         query = """SELECT uid, username, fullname FROM members WHERE lid = $1::bigint AND type = 0""" \
                 + ("""LIMIT {} OFFSET {}""".format(max_results, cont) if limit else '')
         return [{j: i[j] for j in ('uid', 'username', 'fullname')} for i in await conn.fetch(query, self.lid)]
@@ -510,13 +505,15 @@ class Location(AsyncInit, WithLock):
     async def roles(self, conn):
         #async with self.__class__._aiolock:
         query = """
-        SELECT rid, name, permissions AS perms, maxes, locks FROM roles WHERE lid = $1
+        SELECT rid, name, permissions AS perms,  maxes, locks FROM roles WHERE lid = $1
         """
+        q2ery = """SELECT count(*) FROM members WHERE rid = $1::bigint"""
         res = [{j: i[j] for j in ('rid', 'name', 'perms', 'maxes', 'locks')} for i in await conn.fetch(query, self.lid)]
         for i in res:
             i['perms'] = Perms(i['perms']).all
             i['maxes'] = Maxes(i['maxes']).all
             i['locks'] = Locks(i['locks']).all
+            i['count'] = await conn.fetchval(q2ery, i['rid'])
         return res
     
     @lockquire()
@@ -533,6 +530,20 @@ class Location(AsyncInit, WithLock):
         await conn.execute(query, self.lid, name, perms.raw, maxes.raw, locks.raw)
         rid = await conn.fetchval("""SELECT currval(pg_get_serial_sequence('roles', 'rid'))""")
         return await Role(rid, self.app)
+    
+    @lockquire(lock=False)
+    async def items(self, conn, *, cont=0, max_results=20):
+        #async with self.__class__._aiolock:
+        query = """
+        SELECT mid, title, author, genre, image
+          FROM items
+         WHERE lid = $1::bigint
+      ORDER BY title
+         LIMIT {}
+        OFFSET {}
+        """.format(max_results, cont)
+        res = await conn.fetch(query, self.lid)
+        return [{j: i[j] for j in ('mid', 'title', 'author', 'genre', 'image')} for i in res]
     
     @lockquire()
     async def edit(self, conn, to_edit, new):
@@ -650,7 +661,13 @@ class Role(AsyncInit, WithLock):
         return str(self.rid)
     
     def to_dict(self) -> dict:
-        return {'name': self.name, 'perms': self.perms.all, 'maxes': self.maxes.all, 'locks': self.locks.all}
+        return {
+          'rid': self.rid,
+          'name': self.name,
+          'perms': self.perms.all,
+          'maxes': self.maxes.all,
+          'locks': self.locks.all
+          }
     
     async def set_attrs(self, perms, maxes, locks, name):
         async with self.__class__._aiolock, self.app.pg_pool.acquire() as conn:
@@ -714,6 +731,7 @@ class User(AsyncInit, WithLock):
             self.num_checkouts = await conn.fetchval(query, self.uid)
         self.location = await Location(lid, self.app) if location is None else location
         self.role = await Role(rid, self.app, location=self.location) if role is None else role
+        self.lid, self.rid = lid, rid
         self.holds = holds
         self.username = username
         self.name = name

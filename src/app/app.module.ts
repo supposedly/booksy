@@ -7,6 +7,8 @@ import { Globals } from './globals';
 
 import { AuthGuard } from './auth.guard';
 
+import { AppRoutingModule } from './app-routing.module';
+
 import { AboutComponent } from './about/about.component';
 import { AppComponent } from './app.component';
 import { CheckoutComponent } from './checkout/checkout.component';
@@ -21,34 +23,34 @@ import { LoginComponent } from './login/login.component';
 import { MediaInfoComponent } from './media-info/media-info.component';
 import { MediaSearchComponent } from './media-search/media-search.component';
 import { MemberAcctInfoComponent } from './member-acct-info/member-acct-info.component';
+import { MgmtAccountsComponent } from './mgmt-accounts/mgmt-accounts.component';
+import { MgmtHeaderButtonService } from './mgmt-header-button.service';
+import { MgmtHeaderComponent } from './mgmt-header/mgmt-header.component';
+import { MgmtLocationComponent } from './mgmt-location/mgmt-location.component';
+import { MgmtMediaComponent } from './mgmt-media/mgmt-media.component';
+import { MgmtRolesPermsComponent } from './mgmt-roles-perms/mgmt-roles-perms.component';
+import { MemberService } from './member.service';
+import { NotificationsComponent } from './notifications/notifications.component';
 import { ReportsComponent } from './reports/reports.component';
+import { ReportViewComponent } from './report-view/report-view.component';
 import { ReroutingComponent } from './rerouting/rerouting.component';
+import { RoleDetailComponent } from './role-detail/role-detail.component';
+import { PersonalInfoComponent } from './personal-info/personal-info.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { SignupComponent } from './signup/signup.component';
-
-import { AppRoutingModule } from './app-routing.module';
 
 import { CheckoutService } from './checkout.service';
 import { CurrentMediaSessionService } from './current-media-session.service';
 import { HeadButtonService } from './head-button.service';
+import { LocationService } from './location.service';
 import { LoggingService } from './logging.service';
 import { MediaService } from './media.service';
 import { MemberAuthService } from './member-auth.service';
-import { RoleService } from './role.service';
-import { SideButtonService } from './side-button.service';
-import { MgmtHeaderButtonService } from './mgmt-header-button.service';
-import { MgmtHeaderComponent } from './mgmt-header/mgmt-header.component';
-import { MgmtLocationComponent } from './mgmt-location/mgmt-location.component';
-import { MgmtAccountsComponent } from './mgmt-accounts/mgmt-accounts.component';
-import { MgmtRolesPermsComponent } from './mgmt-roles-perms/mgmt-roles-perms.component';
-import { MemberService } from './member.service';
-import { NotificationsComponent } from './notifications/notifications.component';
-import { RoleDetailComponent } from './role-detail/role-detail.component';
-import { MgmtMediaComponent } from './mgmt-media/mgmt-media.component';
-import { SetupService } from './setup.service';
 import { ReportsService } from './reports.service';
-import { ReportViewComponent } from './report-view/report-view.component';
-import { PersonalInfoComponent } from './personal-info/personal-info.component';
+import { RoleService } from './role.service';
+import { SetupService } from './setup.service';
+import { SideButtonService } from './side-button.service';
+
 
 @NgModule({
   declarations: [
@@ -101,7 +103,8 @@ import { PersonalInfoComponent } from './personal-info/personal-info.component';
     MgmtHeaderButtonService,
     MemberService,
     SetupService,
-    ReportsService
+    ReportsService,
+    LocationService
     ],
   bootstrap: [AppComponent]
 })

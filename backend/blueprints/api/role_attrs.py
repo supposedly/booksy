@@ -51,7 +51,7 @@ async def edit_role(rqst, role, user, name, seqs):
 @jwtdec.protected()
 async def delete_role(rqst, role, user):
     if await role.num_members():
-        sanic.exceptions.abort("You can't delete a role with members assigned to it.")
+        sanic.exceptions.abort(403, "You can't delete a role with members assigned to it.")
     if role.name.lower() in ('admin', 'organizer', 'subscriber'): # sorta useless because they can change the name (I should've put a flag in the DB for this)
         sanic.exceptions.abort("Default roles cannot be deleted.")
     await role.delete()

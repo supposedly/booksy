@@ -8,6 +8,13 @@ from .import Location, Role, MediaType, MediaItem, User
 
 media = sanic.Blueprint('location_media_api', url_prefix='/media')
 
+@media.get('/')
+@uid_get('location')
+@rqst_get('cont')
+@jwtdec.protected()
+async def search_location_media(rqst, location, cont):
+    return sanic.response.json(await location.items(cont=cont), status=200)
+
 @media.get('/search')
 @uid_get('location')
 @rqst_get('query')

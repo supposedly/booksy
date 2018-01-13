@@ -1,13 +1,15 @@
 <ul>
-  <li *ngFor="let role of roles">
-    <b>{{role.role}}</b>
-    <br/>
-    <ul>
-      <li *ngFor="let member of role.data" routerLink="../../members/{{member.id}}">
-      {{member.username}} <i>({{member.fullname}})</i>
-      </li>
-    </ul>
-  </li>
+  <label *ngFor="let role of roles">
+    <li *ngIf="role.rid != +globals.rID">
+      <b>{{role.name}}</b>
+      <br/>
+      <ul>
+        <li *ngFor="let member of role.data" routerLink="../../members/{{member.id}}">
+        {{member.username}} <i>({{member.fullname}})</i>
+        </li>
+      </ul>
+    </li>
+  </label>
 </ul>
 <button *ngIf="cont>=15" (click)="cont=cont-15;getMembers()">Prev</button>
-<button *ngIf="15==roles.length" (click)="cont=cont+15;getMembers()">Next</button>
+<button *ngIf="roles.length==15" (click)="cont=cont+15;getMembers()">Next</button>

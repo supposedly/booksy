@@ -4,6 +4,8 @@ import { RoleService } from '../role.service';
 
 import { Role } from '../classes';
 
+import { Globals } from '../globals';
+
 @Component({
   selector: 'app-mgmt-roles-perms',
   templateUrl: './mgmt-roles-perms.component.html',
@@ -13,7 +15,10 @@ export class MgmtRolesPermsComponent implements OnInit {
   roles: any = null;
   msg: string;
   
-  constructor(public roleService: RoleService) {}
+  constructor(
+    public globals: Globals,
+    public roleService: RoleService
+  ) {}
 
   ngOnInit() {
     this.roleService.getAll()
