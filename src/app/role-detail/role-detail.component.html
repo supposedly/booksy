@@ -28,6 +28,7 @@
       
       <h3>Locks</h3>
       <label *ngFor="let name of keys(lockArr.names); let i = index">
+      <aside>Note that a value of 255 in any numeric field represents <i>infinity</i>.</aside>
         <input [name]="name"
           type="number"
           [value]="lockArr.names[name]"

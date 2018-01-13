@@ -37,7 +37,7 @@ def rqst_get(*attrs):
             maps = {'item': (MediaItem, 'mid'), 'location': (Location, 'lid'), 'role': (Role, 'rid'), 'user': (User, 'uid')}
             container = getattr(rqst, 'raw_args' if rqst.method == 'GET' else 'json')
             try:
-                vals = [await maps[i][0](container[maps[i][1]], rqst.app) if i in maps else container[i] for i in attrs]
+                vals = [await maps[i][0](container[maps[i][1]], rqst.app) if i in maps else None if i == 'null' else container[i] for i in attrs]
             except KeyError:
                 sanic.exceptions.abort(422, 'Missing required attributes.')
             except TypeError as obj:

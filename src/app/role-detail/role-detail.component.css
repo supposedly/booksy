@@ -1,3 +1,9 @@
+h3 {
+  margin-bottom: 5px;
+}
+aside {
+  margin-bottom: 10px;
+}
 input:not([type=submit]) {
   margin: 2px;
   border-style: solid;

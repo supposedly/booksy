@@ -6,7 +6,7 @@ import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
 
 import { HttpOptions } from './classes';
-const httpOptions: string = HttpOptions;
+const httpOptions = HttpOptions;
 
 import { Globals } from './globals';
 
@@ -14,7 +14,7 @@ import { Globals } from './globals';
 @Injectable()
 export class LocationService {
   locItemsURL: string = '/api/location/media';
-  searchURL: string = '/api/location/search';
+  searchURL: string = '/api/location/media/search';
   
   constructor(
     private globals: Globals,
@@ -29,11 +29,11 @@ export class LocationService {
     return this.http.get<any>(this.searchURL, {
       params: {
         uid: this.globals.uID,
-        cont: cont,
-        title: title,
-        author: author,
-        genre: genre,
-        media_type: type_
+        cont: cont.toString(),
+        title: title?title:null,
+        author: author?author:null,
+        genre: genre?genre:null,
+        media_type: type_?type_:null
       }
     });
   }

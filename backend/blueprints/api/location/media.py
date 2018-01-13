@@ -13,28 +13,32 @@ media = sanic.Blueprint('location_media_api', url_prefix='/media')
 @rqst_get('cont')
 @jwtdec.protected()
 async def search_location_media(rqst, location, cont):
-    return sanic.response.json(await location.items(cont=cont), status=200)
+    return sanic.response.json(await location.items(cont=int(cont)), status=200)
 
 @media.get('/search')
-@uid_get('location')
 @rqst_get('title', 'genre', 'media_type', 'author', 'cont')
+@uid_get('location')
 @jwtdec.protected()
 async def search_location_media(rqst, location, title, genre, media_type, author, cont):
     return sanic.response.json(
       await location.search(
-        title = title,
-        genre = genre,
-        type_ = media_type,
-        author = author,
+        title = None if title == 'null' else title,
+        genre = None if genre == 'null' else genre,
+        type_ = None if media_type == 'null' else media_type,
+        author = None if author == 'null' else author,
         cont = cont
         ),
       status=200)
 
 @media.get('/types')
 @uid_get('location')
-@jwtdec.protected()
 async def get_location_media_types(rqst, location):
     return sanic.response.json(await location.media_types(), status=200)
+
+@media.get('/genres')
+@uid_get('location')
+async def get_location_media_types(rqst, location):
+    return sanic.response.json(await location.genres(), status=200)
 
 @media.post('/types/<action:(add|remove)>')
 @uid_get('location', user=True)

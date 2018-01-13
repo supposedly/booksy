@@ -1,3 +1,62 @@
-<p>
-  media-search works!
+<h2 *ngIf="suggested.length">Based on your most-recent checkout:</h2>
+<ul>
+  <li *ngFor="let item of suggested" class="item-box">
+    <div class="text"> <!-- div in a list ahah yikes -->
+      <span class="title">{{item.title}}</span>
+      <br/>
+      <span class="author">{{item.author | titlecase}}</span>
+      <br/>
+      <span class="genre">{{item.genre | titlecase}}</span>
+      <br/>
+      <br/>
+      <aside class="type">{{item.type | titlecase}}</aside>
+      <aside class="barcode">{{item.mid}}</aside>
+    </div>
+      <img *ngIf="item.image && item.image != 'None'" [src]="item.image" [alt]="item.title">
+  </li>
+</ul>
+<h2>Search for items:</h2>
+<p>{{msg}}</p>
+<form (ngSubmit)="search()">
+  <input type="text" name="title" [(ngModel)]="title" placeholder="Title"/>
+  <input type="text" name="author" [(ngModel)]="author" placeholder="Author"/>
+  <select placeholder="Genre" name="genre" [(ngModel)]="genre">
+    <option [ngValue]="null" disabled>Genre</option>
+    <option ngValue="null">Any (default)</option>
+    <option *ngFor="let gnre of globals.locGenres" [ngValue]="gnre">
+      {{gnre}}
+    </option>
+  </select>
+  <select placeholder="Medium" name="media-type" [(ngModel)]="type_">
+    <option [ngValue]="null" disabled>Medium</option>
+    <option ngValue="null">Any (default)</option>
+    <option *ngFor="let mtype of globals.locMediaTypes" [ngValue]="mtype">
+      {{mtype}}
+    </option>
+  </select>
+  <input type="submit" *ngIf="checkVisible()" value="Search"/>
+</form>
+<p *ngIf="items.length">
+  Page {{1+ +query.page}} of results for 
+  <span *ngIf="_title">— title "{{_title}}" </span>
+  <span *ngIf="_author">— author "{{_author}}" </span>
+  <span *ngIf="_genre && _genre != 'null'">— genre "{{_genre}}" </span>
+  <span *ngIf="_type_ && _type_ != 'null'">— type "{{_type_}}"</span>
+  :
 </p>
+<ul>
+  <li *ngFor="let item of items" class="item-box result">
+    <div class="text"> <!-- div in a list ahah yikes -->
+      <span class="title">{{item.title}}</span>
+      <br/>
+      <span class="author">{{item.author | titlecase}}</span>
+      <br/>
+      <span class="genre">{{item.genre | titlecase}}</span>
+      <br/>
+      <br/>
+      <aside class="type">{{item.type | titlecase}}</aside>
+      <aside class="barcode">{{item.mid}}</aside>
+    </div>
+      <img *ngIf="item.image && item.image != 'None'" [src]="item.image" [alt]="item.title">
+  </li>
+</ul>

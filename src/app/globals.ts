@@ -32,6 +32,7 @@ export class Globals {
   reportData = null;
   reportDataSortedBy = null;
   
-  // to determine whether to edit or add a role
-  roleAction = 'edit';
+  // genres and media types of user's location
+  locMediaTypes;
+  locGenres;
 }

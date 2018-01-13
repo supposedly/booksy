@@ -1,6 +1,6 @@
 <ul>
   <li *ngFor="let item of items.slice().reverse()" [ngClass]="item.available?'out':'in'">
-    <div class="text"> <!--XXX: div inside li lol yikes -->
+    <div class="text"> <!-- div in a list ahah yikes -->
       <aside class="action">{{item.available?'Borrowed':'Returned'}}</aside>
       <span class="title">{{item.title}}</span>
       <br>

@@ -15,45 +15,66 @@ export class MediaSearchComponent implements OnInit {
   items: any[] = [];
   cont: number = 0;
   
-  msg: string = 0;
-  query: string;
+  msg: string;
+  query: any;
   
   title: string;
   author: string;
   genre: string;
   type_: string;
+
+  _title: string;
+  _author: string;
+  _genre: string;
+  _type_: string;
   
   constructor(
-    private globals: Globals,
+    public globals: Globals,
     private locationService: LocationService,
     private memberService: MemberService
   ) {}
 
   ngOnInit() {
     this.getSuggestions();
- // this.getAllItems(); // Do I really want this or should I limit it just to searches?
+ // this.getAllItems(true); // Do I really want this or should I limit it just to searches?
   }
   
   getSuggestions() {
-    this.memberService.getSuggestions(this.cont)
-      .subscribe(res => this.suggested = res, err => this.msg = err.error?err.error:'Error.');
+    this.memberService.getSuggestions()
+      .subscribe(res => this.suggested = res.items, err => this.msg = err.error?err.error:'Error.');
   }
   
-  getAllItems() {
-    this.locationService.getItems
+  getAllItems(reset: boolean = false) {
+    if (reset) { this.cont = 0; }
+    this.locationService.getAllMedia(this.cont)
+      .subscribe(resp => this.items = resp);
   }
   
-  search(cont, title, author, genre, type_) {
-    if (![title, author, genre, type_].some(n => n)) {
-      this.getAllItems();
+  checkVisible(): boolean {
+    return [this.title, this.author, this.genre, this.type_].some(a => !!((a != 'null') && a));
+  }
+  
+  search(reset: boolean = false) {
+    if (reset) { this.cont = 0; }
+    if (![this.title, this.author, this.genre, this.type_].some(a => !!a)) {
+      this.getAllItems(true);
       return null;
     }
-    
-    this.locationService.searchMedia(cont, title, author, genre, type_)
+    this.locationService.searchMedia(this.cont, this.title, this.author, this.genre, this.type_)
       .subscribe(
         resp => {
-          this.query = {page: cont/20, title: title, author: author, genre: genre, type_: type_}
+          this.query = {
+            page: this.cont/20,
+            title: this.title,
+            author: this.author,
+            genre: this.genre,
+            type_: this.type_
+          }
           this.items = resp;
+          this._title = this.title;
+          this._author = this.author;
+          this._genre = this.genre;
+          this._type_ = this.type_;
         },
         err => {
           this.msg = err.error?err.error:'Error.';
