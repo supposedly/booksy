@@ -52,8 +52,9 @@ async def authenticate(rqst, *args, **kwargs):
         pwhash = await conn.fetchval(query, lid, username)
     bvalid = await app.aexec(app.ppe, bcrypt.checkpw, password, pwhash)
     if not any((username, password, pwhash, bvalid)):
-            # (we shouldn't specify which of pw/username is invalid lest an attacker
-            # use the info to enumerate possible passwords/usernames)
+            # (we shouldn't specify which of pw/username is invalid,
+            # lest some hypothetical attacker use the info to
+            # enumerate possible usernames/passwords)
             return False # unverified
     return await User.from_identifiers(username=username, lid=lid, app=rqst.app)
 

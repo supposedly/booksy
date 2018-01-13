@@ -26,11 +26,9 @@ async def get_recent(rqst, location, recent):
 async def get_user_items(rqst, user):
     return sanic.response.json(await user.items(), status=200)
 
-@members.post('/edit/<action:(password|name)>')
-@rqst_get('user', 'new')
+@members.post('/edit')
+@rqst_get('user', 'username', 'fullname', 'rid') # note that this here is the user TO EDIT, not the one sending the request
 @jwtdec.protected()
-async def edit_member(rqst, user, new, action):
-    sanic.exceptions.abort(501, "Left unimplemented for FBLA demo.")
-    #####
-    await user.edit(action, new)
-    return sanic.response.raw(status=204)
+async def edit_member(rqst, user, username, fullname, rid):
+    await user.edit(username, rid, fullname)
+    return sanic.response.raw(b'', status=204)

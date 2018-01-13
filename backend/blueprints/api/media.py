@@ -34,9 +34,16 @@ async def get_bool_available(rqst, item):
     except AttributeError:
         sanic.exceptions.abort(422, "User does not exist.")
 
+@media.post('/edit')
+@rqst_get('user', 'item', 'title', 'author', 'genre', 'type_', 'price', 'length', 'published', 'isbn')
+async def edit_item(rqst, user, item, *args):
+    await item.edit(*args)
+    return sanic.response.json(item.to_dict(), status=200)
+
 @media.get('/check/verbose')
 @rqst_get('item')
 async def get_media_status(rqst, item):
+    # unused
     return sanic.response.json(item.status, status=200)
 
 @media.post('/check/out')

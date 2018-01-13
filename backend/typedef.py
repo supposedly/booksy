@@ -161,7 +161,7 @@ class MediaItem(AsyncInit, WithLock):
                 raise TypeError('item')
         self.location = await Location(self.lid, self.app)
         self.available = not self._issued_uid
-        self.issued_to = None if self._issued_uid is None else await User(self._issued_uid, self.app)
+        self.issued_to = None if self._issued_uid is None else await User(self._issued_uid, self.app, location=self.location)
         self.type = await MediaType(self._type, self.lid, self.app)
         self.maxes = None if self.maxes is None else Maxes(self.maxes)
     
@@ -209,6 +209,21 @@ class MediaItem(AsyncInit, WithLock):
             # resp['issued_to'] to the local value of the `issued_to' variable
             resp = {i: locals()[i] for i in resp}
         return resp
+    
+    @lockquire()
+    async def edit(self, conn, *args): # title, author, genre, type_, price, length, published, isbn
+        query = """
+        UPDATE items
+           SET title = $1::text,
+               author = $2::text,
+               genre = $3::text,
+               type = $4::text,
+               price = $5::numeric,
+               length = $6::int,
+               published = $7::int,
+               isbn = $8::text
+        """
+        await conn.execute(query, *args)
     
     @lockquire(lock=False)
     async def issue_to(self, conn, user):
@@ -440,25 +455,13 @@ class Location(AsyncInit, WithLock):
         if items:
             res['items'] = {await conn.fetch("""SELECT count(*) FROM items WHERE lid = $1::bigint""", self.lid)}
         return res
-        
-    @lockquire()
-    async def report_names(self, do):
-        """
-        Current overdue fines, items per member;
-        current holds available per member
-        (only usernames)
-        
-        args: fines, items, holds
-        """
-        if 'fines' in do:
-            return
     
     @lockquire(lock=False)
     async def get_user(self, conn, username: str):
         #async with self.__class__._aiolock:
         query = """SELECT uid FROM members WHERE username = $1::text AND lid = $2::bigint AND type = 0"""
         uid = await conn.fetchval(query)
-        return await User(uid)
+        return await User(uid, self.app, location=self)
     
     @lockquire(lock=False)
     async def members(self, conn, by_role=True, *, limit=True, cont=0, max_results=15):
@@ -473,6 +476,24 @@ class Location(AsyncInit, WithLock):
         query = """SELECT uid, username, fullname FROM members WHERE lid = $1::bigint AND type = 0""" \
                 + ("""LIMIT {} OFFSET {}""".format(max_results, cont) if limit else '')
         return [{j: i[j] for j in ('uid', 'username', 'fullname')} for i in await conn.fetch(query, self.lid)]
+    
+    @lockquire()
+    async def add_member(self, conn, username, pwhash: "hash this beforehand", rid, fullname):
+        query = """
+        INSERT INTO members (
+                  username, pwhash,
+                  lid, rid,
+                  fullname, email, phone,
+                  manages, type
+                  )
+         SELECT $1::text, $2::text,
+                $3::text, -- self.lid
+                $4::text,
+                $5::text,
+                NULL, NULL, -- not doing these lol
+                false, 0;
+        """
+        await conn.execute(query, username, pwhash, self.lid, rid, fullname)
     
     @lockquire(lock=False)
     async def search(self, conn, *, title=None, genre=None, type_=None, author=None, cont=0, max_results=20, where_taken=None):
@@ -529,7 +550,7 @@ class Location(AsyncInit, WithLock):
         """
         await conn.execute(query, self.lid, name, perms.raw, maxes.raw, locks.raw)
         rid = await conn.fetchval("""SELECT currval(pg_get_serial_sequence('roles', 'rid'))""")
-        return await Role(rid, self.app)
+        return await Role(rid, self.app, location=self)
     
     @lockquire(lock=False)
     async def items(self, conn, *, cont=0, max_results=20):
@@ -846,13 +867,15 @@ class User(AsyncInit, WithLock):
         await conn.execute(query, self.uid, item.mid)
     
     @lockquire()
-    async def edit(self, conn, to_edit, new):
-        query = f"""
+    async def edit(self, conn, username, rid, fullname):
+        query = """
         UPDATE members
-           SET {to_edit} = $1::text
-         WHERE lid = $2
+           SET username = $2::text,
+               rid = $3::text,
+               fullname = $4::text
+         WHERE uid = $1::text
         """
-        await conn.execute(query, new, self.lid)
+        await conn.execute(query, self.uid, username, rid, fullname)
     
     @lockquire()
     async def items(self, conn):

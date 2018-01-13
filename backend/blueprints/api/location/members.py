@@ -17,9 +17,9 @@ async def serve_location_members(rqst, location, cont):
 
 @mbrs.post('/add')
 @uid_get('location', 'perms')
-@rqst_get('data')
+@rqst_get('username', 'rid', 'fullname', 'password')
 @jwtdec.protected()
-async def add_member_to_location(rqst, location, perms, data):
+async def add_member_to_location(rqst, location, perms, username, rid, fullname, password):
     """
     Addition of a given member.
     Creates an account for them with the chosen default password and
@@ -27,7 +27,8 @@ async def add_member_to_location(rqst, location, perms, data):
     """
     if not perms.can_manage_members:
         sanic.exceptions.abort(401, 'Unauthorized to add members.')
-    return sanic.response.json(await location.add_member(**userdata), status=202)
+    pwhash = await rqst.app.aexec(rqst.app.ppe, bcrypt.hashpw, password.encode('utf-8'), bcrypt.gensalt(12))
+    return sanic.response.json(await location.add_member(username, pwhash, rid, fullname), status=202)
 
 @mbrs.post('/add/batch')
 @uid_get('location', 'perms')
