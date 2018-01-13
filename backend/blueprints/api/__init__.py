@@ -5,8 +5,8 @@ from .. import uid_get, rqst_get
 
 from .location import location
 from .media import media
-from .member import members
+from .member import member
 from .signup import signup
 from .roles import roles
 
-api = Blueprint.group(location, media, members, signup, roles, url_prefix='/api')
+api = Blueprint.group(location, media, member, signup, roles, url_prefix='/api')

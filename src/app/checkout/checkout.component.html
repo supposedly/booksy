@@ -1,9 +1,9 @@
 <h2>Welcome, {{name}}</h2><br/>
-<app-notifications [uID]="uid"></app-notifications>
+<app-notifications [username]="username"></app-notifications>
 <p *ngIf="msg">{{msg}}</p>
 <form (ngSubmit)="submit(mID.value); mID.value=''; msg=null">
 <div *ngIf="isCheckoutAccount">
-   <input name="user-id" [(ngModel)]="uid" [ngModelOptions]="{updateOn: 'submit'}" placeholder="Your ID" #uID><br/>
+   <input name="user-identifier" [(ngModel)]="username" [ngModelOptions]="{updateOn: 'submit'}" placeholder="Your ID" #uID><br/>
 </div>
 <input name="item-id" [(ngModel)]="mid" [ngModelOptions]="{updateOn: 'submit'}" placeholder="Barcode" #mID>
 <button type="submit">Submit</button><br/>

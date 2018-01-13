@@ -880,9 +880,21 @@ class User(AsyncInit, WithLock):
     @lockquire()
     async def items(self, conn):
         query = """
-        SELECT mid, title, author, genre FROM items WHERE issued_to = $1::bigint
+        SELECT mid, title, author, type, genre, image FROM items WHERE issued_to = $1::bigint
         """
-        return await conn.fetch(query, self.uid)
+        return [{j: i[j] for j in ('mid', 'title', 'author', 'genre', 'type', 'image')} for i in await conn.fetch(query, self.uid)]
+    
+    @lockquire()
+    async def holds(self, conn):
+        query = """
+        SELECT items.mid AS mid,
+               items.title AS title,
+               items.author AS author,
+               items.genre AS genre
+          FROM holds, items
+         WHERE holds.uid = $1::bigint AND items.mid = holds.mid
+        """
+        return [{j: i[j] for j in ('mid', 'title', 'author', 'genre', 'type', 'image')} for i in await conn.fetch(query, self.uid)]
     
     @property
     def checkouts_left(self) -> int:

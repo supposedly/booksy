@@ -9,6 +9,7 @@ export class SetupService {
   private namesURL: string = 'stock/attrs/names';
   private mTypeURL: string = this.locMediaURL + '/types';
   private genreURL: string = this.locMediaURL + '/genres';
+  private permCheckURL: string = 'api/member/check-perms';
   
   constructor(
     private globals: Globals,
@@ -28,5 +29,10 @@ export class SetupService {
   getGenres(uID) {
     return this.http.get(this.genreURL, {params: {uid: uID}})
       .subscribe(genres => this.globals.locGenres = genres);
+  }
+  
+  getPerms(uID) {
+    return this.http.get<any>(this.permCheckURL, {params: {uid: uID}})
+      .subscribe(resp => this.globals.canEditMedia = resp.can_edit_media);
   }
 }

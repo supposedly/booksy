@@ -2,8 +2,9 @@
   <li *ngFor="let item of items.slice().reverse()" [ngClass]="item.available?'out':'in'">
     <div class="text"> <!-- div in a list ahah yikes -->
       <aside class="action">{{item.available?'Borrowed':'Returned'}}</aside>
-      <span class="title">{{item.title}}</span>
-      <br>
+      <span class="title link" routerLink="../media/{{item.mid}}">{{item.title}}</span>
+      <span *ngIf="globals.canEditMedia" routerLink="../media/edit/{{item.mid}}" class="link"> (edit)</span>
+      <br/>
       <span class="author">{{item.author}}</span>
       <aside class="barcode">{{item.mid}}</aside>
     </div>

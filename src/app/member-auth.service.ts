@@ -82,6 +82,7 @@ export class MemberAuthService {
       this.setupService.getNames(dts.user_id);
       this.setupService.getMediaTypes(dts.user_id);
       this.setupService.getGenres(dts.user_id);
+      this.setupService.getPerms(dts.user_id);
     }
   }
   

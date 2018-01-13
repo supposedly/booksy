@@ -35,4 +35,7 @@ export class Globals {
   // genres and media types of user's location
   locMediaTypes;
   locGenres;
+  
+  // permissions
+  canEditMedia: boolean;
 }
