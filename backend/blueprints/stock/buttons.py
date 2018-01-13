@@ -64,7 +64,7 @@ async def expose_home_sidebar_buttons(rqst, user):
         side_buttons += [
           {"text": 'find media', "dest": 'media/search'},
           {"text": 'my media', "dest": 'dashboard'},
-          {"text": 'my account', "dest": 'members/me'},
+          {"text": 'my account', "dest": 'account'},
         ]
         if user.perms.can_generate_reports: # self-documenting!
             side_buttons.append({"text": 'reports', "color": '#97fb97'})

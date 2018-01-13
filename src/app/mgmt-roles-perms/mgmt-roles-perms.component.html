@@ -4,7 +4,7 @@
   <li *ngFor="let role of roles; let i = index" routerLink="../../roles/{{role.rid}}">
     {{role.name}}
     <span
-      *ngIf="role.name.toLowerCase() != 'admin' && role.name.toLowerCase() != 'organizer' && role.name.toLowerCase() != 'subscriber'"
+      *ngIf="!role.count"
       (click)="roleService.delete(role.rid).subscribe(); roles.splice(i, 1)">Ⓧ</span>
   </li>
 </ul>

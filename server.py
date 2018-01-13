@@ -143,7 +143,7 @@ async def set_up_dbs(app, loop):
 @app.listener('before_server_stop')
 async def close_dbs(app, loop):
     """
-    Sign off by gracefully closing the connection with the env's DBs and other acquired connections.
+    Gracefully close all acquired connections before closing.
     """
     print('Shutting down.')
     await app.pg_pool.close()

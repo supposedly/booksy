@@ -15,10 +15,10 @@ async def get_notifs(rqst, user):
     return sanic.response.json(await user.notifs(), status=200)
 
 @members.get('/suggest')
-@uid_get()
+@uid_get('location', 'recent')
 @jwtdec.protected()
-async def get_recent(rqst, user):
-    return sanic.response.json({'items': await user.location.search(genre=user.recent, max_results=5)}, status=200)
+async def get_recent(rqst, location, recent):
+    return sanic.response.json({'items': await location.search(genre=recent, max_results=3)}, status=200)
 
 @members.get('/checked-out')
 @uid_get()

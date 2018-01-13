@@ -15,18 +15,23 @@ const httpOptions = HttpOptions;
 export class MemberService {
   private notifURL: string = '/api/member/notifications';
   private membersURL: string = '/api/location/members';
+  private suggestionURL: string = '/api/member/suggest';
   
   constructor(
     private http: HttpClient,
     private globals: Globals
   ) { }
   
+  getAll(cont): Observable<any> {
+    return this.http.get(this.membersURL, {params: {uid: this.globals.uID, cont: cont}});
+  }
+  
   getNotifs(uID?: string): Observable<any> {
     return this.http.get<any>(this.notifURL, {params: {uid: uID?uID:this.globals.uID}}).shareReplay();
   }
   
-  getAll(cont): Observable<any> {
-    return this.http.get(this.membersURL, {params: {uid: this.globals.uID, cont: cont}});
+  getSuggestions(): Observable<any> {
+    return this.http.get(this.suggestionURL, {params: {uid: this.globals.uID}});
   }
   
 }

@@ -37,7 +37,7 @@ const routes: Routes = [
     {path: 'media/manage', component: MgmtMediaComponent},
     {path: 'media/:mID', component: MediaInfoComponent},
     {path: 'roles/:rID', component: RoleDetailComponent},
-    {path: 'members/me', component: PersonalInfoComponent},
+    {path: 'account', component: PersonalInfoComponent},
     {path: 'members/:uID', component: MemberAcctInfoComponent},
     {path: 'checkout', component: CheckoutComponent},
     {path: 'dashboard', component: DashboardComponent},

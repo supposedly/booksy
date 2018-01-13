@@ -13,7 +13,6 @@ mbrs = sanic.Blueprint('location_members_api', url_prefix='/members')
 @uid_get('location')
 @jwtdec.protected()
 async def serve_location_members(rqst, location, cont):
-    print(await location.members(cont=int(cont)))
     return sanic.response.json(await location.members(cont=int(cont)))
 
 @mbrs.post('/add')
