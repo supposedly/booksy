@@ -13,7 +13,7 @@ roles = sanic.Blueprint('location_roles_api', url_prefix='/roles')
 @jwtdec.protected()
 async def all_roles(rqst, perms, location):
     if not perms.can_manage_roles:
-        sanic.exceptions.abort(403, "You're not allowed to manage or view roles.")
+        sanic.exceptions.abort(403, "You aren't allowed to modify roles.")
     return sanic.response.json({"roles": await location.roles()}, status=200)
 
 @roles.post('/add')

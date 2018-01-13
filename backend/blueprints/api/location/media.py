@@ -17,10 +17,18 @@ async def search_location_media(rqst, location, cont):
 
 @media.get('/search')
 @uid_get('location')
-@rqst_get('query')
+@rqst_get('title', 'genre', 'media_type', 'author', 'cont')
 @jwtdec.protected()
-async def search_location_media(rqst, location, query):
-    return sanic.response.json(await location.search_media(query), status=200)
+async def search_location_media(rqst, location, title, genre, media_type, author, cont):
+    return sanic.response.json(
+      await location.search(
+        title = title,
+        genre = genre,
+        type_ = media_type,
+        author = author,
+        cont = cont
+        ),
+      status=200)
 
 @media.get('/types')
 @uid_get('location')
