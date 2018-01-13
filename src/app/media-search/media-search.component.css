@@ -8,6 +8,13 @@ ul {
   list-style: none;
   width: 40em;
 }
+.link {
+  text-decoration: underline;
+  cursor: pointer;
+}
+.link:hover {
+  text-decoration: none;
+}
 .item-box {
   display: flex;
   justify-content: space-between;

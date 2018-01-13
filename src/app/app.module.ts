@@ -51,6 +51,8 @@ import { RoleService } from './role.service';
 import { SetupService } from './setup.service';
 import { SideButtonService } from './side-button.service';
 import { MediaEditComponent } from './media-edit/media-edit.component';
+import { MyItemsComponent } from './my-items/my-items.component';
+import { MyHoldsComponent } from './my-holds/my-holds.component';
 
 
 @NgModule({
@@ -83,6 +85,8 @@ import { MediaEditComponent } from './media-edit/media-edit.component';
     ReportViewComponent,
     PersonalInfoComponent,
     MediaEditComponent,
+    MyItemsComponent,
+    MyHoldsComponent,
   ],
   imports: [
     BrowserModule,

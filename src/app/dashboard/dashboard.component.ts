@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
+import { MemberService } from '../member.service';
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',

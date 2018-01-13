@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 
 import { MemberService } from '../member.service';
 
@@ -15,6 +16,8 @@ export class MgmtAccountsComponent implements OnInit {
   
   constructor(
     public globals: Globals,
+    private router: Router,
+    private route: ActivatedRoute,
     private memberService: MemberService
   ) {}
 
@@ -26,6 +29,11 @@ export class MgmtAccountsComponent implements OnInit {
     this.roles.length = 0;
     this.memberService.getAll(this.cont)
       .subscribe(resp => this.roles = resp.sort((a, b) => a.name.localeCompare(b.name)));
+  }
+  
+  viewMember(mID) {
+    // because this just does not want to work as a regular routerLink
+    this.router.navigate(['../members/' + mID.toString()], {relativeTo: this.route});
   }
 
 }

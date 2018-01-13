@@ -40,7 +40,11 @@ const routes: Routes = [
     {path: 'account', component: PersonalInfoComponent},
     {path: 'members/:uID', component: MemberAcctInfoComponent},
     {path: 'checkout', component: CheckoutComponent},
-    {path: 'dashboard', component: DashboardComponent},
+    {path: 'dashboard', component: DashboardComponent, children: [
+      {path: '', redirectTo: 'items', pathMatch: 'full'},
+      {path: 'items', component: MyItemsComponent},
+      {path: 'holds', component: MyHoldsComponent}
+    ]},
     {path: 'reports/view', component: ReportViewComponent},
     {path: 'reports', component: ReportsComponent},
     {path: 'manage', component: LocationMgmtComponent, children: [

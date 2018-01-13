@@ -91,7 +91,7 @@ INSERT INTO members (
               fullname, email, phone,
               manages, type
               )
-     SELECT 'eh-checkout-00', 'SOMEHASH',
+     SELECT 'eh-checkout-00', 'SOMEHASH'::bytea,
             currval(pg_get_serial_sequence('locations', 'lid')),
             currval(pg_get_serial_sequence('roles', 'rid')),
             'East High School Patron',
@@ -104,7 +104,7 @@ INSERT INTO members (
               fullname, email, phone,
               manages, type
               )
-     SELECT 'eh-admin', 'h45hbr0wn5!!!1',
+     SELECT 'eh-admin', 'h45hbr0wn5!!!1'::bytea,
             currval(pg_get_serial_sequence('locations', 'lid')),
             currval(pg_get_serial_sequence('roles', 'rid')),
             'John Cena',
