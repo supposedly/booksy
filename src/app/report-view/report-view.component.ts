@@ -9,6 +9,7 @@ import { Globals } from '../globals';
   styleUrls: ['./report-view.component.css']
 })
 export class ReportViewComponent implements OnInit {
+  sort;
   data;
   key;
   
@@ -18,9 +19,10 @@ export class ReportViewComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.data = this.globals.reportData;
-    this.key = Object.keys(this.data)[0]
-    this.data = this.data[this.key]
+    this.sort = this.globals.reportDataSortedBy;
+    this.key = Object.keys(this.globals.reportData)[0];
+    this.data = this.globals.reportData[this.key];
+    console.log(this.data);
   }
 
 }

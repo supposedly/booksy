@@ -22,4 +22,4 @@ Per role<br/>
   name="sort-by"
   (change)="onSortChange(total.value, 'all')">
 Total<br/>
-<button (click)="getReport()">Submit</button>
+<button (click)="getReport()" [class.invalid]="!(any() && sortBy)">Submit</button>

@@ -21,7 +21,7 @@ async def get_recent(rqst, user):
     return sanic.response.json({'items': await user.location.search(genre=user.recent, max_results=5)}, status=200)
 
 @members.get('/checked-out')
-@uid_get)(
+@uid_get()
 @jwtdec.protected()
 async def get_user_items(rqst, user):
     return sanic.response.json(await user.items(), status=200)

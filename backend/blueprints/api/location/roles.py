@@ -17,9 +17,12 @@ async def all_roles(rqst, perms, location):
     return sanic.response.json({"roles": await location.roles()}, status=200)
 
 @roles.post('/add')
-@rqst_get('user', 'seq')
+@rqst_get('user', 'name', 'seqs')
 @jwtdec.protected()
-async def add_role_to_location(rqst, user, name, seq):
+async def add_role_to_location(rqst, user, name, kws):
     if not user.perms.can_manage_roles:
-        sanic.exceptions.abort(403, "You're not allowed to manage roles.")
-    await user.location.add_role(name, seq=seq)
+        sanic.exceptions.abort(403, "You aren't allowed to modify roles.")
+    if name.lower() in ('admin', 'organizer', 'subscriber'):
+        sanic.exceptions.abort(403, "That name is reserved.")
+    await user.location.add_role(name=name, kws=kws)
+    return sanic.response.raw(b'', status=204)

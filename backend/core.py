@@ -37,7 +37,7 @@ def lockquire(lock=True, db=True, sem=False, file=False):
             (lockquire = 'lock and acquire')
             """
             # acquire whatever's necessary
-            if lock: await self.__class__._aiolock.acquire()
+          # if lock: await self.__class__._aiolock.acquire()
             if db: conn = await self.app.pg_pool.acquire()
             if sem: await self.app.sem.acquire()
             if file: await self.app.filesem.acquire()
@@ -55,7 +55,7 @@ def lockquire(lock=True, db=True, sem=False, file=False):
                 if file: await self.app.filesem.acquire()
                 if sem: self.app.sem.release()
                 if db: await self.app.pg_pool.release(conn)
-                if lock: self.__class__._aiolock.release()
+              # if lock: self.__class__._aiolock.release()
         return wrapper
     return decorator
 

@@ -17,14 +17,15 @@ import { MgmtLocationComponent } from './mgmt-location/mgmt-location.component';
 import { MgmtAccountsComponent } from './mgmt-accounts/mgmt-accounts.component';
 import { MgmtRolesPermsComponent } from './mgmt-roles-perms/mgmt-roles-perms.component';
 import { MgmtMediaComponent } from './mgmt-media/mgmt-media.component';
+import { PersonalInfoComponent } from './personal-info/personal-info.component';
 import { ReportsComponent } from './reports/reports.component';
+import { ReportViewComponent } from './report-view/report-view.component';
+import { RoleDetailComponent } from './role-detail/role-detail.component';
 import { ReroutingComponent } from './rerouting/rerouting.component';
 import { SignupComponent } from './signup/signup.component';
-import { RoleDetailComponent } from './role-detail/role-detail.component';
-import { ReportViewComponent } from './report-view/report-view.component';
 
 const routes: Routes = [
-  /* Signup is not needed for the FBLA demo */
+  /* Free-for-all signup would be a bad idea to include in the FBLA demo */
   //{path: 'signup/:type', component: SignupComponent},
   {path: 'login', component: LoginComponent},
   {path: '', redirectTo: 'home', pathMatch: 'full', canActivate: [AuthGuard]},
@@ -36,11 +37,12 @@ const routes: Routes = [
     {path: 'media/manage', component: MgmtMediaComponent},
     {path: 'media/:mID', component: MediaInfoComponent},
     {path: 'roles/:rID', component: RoleDetailComponent},
+    {path: 'members/me', component: PersonalInfoComponent},
+    {path: 'members/:uID', component: MemberAcctInfoComponent},
     {path: 'checkout', component: CheckoutComponent},
     {path: 'dashboard', component: DashboardComponent},
-    {path: 'account', component: MemberAcctInfoComponent},
+    {path: 'reports/view', component: ReportViewComponent},
     {path: 'reports', component: ReportsComponent},
-    {path: 'view-report', component: ReportViewComponent},
     {path: 'manage', component: LocationMgmtComponent, children: [
       {path: '', redirectTo: 'location', pathMatch: 'full'},
       {path: 'location', component: MgmtLocationComponent},

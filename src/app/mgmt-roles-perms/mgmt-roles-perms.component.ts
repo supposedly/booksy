@@ -11,12 +11,21 @@ import { Role } from '../classes';
 })
 export class MgmtRolesPermsComponent implements OnInit {
   roles: any = null;
+  msg: string;
   
-  constructor(private roleService: RoleService) {}
+  constructor(public roleService: RoleService) {}
 
   ngOnInit() {
     this.roleService.getAll()
-      .subscribe(res => this.roles = res.roles)
+      .subscribe(
+        res => this.roles = res.roles.sort((a, b) => a.name.localeCompare(b.name)),
+        err => this.msg = err.error?err.error:'Error.'
+      );
+  }
+  
+  deleteRole(rID, index) {
+    this.roleService.delete(rID)
+      .subscribe(resp => this.roles.splice(index, 1))
   }
 
 }

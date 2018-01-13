@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { ReportsService } from '../reports.service';
@@ -10,14 +10,14 @@ import { Globals } from '../globals';
   templateUrl: './reports.component.html',
   styleUrls: ['./reports.component.css']
 })
-export class ReportsComponent implements OnInit {
-  sortBy: string;
+export class ReportsComponent /* implements OnInit */ {
+  sortBy: string = null;
   buttons: any[] = [
-    {name: 'Checkouts', value: 'on'},
+    {name: 'Checkouts', value: false},
     {name: 'Overdue items', value: false},
     {name: 'Fines', value: false},
     {name: 'Holds', value: false},
-    {name: 'Items', value: false}
+ // {name: 'Items', value: false}
   ]
   
   constructor(
@@ -25,11 +25,8 @@ export class ReportsComponent implements OnInit {
     private route: ActivatedRoute,
     private reportsService: ReportsService,
     private globals: Globals
-  ) { }
+  ) {}
 
-  ngOnInit() {
-  }
-  
   onSortChange(item, value) {
     if (item=='on') {this.sortBy = value;}
   }
@@ -40,16 +37,23 @@ export class ReportsComponent implements OnInit {
     }
   }
   
+  any(): boolean {
+    // because I can't do this from HTML for some reason
+    return this.buttons.some(n => n);
+  }
+  
   getReport() {
     let arr = [];
     for (let btn of this.buttons) {
       arr.push(btn.value?this.sortBy:false);
     }
+    if (!arr.some(n => n) || !this.sortBy) { return; }
     this.reportsService.getReport(...arr)
       .subscribe(
         resp => {
           this.globals.reportData = resp;
-          this.router.navigate(['../view-report'], {relativeTo: this.route});
+          this.globals.reportDataSortedBy = this.sortBy;
+          this.router.navigate(['./view'], {relativeTo: this.route});
         });
   }
 }
