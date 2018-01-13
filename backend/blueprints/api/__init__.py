@@ -7,6 +7,6 @@ from .location import location
 from .media import media
 from .member import members
 from .signup import signup
-from .role_attrs import roles
+from .roles import roles
 
 api = Blueprint.group(location, media, members, signup, roles, url_prefix='/api')

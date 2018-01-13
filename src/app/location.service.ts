@@ -21,11 +21,11 @@ export class LocationService {
     private http: HttpClient
   ) {}
   
-  getItems(cont): Observable<any> {
+  getAllMedia(cont): Observable<any> {
     return this.http.get<any>(this.locItemsURL, {params: {uid: this.globals.uID, cont: cont}});
   }
   
-  searchItems(title=null, author=null, genre=null, type_=null, cont=null): Observable<any> {
+  searchMedia(cont=0, title=null, author=null, genre=null, type_=null): Observable<any> {
     return this.http.get<any>(this.searchURL, {
       params: {
         uid: this.globals.uID,

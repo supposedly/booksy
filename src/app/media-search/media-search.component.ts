@@ -14,7 +14,14 @@ export class MediaSearchComponent implements OnInit {
   suggested: any[] = [];
   items: any[] = [];
   cont: number = 0;
+  
   msg: string = 0;
+  query: string;
+  
+  title: string;
+  author: string;
+  genre: string;
+  type_: string;
   
   constructor(
     private globals: Globals,
@@ -34,6 +41,24 @@ export class MediaSearchComponent implements OnInit {
   
   getAllItems() {
     this.locationService.getItems
+  }
+  
+  search(cont, title, author, genre, type_) {
+    if (![title, author, genre, type_].some(n => n)) {
+      this.getAllItems();
+      return null;
+    }
+    
+    this.locationService.searchMedia(cont, title, author, genre, type_)
+      .subscribe(
+        resp => {
+          this.query = {page: cont/20, title: title, author: author, genre: genre, type_: type_}
+          this.items = resp;
+        },
+        err => {
+          this.msg = err.error?err.error:'Error.';
+        }
+      );
   }
 
 }
