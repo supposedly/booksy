@@ -8,6 +8,7 @@ nav a {
   display: inline;
   padding: 10px;
   text-decoration: none;
+  white-space: nowrap;
   background-color: #f1f1f1;
   color: #666;
   transition: background-color .1s;
