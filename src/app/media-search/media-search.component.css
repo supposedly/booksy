@@ -20,7 +20,7 @@ ul {
   justify-content: space-between;
   
   position: relative;
-  margin: 3px auto;
+  margin: 0;
   padding: 10px;
   font-size: 16px;
   border: solid;
@@ -50,4 +50,7 @@ input:not([type=submit]) {
   border-radius: 5px;
   border-width: 1px;
   padding: 10px;
+}
+@media only screen and (max-width: 750px) {
+  .item-box { width: 16em; }
 }
