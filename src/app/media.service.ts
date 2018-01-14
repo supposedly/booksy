@@ -44,8 +44,8 @@ export class MediaService {
     return this.http.get<MediaItemProxy>(this.infoURL, {params: {mid: mID}});
   }
   
-  placeHold(mID: string): void {
-    return this.http.post<any>(this.holdURL, {uid: globals.uID, mid: mID});
+  placeHold(mID: string): Observable<any> {
+    return this.http.post<any>(this.holdURL, {uid: this.globals.uID, mid: mID});
   }
   
 }

@@ -19,9 +19,9 @@ export class MediaInfoComponent implements OnInit {
   
   constructor(
     public globals: Globals,
+    public location: Location,
     private route: ActivatedRoute,
-    private mediaService: MediaService,
-    private location: Location
+    private mediaService: MediaService
   ) {}
   
   ngOnInit(): void {
