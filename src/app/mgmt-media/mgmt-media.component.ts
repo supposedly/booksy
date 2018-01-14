@@ -8,7 +8,7 @@ import { LocationService } from '../location.service';
   styleUrls: ['./mgmt-media.component.css']
 })
 export class MgmtMediaComponent implements OnInit {
-  items: any[] = null;
+  items: any[] = [];
   cont: number = 0;
 
   constructor(private locationService: LocationService) { }
