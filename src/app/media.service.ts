@@ -48,22 +48,22 @@ export class MediaService {
   }
   
   placeHold(mID: string): Observable<any> {
-    return this.http.post<any>(this.holdURL, {uid: this.globals.uID, mid: mID});
+    return this.http.post<any>(this.holdURL, {uid: this.globals.uID, mid: mID}, httpOptions);
   }
   
   createItem(item): Observable<any> {
     // might should be in LocationService
     item.uid = this.globals.uID;
-    return this.http.post<any>(this.createItemURL, item);
+    return this.http.post<any>(this.createItemURL, item, httpOptions);
   }
   
   editItem(item): Observable<any> {
     item.uid = this.globals.uID;
-    return this.http.post<any>(this.editItemURL, item);
+    return this.http.post<any>(this.editItemURL, item, httpOptions);
   }
   
   deleteItem(mID): Observable<any> {
-    return this.http.post<any>(this.deleteItemURL, {uid: this.globals.uID, mid: mID});
+    return this.http.post<any>(this.deleteItemURL, {uid: this.globals.uID, mid: mID}, httpOptions);
   }
   
 }

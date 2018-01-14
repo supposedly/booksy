@@ -59,3 +59,12 @@ CREATE TABLE IF NOT EXISTS
     maxes BIGINT,
     locks BIGINT
   );
+
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+CREATE TABLE IF NOT EXISTS
+  help (
+    id BIGSERIAL PRIMARY KEY,
+    title TEXT,
+    content TEXT
+  );

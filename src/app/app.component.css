@@ -1,5 +1,6 @@
 ::ng-deep * ~ * {
   font-family: 'Roboto', sans-serif;
+  color: #232323;
 }
 ::ng-deep * ~ button, * ~ input[type=submit] {
   background-color: #43ba2e;

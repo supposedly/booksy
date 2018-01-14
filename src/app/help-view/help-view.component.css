@@ -1,0 +1,85 @@
+/*
+The below is mostly copied from ngx-md's CSS styling, necessary to avoid this issue:
+https://github.com/dimpu/ngx-md/issues/118
+I take no credit.
+*/
+::ng-deep * {
+  box-sizing: border-box;
+}
+::ng-deep pre {
+  display: block;
+  padding: 9.5px;
+  margin: 0 0 10px;
+  font-size: 16px;
+  line-height: 1.42857143;
+  color: #333;
+  word-break: break-all;
+  word-wrap: break-word;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+::ng-deep blockquote {
+  display: block;
+  background: #fff;
+  padding: 15px 20px 15px 45px;
+  margin: 0 0 20px;
+  position: relative;
+  font-family: Ubuntu, sans-serif;
+  font-size: 16px;
+  line-height: 1.2;
+  color: #666;
+  text-align: justify;
+  border-left: 15px solid #c76c0c;
+  border-right: 2px solid #c76c0c;
+  -moz-box-shadow: 0px 0px 2px #ccc;;
+  -webkit-box-shadow: 0px 0px 2px #ccc;
+  box-shadow: 0px 0px 2px #ccc;
+}
+::ng-deep blockquote::before {
+  content: "\201C";
+  font-family: Ubuntu, sans-serif;
+  font-size: 60px;
+  font-weight: bold;
+  color: #999;
+  position: absolute;
+  left: 10px;
+  top: 5px;
+}
+::ng-deep :after, :before {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+::ng-deep table {
+  font-size: 14px;
+  color: #212121;
+  margin: 0 auto;
+  border-collapse: collapse;
+}
+::ng-deep table td:last-of-type {
+  border-right: 0;
+}
+::ng-deep table tbody tr:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+
+::ng-deep table td {
+  height: 40px;
+  width: 230px;
+  border-bottom: 1px solid #e6e6e6;
+  border-right: 1px solid #e6e6e6;
+}
+::ng-deep table thead th {
+  font-size: 20px;
+  color: #212121;
+  height: 40px;
+  border: 1px solid #e6e6e6;
+  border-top: 0;
+  border-right: 0;
+  border-left: 0;
+}
+::ng-deep .token {
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    background-color: transparent !important;
+}

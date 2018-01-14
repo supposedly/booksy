@@ -14,15 +14,15 @@ help = sanic.Blueprint('api_help', url_prefix='/help')
 
 @help.get('/titles')
 async def serve_help_titles(rqst):
-    """These can be cached, because they won't change during a session"""
+    """These can be cached because they won't change"""
     async with rqst.app.acquire() as conn:
         titles = await conn.fetch("""SELECT id, title FROM help WHERE true""")
     return sanic.response.json([{'id': i['id'], 'title': i['title']} for i in titles], status=200)
 
-@help.get('/article')
+@help.get('/content')
 @rqst_get('id')
 async def serve_help_article(rqst, id_):
-    """These should never be cached; too big"""
+    """These should never be cached"""
     async with rqst.app.acquire() as conn:
-        text = await conn.fetchval("""SELECT content FROM help WHERE id = $1::bigint""", id_)
-    return sanic.response.json({'text': text}, status=200)
+        title, content = await conn.fetchrow("""SELECT title, content FROM help WHERE id = $1::bigint""", int(id_))
+    return sanic.response.json({'article': {'title': title, 'content': content}}, status=200)
