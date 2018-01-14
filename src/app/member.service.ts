@@ -31,7 +31,8 @@ export class MemberService {
     return this.http.get<any>(this.suggestionURL, {params: {uid: this.globals.uID}});
   }
   
-  getItems(): Observable<any> { // checked-out items, that is
+  getItems(): Observable<any> {
+    // checked-out items
     return this.http.get<any>(this.itemsURL, {params: {uid: this.globals.uID}});
   }
   
