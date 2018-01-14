@@ -1,0 +1,18 @@
+hr {
+  display: block;
+  height: 1px;
+  margin: 1em 0;
+  padding: 0;
+  border-top: 2px solid #ccc;
+}
+ul {
+  list-style: none;
+}
+li {
+  text-decoration: underline;
+  cursor: pointer;
+  margin: 5px;
+}
+li:hover {
+  text-decoration: none;
+}

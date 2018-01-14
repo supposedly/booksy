@@ -8,6 +8,7 @@ import { CheckoutComponent } from './checkout/checkout.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { HomePageComponent } from './home-page/home-page.component';
 import { HelpComponent } from './help/help.component';
+import { HelpViewComponent } from './help-view/help-view.component';
 import { LocationMgmtComponent } from './location-mgmt/location-mgmt.component';
 import { LoginComponent } from './login/login.component';
 import { MediaEditComponent } from'./media-edit/media-edit.component';
@@ -49,7 +50,7 @@ const routes: Routes = [
       {path: 'items', component: MyItemsComponent},
       {path: 'holds', component: MyHoldsComponent}
     ]},
-    {path: 'reports/view', component: ReportViewComponent},
+    {path: 'reports/view', component: ReportViewComponent}, // these won't work as children ... even though they well should
     {path: 'reports', component: ReportsComponent},
     {path: 'manage', component: LocationMgmtComponent, children: [
       {path: '', redirectTo: 'location', pathMatch: 'full'},
@@ -58,6 +59,7 @@ const routes: Routes = [
       {path: 'roles', component: MgmtRolesPermsComponent}
     ]},
   ]},
+  {path: 'help/:id', component: HelpViewComponent},
   {path: 'help', component: HelpComponent},
   {path: 'about', component: AboutComponent},
 ];

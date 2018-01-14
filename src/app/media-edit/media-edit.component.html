@@ -6,7 +6,7 @@
   <p>Published in <input type="text" name="published" [(ngModel)]="item.published" placeholder="Published"/></p>
   <img *ngIf="item.image && item.image != 'None'" [src]="item.image"/>
   <br/>
-  (image is not inputtable)
+  (image is not inputtable/editable)
   <p>Type:
       <select name="media-type" [(ngModel)]="item.type">
         <option [ngValue]="null" disabled>Medium</option>
