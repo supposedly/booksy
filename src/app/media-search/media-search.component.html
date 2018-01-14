@@ -24,7 +24,7 @@
   <select placeholder="Genre" name="genre" [(ngModel)]="genre">
     <option [ngValue]="null" disabled>Genre</option>
     <option ngValue="null">Any (default)</option>
-    <option *ngFor="let genre_ of globals.locGenres" [ngValue]="gnre">
+    <option *ngFor="let genre_ of globals.locGenres" [ngValue]="genre_">
       {{genre_}}
     </option>
   </select>
@@ -38,7 +38,7 @@
   <input type="submit" *ngIf="checkVisible()" value="Search"/>
 </form>
 <p *ngIf="items.length">
-  Page {{1+ +query.page}} of results for 
+  Page {{+query.page+1}} of results for your search <!-- Commenting just to make visible that ending space -->
   <span *ngIf="_title">— title "{{_title}}" </span>
   <span *ngIf="_author">— author "{{_author}}" </span>
   <span *ngIf="_genre && _genre != 'null'">— genre "{{_genre}}" </span>
