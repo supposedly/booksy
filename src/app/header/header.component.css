@@ -2,35 +2,35 @@
   height: 35px;
 }
 nav {
-    display: inline-block;
-    background-color: #f7f7f7;
-    box-shadow: 0 -3px 10px black;
-    border-radius: 2px;
-    width: 100%;
-    z-index: 2;
-    top: 0;
-    left: 0;
-    position: fixed;
+  display: inline-block;
+  background-color: #f7f7f7;
+  box-shadow: 0 -3px 10px black;
+  border-radius: 2px;
+  width: 100%;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  position: fixed;
 }
 a {
-    display:inline-block;
-    padding: 20px 20px;
-    color: #888;
-    font-weight: bold;
-    font-size: 20px;
-    text-decoration: none !important;
-    line-height: 1;
-    text-transform: uppercase;
-    background-color: transparent;
-    font-family: sans-serif;
-    
-    -webkit-transition: background-color .1s, color .1s;
-    -moz-transition: background-color .1s, color .1s;
-    transition: background-color .1s, color .1s;
+  display:inline-block;
+  padding: 20px 20px;
+  color: #888;
+  font-weight: bold;
+  font-size: 20px;
+  text-decoration: none !important;
+  line-height: 1;
+  text-transform: uppercase;
+  background-color: transparent;
+  font-family: sans-serif;
+  
+  -webkit-transition: background-color .1s, color .1s;
+  -moz-transition: background-color .1s, color .1s;
+  transition: background-color .1s, color .1s;
 }
 a:active {
-    background-color: #888;
-    color: #f7f7f7;
+  background-color: #888;
+  color: #f7f7f7;
 }
 a.selected {
   background-color: #bfc8cc !important;

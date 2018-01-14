@@ -1,6 +1,3 @@
-* {
-  font-family: Roboto, sans-serif;
-}
 h2 {
   font-weight: 300;
 }
@@ -41,15 +38,6 @@ ul {
 .item-box .text aside {
   font-size: 13px;
   color: #555;
-}
-
-input:not([type=submit]) {
-  margin: 2px;
-  border-style: solid;
-  border-color: #dcdcdc;
-  border-radius: 5px;
-  border-width: 1px;
-  padding: 10px;
 }
 @media only screen and (max-width: 750px) {
   .item-box { width: 16em; }
