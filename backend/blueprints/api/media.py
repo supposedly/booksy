@@ -38,9 +38,19 @@ async def get_bool_available(rqst, item):
 
 @media.post('/edit')
 @rqst_get('user', 'item', 'title', 'author', 'genre', 'type_', 'price', 'length', 'published', 'isbn')
-async def edit_item(rqst, user, item, *args):
-    await item.edit(*args)
+@jwtdec.protected()
+async def edit_item(rqst, user, item, title, author, genre, type_, price, length, published, isbn):
+    if not user.perms.can_manage_media:
+        sanic.exceptions.abort(403, "You aren't allowed to edit media.")
+    await item.edit(title, author, genre, type_, price, length, published, isbn)
     return sanic.response.json(item.to_dict(), status=200)
+
+@media.post('/delete')
+@rqst_get('item', 'user')
+async def del_item(rqst, item, user):
+    if not user.perms.can_manage_media:
+        sanic.exceptions.abort(403, "You aren't allowd to delete media.")
+    await item.delete()
 
 @media.get('/check/verbose')
 @rqst_get('item')
@@ -59,7 +69,7 @@ async def issue_item(rqst, item, username, location):
     if user.cannot_check_out:
         sanic.exceptions.abort(403, "You aren't allowed to check out.")
     if not item.available and user.uid != item._issued_uid:
-        # will never be triggered unless I forget to query /check first
+        # will never be triggered really unless I forget to query /check first
         sanic.exceptions.abort(409, f'Item is checked out to {issued_to}.')
     await item.issue_to(user=user)
     return sanic.response.json({'checked': 'out', 'title': item.title, 'author': item.author, 'image': item.image}, status=200)

@@ -1,6 +1,8 @@
 """
 Just a bunch of type definitions :)
 """
+from decimal import Decimal
+
 import asyncio
 import datetime as dt
 from asyncio import iscoroutinefunction as is_coro
@@ -169,7 +171,7 @@ class MediaItem(AsyncInit, WithLock):
         self.type = await MediaType(self._type, self.lid, self.app)
         self.maxes = None if self.maxes is None else Maxes(self.maxes)
     
-    def to_dict(self, verbose=False): # 'verbose' is unused
+    def to_dict(self, verbose=False) :# unused param
         retdir = {attr: str(getattr(self, attr, None)) for attr in self.props}
         retdir['available'] = not self.issued_to
         retdir['type_'] = self._type
@@ -209,20 +211,20 @@ class MediaItem(AsyncInit, WithLock):
             resp = {i: locals()[i] for i in resp}
         return resp
     
-    @lockquire()
-    async def edit(self, conn, *args): # title, author, genre, type_, price, length, published, isbn
-        query = """
-        UPDATE items
-           SET title = $1::text,
-               author = $2::text,
-               genre = $3::text,
-               type = $4::text,
-               price = $5::numeric,
-               length = $6::int,
-               published = $7::int,
-               isbn = $8::text
-        """
-        await conn.execute(query, *args)
+    async def edit(self, title, author, genre, type_, price, length, published, isbn):
+        async with self.app.acquire() as conn:
+            query = """
+            UPDATE items
+               SET title = $1::text,
+                   author = $2::text,
+                   genre = $3::text,
+                   type = $4::text,
+                   price = $5::numeric,
+                   length = $6::int,
+                   published = $7::int,
+                   isbn = $8::text
+            """
+            await conn.execute(query, title, author, genre, type_, Decimal(price), int(length), int(published), isbn)
     
     @lockquire(lock=False)
     async def issue_to(self, conn, user):
@@ -627,19 +629,16 @@ class Location(AsyncInit, WithLock):
         return [i['genre'] for i in await conn.fetch(query, self.lid)]
     
     @lockquire(lock=False)
-    async def add_media(self, conn, **kwargs):
-        kwgs = [kwargs.get(i, None) for i in ('title', 'author', 'isbn')]
-        async with app.sem, app.session.get(self.gb_img_query(*kwgs)) as resp:
+    async def add_media(self, conn, title=None, author=None, published=None, type_=None, genre=None, isbn=None, price=None, length=None):
+        async with app.sem, app.session.get(self.gb_img_query(title, author, isbn)) as resp:
             rel = await resp.json()
         ident = rel.get('industryIdentifiers', None)
         img = rel.get('imageLinks', '')
         if ident:
-            ident, *_ = [sub['identifier'] for sub in ident if 'isbn' in sub['type'].lower()]
+            isbn, *_ = [sub['identifier'] for sub in ident if 'isbn' in sub['type'].lower()]
         if img:
-            img = img.get('smallThumbnail', img.get('thumbnail', ''))
-        kwargs['isbn'] = kwargs['isbn'] or ident
-        
-        args = (kwargs[attr] for attr in MediaItem.props)
+            img = img.get('smallThumbnail', img.get('thumbnail', None))
+        args = type_, genre, isbn, self.lid, title, author, published
         #async with self.__class__._aiolock:
         query = """
         INSERT INTO items (
@@ -652,17 +651,19 @@ class Location(AsyncInit, WithLock):
              SELECT $2::text, $3::text,
                     $4::text, $5::bigint,
                     $6::text, $7::text, $8::date,
-                    current_date, $9::bigint,
+                    current_date, NULL,
                     $1::text;
         """
         await conn.execute(query, img, *args)
+        mid = await conn.execute("""SELECT currval(pg_get_serial_sequence('items', 'mid'))""")
+        return await MediaItem(mid, self.app)
     
     @lockquire()
     async def remove_item(self, conn, item):
         item = item if isinstance(item, MediaItem) else await MediaItem(item, self.app)
         query = """
         DELETE FROM items
-        WHERE mid = $1
+        WHERE mid = $1::bigint
         """
         return await conn.execute(query, item.mid)
     

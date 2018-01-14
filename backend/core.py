@@ -7,7 +7,7 @@ import struct
 from functools import wraps
 from asyncio import iscoroutinefunction as is_coro
 
-def lockquire(lock=True, db=True, sem=False, file=False):
+def lockquire(*, lock=True, db=True, sem=False, file=False):
     """
     `lock' can be set to False when the function contains other stuff
     that doesn't require the lock (so as to release it sooner for other

@@ -18,7 +18,7 @@
 </ul>
 <h2>Search for items:</h2>
 <p>{{msg}}</p>
-<form (ngSubmit)="search()">
+<form (ngSubmit)="search(true)">
   <input type="text" name="title" [(ngModel)]="title" placeholder="Title"/>
   <input type="text" name="author" [(ngModel)]="author" placeholder="Author"/>
   <select placeholder="Genre" name="genre" [(ngModel)]="genre">
@@ -62,5 +62,5 @@
       <img *ngIf="item.image && item.image != 'None'" [src]="item.image" [alt]="item.title">
   </li>
 </ul>
-<button *ngIf="cont>=20" (click)="cont=cont-20;search()">Prev</button>
-<button *ngIf="items.length==20" (click)="cont=cont+20;search()">Next</button>
+<button *ngIf="cont>=20" (click)="cont=cont-20;search(false)">Prev</button>
+<button *ngIf="items.length==20" (click)="cont=cont+20;search(false)">Next</button>

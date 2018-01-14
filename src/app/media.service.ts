@@ -17,6 +17,9 @@ export class MediaService {
   private infoURL = 'api/media/info';
   private statusURL = 'api/media/check';
   private holdURL = 'api/media/hold';
+  private createItemURL = 'api/location/media/add';
+  private editItemURL = 'api/media/edit';
+  private deleteItemURL = 'api/media/delete';
 
   constructor(
     private globals: Globals,
@@ -24,7 +27,7 @@ export class MediaService {
   ) {}
   
   /*
-  export class MediaItem {
+  class MediaItem {
     mid: string;
     type: string;
     isbn: string;
@@ -46,6 +49,21 @@ export class MediaService {
   
   placeHold(mID: string): Observable<any> {
     return this.http.post<any>(this.holdURL, {uid: this.globals.uID, mid: mID});
+  }
+  
+  createItem(item): Observable<any> {
+    // might should be in LocationService
+    item.uid = this.globals.uID;
+    return this.http.post<any>(this.createItemURL, item);
+  }
+  
+  editItem(item): Observable<any> {
+    item.uid = this.globals.uID;
+    return this.http.post<any>(this.editItemURL, item);
+  }
+  
+  deleteItem(mID): Observable<any> {
+    return this.http.post<any>(this.deleteItemURL, {uid: this.globals.uID, mid: mID});
   }
   
 }

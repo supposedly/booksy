@@ -30,15 +30,15 @@ export class RoleService {
     return this.http.get<any>(this.roleInfoURL, {params: {rid: rID, uid: this.globals.uID}});
   }
   
-  modify(rID, name, perms, maxes, locks) {
+  modify(rID, name, perms, maxes, locks): Observable<any> {
     return this.http.post(this.roleEditURL, {uid: this.globals.uID, rid: rID, name: name, seqs: {perms: perms, maxes: maxes, locks: locks}}, httpOptions);
   }
   
-  create(name, perms, maxes, locks) {
+  create(name, perms, maxes, locks): Observable<any> {
     return this.http.post(this.roleCreateURL, {uid: this.globals.uID, name: name, seqs: {perms: perms, maxes: maxes, locks: locks}}, httpOptions);
   }
   
-  delete(rID) {
+  delete(rID): Observable<any> {
     return this.http.put(this.roleDelURL, {uid: this.globals.uID, rid: rID});
   }
   

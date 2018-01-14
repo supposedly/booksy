@@ -3,6 +3,8 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
+import { MarkdownModule } from 'ngx-md';
+
 import { Globals } from './globals';
 
 import { AuthGuard } from './auth.guard';
@@ -91,6 +93,7 @@ import { DashHeaderComponent } from './dash-header/dash-header.component';
     DashHeaderComponent,
   ],
   imports: [
+    MarkdownModule.forRoot(),
     BrowserModule,
     FormsModule,
     AppRoutingModule,
