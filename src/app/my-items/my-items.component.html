@@ -1,6 +1,6 @@
 <p>{{msg}}</p>
 <ul>
-  <li *ngFor="let item of items" class="item-box result">
+  <li *ngFor="let item of items" class="item-box">
     <div class="text"> <!-- div in a list ahah yikes -->
       <span class="title link" routerLink="../../media/{{item.mid}}">{{item.title}}</span>
       <span class="link" *ngIf="globals.canEditMedia" routerLink="../../media/edit/{{item.mid}}"> (edit)</span>

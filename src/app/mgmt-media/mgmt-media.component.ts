@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { MediaService } from '../media.service';
+import { LocationService } from '../location.service';
 
 @Component({
   selector: 'app-mgmt-media',
@@ -8,10 +8,18 @@ import { MediaService } from '../media.service';
   styleUrls: ['./mgmt-media.component.css']
 })
 export class MgmtMediaComponent implements OnInit {
+  items: any[] = null;
+  cont: number = 0;
 
-  constructor() { }
+  constructor(private locationService: LocationService) { }
 
   ngOnInit() {
+    this.getItems();
+  }
+  
+  getItems() {
+    this.locationService.getAllMedia(this.cont)
+      .subscribe(resp => this.items = resp.items);
   }
 
 }
