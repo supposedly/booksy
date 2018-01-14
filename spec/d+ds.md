@@ -1,6 +1,7 @@
-**NOTE:** This document is NOT intended to be viewed as a formatted Markdown file.
-Please click the `</>` button above to turn it into a monospace, syntax-highlighted-but-
-otherwise-plaintext document.
+### **NOTE:** This document is NOT intended to be viewed as a formatted Markdown file.
+**Please click the `</>` button above to turn it into a monospaced, syntax-highlighted-but-otherwise-plaintext document.**
+
+----
 
 ``Documentation and design specification`` for booksy-db
 
