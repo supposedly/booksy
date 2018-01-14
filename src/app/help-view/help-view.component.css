@@ -19,6 +19,13 @@ I take no credit.
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+::ng-deep code {
+  padding: 2px 4px;
+  font-size: 90%;
+  color: #c7254e;
+  background-color: #f9f2f4;
+  border-radius: 4px;
+}
 ::ng-deep blockquote {
   display: block;
   background: #fff;
