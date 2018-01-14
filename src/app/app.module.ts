@@ -56,6 +56,7 @@ import { MediaEditComponent } from './media-edit/media-edit.component';
 import { MyItemsComponent } from './my-items/my-items.component';
 import { MyHoldsComponent } from './my-holds/my-holds.component';
 import { DashHeaderComponent } from './dash-header/dash-header.component';
+import { HelpViewComponent } from './help-view/help-view.component';
 
 
 @NgModule({
@@ -91,6 +92,7 @@ import { DashHeaderComponent } from './dash-header/dash-header.component';
     MyItemsComponent,
     MyHoldsComponent,
     DashHeaderComponent,
+    HelpViewComponent,
   ],
   imports: [
     MarkdownModule.forRoot(),
