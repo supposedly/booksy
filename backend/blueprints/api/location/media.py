@@ -13,7 +13,7 @@ media = sanic.Blueprint('location_media_api', url_prefix='/media')
 @rqst_get('cont')
 @jwtdec.protected()
 async def search_location_media(rqst, location, cont):
-    return sanic.response.json(await location.items(cont=int(cont)), status=200)
+    return sanic.response.json({'items': await location.items(cont=int(cont))}, status=200)
 
 @media.get('/search')
 @rqst_get('title', 'genre', 'media_type', 'author', 'cont')

@@ -29,10 +29,6 @@ ul {
   border-color: #29bdff;
   background-color: #edf7fe;
 }
-.item-box.result {
-  border-color: #00c516;
-  background-color: #e0ffe0;
-}
 .item-box img {
   display: inline-block;
   height: 128px;
