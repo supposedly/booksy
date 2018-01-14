@@ -1,12 +1,14 @@
 <p>{{msg}}</p>
 <button (click)="location.back()">Go back</button>
-<button *ngIf="!item.available && !globals.isCheckoutAccount" (click)="placeOnHold()">Place hold</button>
 <div *ngIf="item">
+  <button *ngIf="!item.available && !globals.isCheckoutAccount" (click)="placeOnHold()">Place hold</button>
+  <h1>{{item.title}}</h1>
+  <p class="author">{{item.author}}</p>
   <img [src]="item.image"/>
-  <h3>{{item.title}}</h3>
-  <h4>{{item.author}}</h4>
-  <p>{{item.mid}}</p>
-  <p>{{item.type}}</p>
+  <p>Type: {{item.type | titlecase}}</p>
+  <p>Barcode: {{item.mid}}</p>
+  <p>ISBN: {{item.isbn}}</p>
+  <br/>
   <p>${{item.price}}</p>
   <p>{{item.length}} pages</p>
 </div>

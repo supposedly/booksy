@@ -1,3 +1,7 @@
+**NOTE:** This document is NOT intended to be viewed as a formatted Markdown file.
+Please click the `</>` button above to turn it into a monospace, syntax-highlighted-but-
+otherwise-plaintext document.
+
 ``Documentation and design specification`` for booksy-db
 
 __[DESIGN SPEC]__
@@ -13,7 +17,7 @@ __[DESIGN SPEC]__
 ### COLOR SCHEME ###
    >> The default is just an amalgam of greys, but I hope in the future to allow libraries
       to choose two or three of their own colors; to match their school's team colors, for
-      an example. Colors should not NOT be jarring or overly-contrasting in any way, since
+      instance... colors should not NOT be jarring or overly-contrasting in any way, since
       the foremost goal is of course readability.
 
 __[CONCEPTS]__
@@ -39,7 +43,7 @@ __[CONCEPTS]__
       this application to manage media distribution.
 ### [ROLES] ###
    >> Roles are permission groups assigned to users that determine the degree of freedom
-      to which these users are allowed to use the application. There are three default
+      to which they are allowed to use the application. There are three default
       roles, described below.
    ----
    > Administrator:
@@ -195,8 +199,6 @@ When the user logs in, they will be given a session token and login info, passed
 by Sanic at the backend. The Angular service that generates the sidebar buttons will then
 (depending on the user's login credentials) fetch the appropriate sidebar buttons and
 in turn allow access to the appropriate pages.
-This is probably a bit of a better solution than presenting an entirely different app
-to every "level" of user!
 
 **HOME**
 ![!][NOTE:] The following text makes a distinction between a *chieftain* and an *operator*.
@@ -263,13 +265,11 @@ other pages being shown in the sidebar. Depending on the user's permissions, cer
 ### [MY ACCOUNT] ###
    > ![PERMISSIONS][N/A]
    >> This page facilitates the modification of account settings, such as
-      name, email/phone number
+      name, email/phone number, etc.
 ### [MY ITEMS] ###
    > ![PERMISSIONS][N/A]
    >> The dashboard. Shows info about all a user's checked-out items; may
       expand in the future to include favorites or whatever.
-   ----
-   1. 
 ### [REPORTS] ###
    > ![PERMISSIONS][CHIEFTAIN]
    >> Generate reports of checkouts and missing books and the like.

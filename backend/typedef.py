@@ -2,9 +2,10 @@
 Just a bunch of type definitions :)
 """
 import asyncio
-import csv
 import datetime as dt
 from asyncio import iscoroutinefunction as is_coro
+
+import asyncpg
 
 from .core import AsyncInit, WithLock, lockquire
 from .resources import Perms, Maxes, Locks
@@ -147,7 +148,7 @@ class MediaItem(AsyncInit, WithLock):
         self.acquire = self.pool.acquire
         async with self.__class__._aiolock, self.acquire() as conn:
             query = """
-            SELECT type, isbn, lid, author, title, published, genre, issued_to, due_date, fines, acquired, maxes, image
+            SELECT type, isbn, lid, author, title, published, genre, issued_to, due_date, fines, acquired, maxes, image, length, price
              FROM items
             WHERE mid = $1::bigint
             """
@@ -158,7 +159,8 @@ class MediaItem(AsyncInit, WithLock):
                 self.published, self.genre,      \
                 self._issued_uid, self.due_date, \
                 self.fines, self.acquired,       \
-                self.maxes, self.image = await conn.fetchrow(query, self.mid)
+                self.maxes, self.image,          \
+                self.length, self.price = await conn.fetchrow(query, self.mid)
             except TypeError:
                 raise TypeError('item')
         self.location = await Location(self.lid, self.app)
@@ -224,6 +226,11 @@ class MediaItem(AsyncInit, WithLock):
     
     @lockquire(lock=False)
     async def issue_to(self, conn, user):
+        """
+        Set user's recent genre to self.genre,
+        set item's issued_to to the user's ID,
+        and clear the user's holds on the item
+        """
         infinite = user.maxes.checkout_duration >= 255
         #async with self.__class__._aiolock:
         query = """
@@ -232,7 +239,6 @@ class MediaItem(AsyncInit, WithLock):
          WHERE uid = $1::bigint;
         """
         await conn.execute(query, user.uid, self.genre)
-        
         query = """
         UPDATE items
            SET issued_to = $1::bigint, -- uid given as param
@@ -246,7 +252,12 @@ class MediaItem(AsyncInit, WithLock):
         if not infinite:
             params.append(7*user.maxes.checkout_duration)
         await conn.execute(*params)
-            
+        query = """
+  DELETE FROM holds
+        WHERE mid = $1::bigint
+          AND uid = $2::bigint
+        """
+        await conn.execute(query, self.mid, user.uid)
         self.issued_to = user
         self.due_date = dt.datetime.max if infinite else dt.datetime.utcnow() + dt.timedelta(weeks=user.maxes.checkout_duration)
         self.fines = 0
@@ -503,14 +514,14 @@ class Location(AsyncInit, WithLock):
             + ("""AND author ILIKE '%' || ${}::text || '%' """ if author else '')
             + ("""AND type ILIKE '%' || ${}::text || '%' """ if type_ else '')
             + ("""AND false """ if not any(search_terms) else '') # because 'WHERE true' otherwise returns everything if not any(search_terms)
-            + ("""WHERE issued_to IS {} NULL""".format(('', 'NOT')[where_taken]) if where_taken is not None else '')
+            + ("""AND issued_to IS {} NULL """.format(('', 'NOT')[where_taken]) if where_taken is not None else '')
             + ("""ORDER BY lower(title) """) # just to establish a consistent order for `cont' param
             ).format(*range(1, 1+sum(map(bool, search_terms)))) \
-            + ("""LIMIT {} OFFSET {}""").format(max_results, cont) # these are ok not to parameterize because they're internal
+            + ("""LIMIT {} OFFSET {} """).format(max_results, cont) # these are ok not to parameterize because they're internal
         results = await conn.fetch(query, *filter(bool, search_terms))
         if where_taken is not None: # this means I'm calling it from in here and so I probably want an actual MediaItem or at least no junk
             if max_results == 1:
-                return await MediaItem(*results)
+                return await MediaItem(results[0]['mid'], app=self.app)
             return [i['mid'] for i in results]
         # I'd have liked to provide a full MediaItem for each result,
         # but that would take so so so so so unbearably long on Heroku's DB speeds,
@@ -854,17 +865,30 @@ class User(AsyncInit, WithLock):
         return response
     
     @lockquire()
-    async def hold(self, conn, *, item=None, title=None):
+    async def hold(self, conn, *, title, author, type_, genre, item=None):
         if item is None:
-            item = await self.location.search(title=title, max_results=1, where_available=False)
-        if await conn.fetchval("""SELECT count(*) FROM members WHERE lower(title) = $1::text AND issued_to IS NULL""", title):
+            item = await self.location.search(title=title, genre=genre, type_=str(type_), author=author, max_results=1, where_taken=True)
+        templ = """
+       SELECT count(*)
+         FROM items
+        WHERE lower(title) = lower($1::text)
+          AND lower(author) = lower($2::text)
+          AND lower(type) = lower($3::text)
+          AND lower(genre) = lower($4::text)
+        """
+        if await conn.fetchval(templ+"""AND issued_to IS NULL""", title, author, str(type_), genre):
             return 'Item is already available!'
+        if await conn.fetchval(templ+"""AND issued_to = $5::bigint""", title, author, str(type_), genre, self.uid):
+            return 'You have this item checked out already!'
         query = """
         INSERT INTO holds
           (uid, mid, created)
         SELECT $1::bigint, $2::bigint, current_date
         """
-        await conn.execute(query, self.uid, item.mid)
+        try:
+            await conn.execute(query, self.uid, item.mid)
+        except asyncpg.exceptions.UniqueViolationError:
+            return 'You already have a hold placed on this item!'
     
     @lockquire()
     async def edit(self, conn, username, rid, fullname):
@@ -891,7 +915,8 @@ class User(AsyncInit, WithLock):
                items.title AS title,
                items.type AS type,
                items.author AS author,
-               items.genre AS genre
+               items.genre AS genre,
+               items.image AS image
           FROM holds, items
          WHERE holds.uid = $1::bigint AND items.mid = holds.mid
         """

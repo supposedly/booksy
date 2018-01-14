@@ -1,3 +1,4 @@
-* {
+*:not(small) {
   font-weight: 350;
+  font-size: 18px;
 }
