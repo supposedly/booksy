@@ -41,7 +41,10 @@ testem.log
 .DS_Store
 Thumbs.db
 
-# Personals
+# python cruft
 __pycache__/
+*.pyc
+
+# Personals
 devserver.py
 *.spec.ts

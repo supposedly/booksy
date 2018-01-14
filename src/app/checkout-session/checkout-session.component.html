@@ -1,7 +1,7 @@
 <ul>
-  <li *ngFor="let item of items.slice().reverse()" [ngClass]="item.available||globals.isCheckoutAccount?'out':'in'">
+  <li *ngFor="let item of items.slice().reverse()" [ngClass]="item.available||globals.isCheckoutAccount?'in':'out'">
     <div class="text"> <!-- div in a list ahah yikes -->
-      <aside class="action">{{item.available||globals.isCheckoutAccount?'Borrowed':'Returned'}}</aside>
+      <aside class="action">{{item.available&&!globals.isCheckoutAccount?'Returned':'Borrowed'}}</aside>
       <span class="title link" routerLink="../media/{{item.mid}}">{{item.title}}</span>
       <span *ngIf="globals.canEditMedia" routerLink="../media/edit/{{item.mid}}" class="link"> (edit)</span>
       <br/>
