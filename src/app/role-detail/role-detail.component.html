@@ -3,7 +3,7 @@
 <h2>{{roleName}}</h2>
 <input type="text" [value]="roleName" [(ngModel)]="roleName"/>
 <div *ngIf="permArr && maxArr && lockArr">
-  <form name="tes" (ngSubmit)="submit()" *ngIf="rID">
+  <form name="role-information" (ngSubmit)="submit()" *ngIf="rID">
       <h3>Permissions</h3>
       <label *ngFor="let name of keys(permArr.names); let i = index">
         <input [name]="name"

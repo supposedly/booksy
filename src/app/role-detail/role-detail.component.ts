@@ -28,7 +28,7 @@ export class RoleDetailComponent implements OnInit {
   
   ngOnInit() {
     this.rID = this.route.snapshot.paramMap.get('rID');
-    if (this.rID == 'create') {
+    if (this.rID == 'new') {
       this.makeArrs();
     } else {
       this.getArrs();
@@ -81,9 +81,9 @@ export class RoleDetailComponent implements OnInit {
   }
   
   submit() {
-    if (this.rID == 'create') {
+    if (this.rID == 'new') {
       this.roleService.create(this.roleName, this.permArr.names, this.maxArr.names, this.lockArr.names)
-        .subscribe(_ => this.msg = "Successfully edited.", err => this.msg = err.error?err.error:"Not allowed!");
+        .subscribe(resp => {this.rID = resp.rid; this.msg = "Successfully created."}, err => this.msg = err.error?err.error:"Not allowed!");
     } else {
       this.roleService.modify(this.rID, this.roleName, this.permArr.names, this.maxArr.names, this.lockArr.names)
         .subscribe(_ => this.msg = "Successfully edited.", err => this.msg = err.error?err.error:"Not allowed!");

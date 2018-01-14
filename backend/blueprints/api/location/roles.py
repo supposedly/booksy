@@ -24,5 +24,5 @@ async def add_role_to_location(rqst, user, name, kws):
         sanic.exceptions.abort(403, "You aren't allowed to modify roles.")
     if name.lower() in ('admin', 'organizer', 'subscriber'):
         sanic.exceptions.abort(403, "That name is reserved.")
-    await user.location.add_role(name=name, kws=kws)
-    return sanic.response.raw(b'', status=204)
+    role = await user.location.add_role(name=name, kws=kws)
+    return sanic.response.json({'rid': role.rid}, status=200)

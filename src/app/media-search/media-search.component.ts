@@ -45,6 +45,7 @@ export class MediaSearchComponent implements OnInit {
   }
   
   getAllItems(reset: boolean = false) {
+    /* unused currently */
     if (reset) { this.cont = 0; }
     this.locationService.getAllMedia(this.cont)
       .subscribe(resp => this.items = resp);

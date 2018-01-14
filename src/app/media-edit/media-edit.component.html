@@ -1,3 +1,33 @@
-<p>
-  media-edit works!
-</p>
+<p>{{msg}}</p>
+<button (click)="location.back()">Go back</button>
+<div *ngIf="item">
+  <h1>{{item.title}}</h1>
+  <p class="author"><input type="text" name="author" [(ngModel)]="item.author" placeholder="Author"/></p>
+  <p>Published in <input type="text" name="published" [(ngModel)]="item.published" placeholder="Published"/></p>
+  <img *ngIf="item.image && item.image != 'None'" [src]="item.image"/>
+  <br/>
+  (image is not inputtable)
+  <p>Type:
+      <select name="media-type" [(ngModel)]="item.type">
+        <option [ngValue]="null" disabled>Medium</option>
+        <option ngValue="null">Any (default)</option>
+        <option *ngFor="let mtype of globals.locMediaTypes" [ngValue]="mtype">
+          {{mtype}}
+        </option>
+    </select>
+  </p>
+  <p>Genre:
+      <select name="genre" [(ngModel)]="item.genre">
+        <option [ngValue]="null" disabled>Genre</option>
+        <option *ngFor="let genre of globals.locGenres" [ngValue]="genre">
+          {{genre}}
+        </option>
+      </select>
+  </p>
+  <p>Barcode: {{item.mid}}</p>
+  <p>ISBN: <input type="text" name="isbn" [(ngModel)]="item.isbn" placeholder="ISBN"/></p>
+  <br/>
+  <p>$<input type="text" name="price" [(ngModel)]="item.price" placeholder="Price"/></p>
+  <p><input type="number" min="0" name="length" [(ngModel)]="item.length" placeholder="Length"/> pages</p>
+  <button *ngIf="checkAllNecessary()" (click)="submit()">Submit</button>
+</div>
