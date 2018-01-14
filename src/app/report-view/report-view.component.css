@@ -12,3 +12,16 @@ li ul {
 li:empty {
   display: none;
 }
+button {
+  background-color: #43ba2e;
+  color: white;
+  padding: 10px 10px;
+  margin: auto;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  transition: opacity .2s;
+}
+button:hover {
+  opacity: 0.8;
+}

@@ -30,7 +30,7 @@ export class CheckoutComponent implements OnInit {
       if (!this.isCheckoutAccount) {
         this.username = globals.username;
         if (this.globals.managesLocation) {
-          this.name = globals.locname + ' Admin'
+          this.name = globals.locname + ' Admin';
         } else {
           this.name = globals.name;
         }

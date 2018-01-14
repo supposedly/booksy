@@ -7,7 +7,7 @@ import struct
 from functools import wraps
 from asyncio import iscoroutinefunction as is_coro
 
-def lockquire(*, lock=True, db=True, sem=False, file=False):
+def lockquire(*, lock=True, db=True, sem=False, file=False, no_self=False):
     """
     `lock' can be set to False when the function contains other stuff
     that doesn't require the lock (so as to release it sooner for other
@@ -43,7 +43,10 @@ def lockquire(*, lock=True, db=True, sem=False, file=False):
             if file: await self.app.filesem.acquire()
             try:
                 # get return value here
-                value = await func(self=self, conn=conn, *args, **kwargs)
+                if no_self:
+                    value = await func(conn=conn, *args, **kwargs)
+                else:
+                    value = await func(self=self, conn=conn, *args, **kwargs)
             except:
                 # do nothing, let it propagate
                 raise

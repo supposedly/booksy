@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 import { LoggingService } from './logging.service';
 import { SetupService } from './setup.service';
+import { RoleService } from './role.service';
 
 import { Location, HttpOptions } from './classes';
 import { Globals } from './globals';
@@ -45,6 +46,7 @@ export class MemberAuthService {
   constructor(
     private globals: Globals,
     private http: HttpClient,
+    private roleService: RoleService,
     private setupService: SetupService,
     private loggingService: LoggingService
   ) {
@@ -83,6 +85,7 @@ export class MemberAuthService {
       this.setupService.getMediaTypes(dts.user_id);
       this.setupService.getGenres(dts.user_id);
       this.setupService.getPerms(dts.user_id);
+      // XXX XXX XXX: ^ that is REALLY REALLY REALLY slow, I need to put them in one function
     }
   }
   
@@ -133,7 +136,7 @@ export class MemberAuthService {
           return false;
         }
     );
-    return this.globals.isLoggedIn; //synchronicity in an async function? uh oh (but it works for reasons)
+    return this.globals.isLoggedIn; // synchronicity in an async function? uh oh (but it works perf bc caching)
   }
   
   logOut() {

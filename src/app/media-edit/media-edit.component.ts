@@ -2,6 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 
+import { LocationService } from '../location.service';
 import { MediaService } from '../media.service';
 
 import { Globals } from '../globals';
@@ -20,6 +21,7 @@ export class MediaEditComponent implements OnInit {
     public globals: Globals,
     public location: Location,
     private route: ActivatedRoute,
+    private locationService: LocationService,
     private mediaService: MediaService
   ) {}
   
@@ -40,7 +42,7 @@ export class MediaEditComponent implements OnInit {
   makeItem(): void {
     this.item = {
       mid: null,
-      title: null,
+      title: 'New item',
       author: null,
       published: null,
       image: null,
@@ -54,14 +56,14 @@ export class MediaEditComponent implements OnInit {
   }
   
   checkAllNecessary() {
+    // ugly
     let item = this.item;
-    // uggo
     return item.title && item.author && item.type && item.isbn && item.price && item.length;
   }
   
   submit(): void {
     if (this.mID == 'new') {
-      this.mediaService.createItem(this.item)
+      this.locationService.addItem(this.item)
         .subscribe(
           resp => {
             this.item.image = resp.image;
