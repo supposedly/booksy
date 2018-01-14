@@ -15,7 +15,7 @@ async def serve_attr_names(rqst, perms):
     # return sanic.response.json({i.__name__.lower(): filter(bool, i._names) for i in (Perms, Maxes, Locks)}, status=200)
     res = {
       'perms': [
-        'Manage location (edit name, info, etc.)',
+      # 'Manage location (edit name, info, etc.)',
         'Manage accounts (edit names, usernames and passwords)',
         'Manage media (add items, edit metadata)',
         'Manage roles (edit permissions and names)',
@@ -34,11 +34,11 @@ async def serve_attr_names(rqst, perms):
       ]
     }
     if perms.can_manage_location:
+        res['perms'].insert(0, 'Manage location (edit name, info, etc.)')
         res['perms'].insert(3, 
           'Create administrative roles '
           '(ones that can provide other roles with '
-          'the "Manage location" permission)'
-          )
+          'the "Manage location" permission)')
     return sanic.response.json(res, status=200)
 
 @attrs.get('/signup-form')

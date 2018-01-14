@@ -171,7 +171,7 @@ class MediaItem(AsyncInit, WithLock):
         self.type = await MediaType(self._type, self.lid, self.app)
         self.maxes = None if self.maxes is None else Maxes(self.maxes)
     
-    def to_dict(self, verbose=False) :# unused param
+    def to_dict(self):
         retdir = {attr: str(getattr(self, attr, None)) for attr in self.props}
         retdir['available'] = not self.issued_to
         retdir['type_'] = self._type
@@ -212,19 +212,21 @@ class MediaItem(AsyncInit, WithLock):
         return resp
     
     async def edit(self, title, author, genre, type_, price, length, published, isbn):
+        print(genre)
         async with self.app.acquire() as conn:
             query = """
             UPDATE items
-               SET title = $1::text,
-                   author = $2::text,
-                   genre = $3::text,
-                   type = $4::text,
-                   price = $5::numeric,
-                   length = $6::int,
-                   published = $7::int,
-                   isbn = $8::text
+               SET title = $2::text,
+                   author = $3::text,
+                   genre = $4::text,
+                   type = $5::text,
+                   price = $6::numeric,
+                   length = $7::int,
+                   published = $8::int,
+                   isbn = $9::text
+             WHERE mid = $1::bigint
             """
-            await conn.execute(query, title, author, genre, type_, Decimal(price), int(length), int(published), isbn)
+            await conn.execute(query, self.mid, title, author, genre, type_, Decimal(price), int(length), int(published), isbn)
     
     @lockquire(lock=False)
     async def issue_to(self, conn, user):
@@ -640,7 +642,7 @@ class Location(AsyncInit, WithLock):
             img = rel.get('imageLinks', '')
             if ident:
                 # get isbn
-                ident, *_ = [i['identifier'] for i in ident if 'isbn' in sub['type'].lower()]
+                ident, *_ = [i['identifier'] for i in ident if 'isbn' in i['type'].lower()]
             if img:
                 img = img.get('smallThumbnail', img.get('thumbnail', None))
         args = type_, genre, ident or isbn, self.lid, title, author, int(published), Decimal(price), int(length)

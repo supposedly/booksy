@@ -1,4 +1,4 @@
-::ng-deep * {
+::ng-deep *:not(a) {
   font-family: 'Roboto', sans-serif;
   color: #232323;
 }

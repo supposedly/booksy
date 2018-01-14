@@ -1,9 +1,7 @@
-*See [here](https://gist.github.com/hdtrhn/30ae9a833ea6dc61b78cf5ab7958b4f7) for a "raw" version of this file, if it's easier on the eyes at all.*
-
 ## Booksy
 
-Hello! Please paste visit the following URL: https://booksy-db.herokuapp.com  
-It may take a long while the first time you load it; please see the "annoyances" section at the bottom of this document for
+Hello! Please visit the following URL: https://booksy-db.herokuapp.com  
+It may take a while the first time you load it; please see the "annoyances" section at the bottom for
 an explanation of why.
 
 ## Accounts
@@ -11,7 +9,7 @@ an explanation of why.
 Sign in with a **Location ID** of 1, and one of the following strings in both the userID and password fields:
 * `fbla-demo-checkout` to use the checkout account (Ctrl+F **checkout** here to see below what is meant by this).
 * `fbla-demo-admin` to use the administrator account, from which you may add users and media and edit info and
-   all the good stuff.
+   all that.
 * `fbla-demo-teacher` to use an account given the Organizer role (from which one can view reports and return
    items but not be given any managerial functionality besides user management)
 * `fbla-demo-user` to use a user account given zero permissions except to find and check out media (i.e. given
@@ -28,12 +26,14 @@ mentioned)
 
 Visit the [ABOUT](https://booksy-db.herokuapp.com/about) tab up top to see my credits and code, the latter being at https://gitlab.com/hdtrhn/fbla-webapp.
 
-The code is a bit much to slog through, and to be honest what I'm most afraid of is that it could somehow violate the "Code contains unnecessary steps or complexity" section of the (really somewhat vague) rubric; I have no idea how much time you will have to look through it, but I will say that, save the parts clearly commented as "unused" as well as some
-more-or-less-unavoidable repetition in the CSS and TypeScript of the front-end, there is little to none present in the
+The code is a bit much to slog through, and to be honest what I'm most afraid of is that it could somehow violate the
+"Code contains unnecessary steps or complexity" section of the (really somewhat vague) rubric; I have no idea how much time you will have to look through it,
+but I will say that, save the parts clearly commented as "unused" as well as some
+more-or-less-unavoidable repetition TypeScript of the front-end, there is little to none present in the
 code that is not in some way necessary. The more complex a section, especially in the back end, the more necessary it
 generally was.
 
-To aid you in reviewing the project's code, here is a general what-to-look-for and a brief explanation of the project
+To aid you in reviewing the code, here's a general what-to-look-for and a brief explanation of the project
 structure:
 * The server back-end code is in the "server.py" file of the root directory and in the "backend" folder of the same.  
 Within the backend folder, each sub-folder in the 'blueprints' directory corresponds to a path in the site's API;
@@ -57,8 +57,7 @@ to eschew for this project in the interest of time.
   Files that end in `.component.ts` are
   the TypeScript code that grabs info from the Services to pass to their corresponding `.component.html` file, and the latter contains the HTML shown on the actual page.
 * Any further questions about the project structure of an Angular app can be answered better than me by
-  https://angular.io/docs and https://angular.io/tutorial. (Feel free to email me at the address in the ABOUT
-  tab if there's anything important you must know, however!)
+  https://angular.io/docs and https://angular.io/tutorial.
 
 
 ## Account types
@@ -81,9 +80,7 @@ may as well just check it out from your own account and be done with it.
 functionality they get out of the webapp. I encourage you to play around by logging into the admin account and
 seeing what permissions and roles you can assign.
  
-Hope that covers everything you need to know. Again, read the HELP articles or even shoot an email to
-booksy.db@gmail.com (as mentioned on the ABOUT page) to ask me about anything more and I will do my best to respond
-accurately (if I'm not too busy finishing my presentation for competition, that is!).
+Hope that covers everything you need to know. Again, read the HELP articles for more.
 
 ## Annoyances
 

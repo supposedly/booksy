@@ -1,14 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
+import { catchError, map, tap } from 'rxjs/operators';
+import { Observable } from 'rxjs/Observable';
+
+import { Role, HttpOptions } from './classes';
+const httpOptions = HttpOptions;
+
 import { Globals } from './globals';
 
 @Injectable()
 export class SetupService {
-  private locMediaURL: string = 'api/location/media'
-  private namesURL: string = 'stock/attrs/names';
-  private mTypeURL: string = this.locMediaURL + '/types';
-  private genreURL: string = this.locMediaURL + '/genres';
+  private attrsURL: string = 'api/attrs';
   private permCheckURL: string = 'api/member/check-perms';
   
   constructor(
@@ -16,23 +19,20 @@ export class SetupService {
     private http: HttpClient
   ) {}
   
-  getNames(uID) {
-    this.http.get(this.namesURL, {params: {uid: uID}})
-      .subscribe(names => this.globals.attrs = names);
-  }
-  
-  getMediaTypes(uID) {
-    return this.http.get(this.mTypeURL, {params: {uid: uID}})
-      .subscribe(types => this.globals.locMediaTypes = types);
-  }
-  
-  getGenres(uID) {
-    return this.http.get(this.genreURL, {params: {uid: uID}})
-      .subscribe(genres => this.globals.locGenres = genres);
+  getAttrs(uID) {
+    this.http.get<any>(this.attrsURL, {params: {uid: uID}})
+      .subscribe(resp => {
+        this.globals.attrs = resp.names;
+        this.globals.locMediaTypes = resp.types;
+        this.globals.locGenres = resp.genres;
+      });
   }
   
   getPerms(uID) {
     return this.http.get<any>(this.permCheckURL, {params: {uid: uID}})
-      .subscribe(resp => this.globals.canEditMedia = resp.can_edit_media);
+      .subscribe(resp => {
+          this.globals.canEditMedia = resp.can_manage_media;
+          this.globals.canMakeAdminRoles = resp.can_create_admin_roles;
+      });
   }
 }
