@@ -31,7 +31,7 @@ async def get_user_items(rqst, user):
 @uid_get()
 @jwtdec.protected()
 async def get_user_holds(rqst, user):
-    return sanic.response.json(await user.holds(), status=200)
+    return sanic.response.json(await user.held(), status=200)
 
 @member.post('/edit')
 @rqst_get('user', 'username', 'fullname', 'rid') # note that this here is the user TO EDIT, not the one sending the request

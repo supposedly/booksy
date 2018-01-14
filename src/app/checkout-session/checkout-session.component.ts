@@ -19,10 +19,10 @@ export class CheckoutSessionComponent implements OnInit {
     private mediaService: MediaService
   ) {}
   
-  @Input() newItem: number;
+  @Input() newItem: string;
   
   ngOnChanges() {
-    if (this.newItem === null) {
+    if (this.newItem === 'clear') {
       this.items.length = 0;
     } else if (this.newItem) {
       this.updateList(this.newItem);
@@ -34,6 +34,6 @@ export class CheckoutSessionComponent implements OnInit {
   
   updateList(mid) {
     this.mediaService.getInfo(mid)
-      .subscribe(item => this.items.push(item.info), err => console.log(err));
+      .subscribe(item => this.items.push(item.info));
   }
 }

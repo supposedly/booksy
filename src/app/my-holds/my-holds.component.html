@@ -1,3 +1,20 @@
-<p>
-  my-holds works!
-</p>
+<p>{{msg}}</p>
+<ul>
+  <li *ngFor="let item of items" class="item-box result">
+    <div class="text"> <!-- div in a list ahah yikes -->
+      <span class="title link" routerLink="../../media/{{item.mid}}">{{item.title}}</span>
+      <span class="link" *ngIf="globals.canEditMedia" routerLink="../../media/edit/{{item.mid}}"> (edit)</span>
+      <br/>
+      <span class="author">{{item.author | titlecase}}</span>
+      <br/>
+      <span class="genre">{{item.genre | titlecase}}</span>
+      <br/>
+      <br/>
+      <aside class="type">{{item.type | titlecase}}</aside>
+      <aside class="barcode">{{item.mid}}</aside>
+    </div>
+      <img *ngIf="item.image && item.image != 'None'" [src]="item.image" [alt]="item.title">
+  </li>
+</ul>
+<button *ngIf="cont>=15" (click)="cont=cont-15;getHolds()">Prev</button>
+<button *ngIf="items.length==15" (click)="cont=cont+15;getHolds()">Next</button>

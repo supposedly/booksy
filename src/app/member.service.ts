@@ -13,25 +13,30 @@ const httpOptions = HttpOptions;
 
 @Injectable()
 export class MemberService {
-  private notifURL: string = '/api/member/notifications';
-  private membersURL: string = '/api/location/members';
-  private suggestionURL: string = '/api/member/suggest';
+  private notifURL: string = 'api/member/notifications';
+  private suggestionURL: string = 'api/member/suggest';
+  private holdsURL: string = 'api/member/held';
+  private itemsURL: string = 'api/member/checked-out';
   
   constructor(
     private http: HttpClient,
     private globals: Globals
-  ) { }
-  
-  getAll(cont): Observable<any> {
-    return this.http.get(this.membersURL, {params: {uid: this.globals.uID, cont: cont}});
-  }
+  ) {}
   
   getNotifs(username?: string): Observable<any> {
     return this.http.get<any>(this.notifURL, {params: {username: username?username:this.globals.username, lid: this.globals.lID}}).shareReplay();
   }
   
   getSuggestions(): Observable<any> {
-    return this.http.get(this.suggestionURL, {params: {uid: this.globals.uID}});
+    return this.http.get<any>(this.suggestionURL, {params: {uid: this.globals.uID}});
+  }
+  
+  getItems(): Observable<any> { // checked-out items, that is
+    return this.http.get<any>(this.itemsURL, {params: {uid: this.globals.uID}});
+  }
+  
+  getHolds(): Observable<any> {
+    return this.http.get<any>(this.holdsURL, {params: {uid: this.globals.uID}});
   }
   
 }

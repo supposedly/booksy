@@ -52,7 +52,10 @@ async def get_media_status(rqst, item):
 @rqst_get('item', 'username', 'location')
 @jwtdec.protected()
 async def issue_item(rqst, item, username, location):
-    user = await User.from_identifiers(username, location, app=rqst.app)
+    try:
+        user = await User.from_identifiers(username, location, app=rqst.app)
+    except ValueError as e:
+        sanic.exceptions.abort(404, e)
     if user.cannot_check_out:
         sanic.exceptions.abort(403, "You aren't allowed to check out.")
     if not item.available and user.uid != item._issued_uid:
@@ -65,9 +68,14 @@ async def issue_item(rqst, item, username, location):
 @rqst_get('item', 'username', 'location')
 @jwtdec.protected()
 async def return_item(rqst, item, username, location):
-    user = await User.from_identifiers(username, location, app=rqst.app)
+    try:
+        user = await User.from_identifiers(username, location, app=rqst.app)
+    except ValueError as e:
+        sanic.exceptions.abort(404, e)
     if user.is_checkout or not user.perms.can_return_items:
         sanic.exceptions.abort(403, "You aren't allowed to return items.")
+    if item.fines:
+        sanic.exceptions.abort(403, "This item's fines must be paid off before it is returned.")
     await item.check_in()
     return sanic.response.raw(b'', status=204)
 

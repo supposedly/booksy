@@ -5,19 +5,23 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
 
-import { MediaItem, MediaItemProxy, HttpOptions } from './classes';
 import { LoggingService } from './logging.service';
 
+import { MediaItem, MediaItemProxy, HttpOptions } from './classes';
 const httpOptions = HttpOptions;
+
+import { Globals } from './globals';
 
 @Injectable()
 export class MediaService {
-  private infoURL = '/api/media/info';
-  private statusURL = '/api/media/check';
+  private infoURL = 'api/media/info';
+  private statusURL = 'api/media/check';
+  private holdURL = 'api/media/hold';
 
   constructor(
+    private globals: Globals,
     private http: HttpClient
-  ) { }
+  ) {}
   
   /*
   export class MediaItem {
@@ -37,8 +41,11 @@ export class MediaService {
   }
   
   getInfo(mID: string): Observable<MediaItemProxy> {
-    const mediaInfoURL = '/api/media/info';
     return this.http.get<MediaItemProxy>(this.infoURL, {params: {mid: mID}});
+  }
+  
+  placeHold(mID: string): void {
+    return this.http.post<any>(this.holdURL, {uid: globals.uID, mid: mID});
   }
   
 }

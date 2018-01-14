@@ -18,29 +18,19 @@ export class Role {
   locks: number[];
 }
 export class MediaItem {
-  mid: string;
-  type: string;
-  genre: string;
-  isbn: string;
-  lid: string;
-  title: string;
-  author: string;
-  published: string;
-  acquired?: string;
-  image?: string;
-}
-export class MediaItemVerbose {
-  mid: string;
-  lid: string;
-  type: string;
-  isbn: string;
-  title: string;
-  author: string;
-  published: string;
-  acquired: string;
-  issuedto: string;
-  due: string;
-  fines: string;
+  mid;
+  type;
+  genre;
+  isbn;
+  lid;
+  title;
+  author;
+  price?: any;
+  length?: any;
+  published;
+  acquired?;
+  image?;
+  available?;
 }
 export class MediaItemProxy {
   info: MediaItem;

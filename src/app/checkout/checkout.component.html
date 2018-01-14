@@ -8,5 +8,4 @@
 <input name="item-id" [(ngModel)]="mid" [ngModelOptions]="{updateOn: 'submit'}" placeholder="Barcode" #mID>
 <button type="submit">Submit</button><br/>
 </form>
-<app-media-info [mID]="mid"></app-media-info>
-<app-checkout-session [newItem]="mid"></app-checkout-session>
+<app-checkout-session [newItem]="_mid"></app-checkout-session>

@@ -1,8 +1,20 @@
 ``Documentation and design specification`` for booksy-db
 
 __[DESIGN SPEC]__
-![!][NOTE:] Various UI and UX info goes here!
-> Indeed it does.
+### NAVIGATION ###
+   >> All navigation should be handled by way of "nav" elements, i.e. headers and sidebars.
+      The main application header is of course the most prominent of these, right after it
+      being the home-page sidebar then the sub-headers found in the "Manage location" and
+      "dashboard/My media" sections thereof.
+### ACCESSIBILITY ###
+   >> The application should be responsive to some extent; Angular works great on mobile
+      browsers, and it'd be awful of me not to take advantage of that, so most content will
+      follow a CSS media rule to scale itself down if the screen gets small.
+### COLOR SCHEME ###
+   >> The default is just an amalgam of greys, but I hope in the future to allow libraries
+      to choose two or three of their own colors; to match their school's team colors, for
+      an example. Colors should not NOT be jarring or overly-contrasting in any way, since
+      the foremost goal is of course readability.
 
 __[CONCEPTS]__
 ![!][NOTE:] These are the abstract ideas and terms utilized in the rest of the documentation.

@@ -44,3 +44,4 @@ Thumbs.db
 # Personals
 __pycache__/
 devserver.py
+*.spec.ts
