@@ -15,6 +15,7 @@ import { Globals } from '../globals';
 export class MediaEditComponent implements OnInit {
   item: any;
   mID: string;
+  genre_: string = null;
   msg: string;
   
   constructor(
@@ -58,11 +59,12 @@ export class MediaEditComponent implements OnInit {
   checkAllNecessary() {
     // ugly
     let item = this.item;
-    return item.title && item.author && item.type && item.isbn && item.price && item.length;
+    return (item.isbn || (item.title && item.author)) && (this.genre_ || item.genre) && item.type && item.price && item.length;
   }
   
   submit(): void {
     if (this.mID == 'new') {
+      this.item.genre = this.genre_?this.genre_:this.item.genre
       this.locationService.addItem(this.item)
         .subscribe(
           resp => {

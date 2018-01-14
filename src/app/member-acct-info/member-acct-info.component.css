@@ -9,11 +9,3 @@ p {
 .low {
     margin-bottom: 1em;
 }
-input {
-  margin: 2px;
-  border-style: solid;
-  border-color: #dcdcdc;
-  border-radius: 5px;
-  border-width: 1px;
-  padding: 10px;
-}

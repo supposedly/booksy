@@ -1,8 +1,8 @@
-::ng-deep * ~ * {
+::ng-deep * {
   font-family: 'Roboto', sans-serif;
   color: #232323;
 }
-::ng-deep * ~ button, * ~ input[type=submit] {
+::ng-deep button, input[type=submit] {
   background-color: #43ba2e;
   color: white;
   padding: 10px 10px;
@@ -12,10 +12,10 @@
   border-radius: 5px;
   transition: opacity .2s;
 }
-::ng-deep * ~ button:hover, * ~ input[type=submit]:hover {
+::ng-deep button:hover, input[type=submit]:hover {
   opacity: 0.8;
 }
-::ng-deep * ~ input {
+::ng-deep input {
   margin: 2px;
   border-style: solid;
   border-color: #dcdcdc;

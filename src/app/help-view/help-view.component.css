@@ -1,7 +1,7 @@
 /*
-The below is mostly copied from ngx-md's CSS styling, necessary to avoid this issue:
+The below is mostly copied from ngx-md's CSS styling, but with the changes necessary to resolve this issue:
 https://github.com/dimpu/ngx-md/issues/118
-I take no credit.
+I take no credit for any of the CSS below.
 */
 ::ng-deep * {
   box-sizing: border-box;
@@ -20,11 +20,13 @@ I take no credit.
   border-radius: 4px;
 }
 ::ng-deep code {
-  padding: 2px 4px;
-  font-size: 90%;
   color: #c7254e;
   background-color: #f9f2f4;
-  border-radius: 4px;
+  font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+}
+::ng-deep *:not(pre) > code {
+  padding: 2px 4px;
+  font-size: 90%;
 }
 ::ng-deep blockquote {
   display: block;
