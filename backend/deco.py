@@ -41,7 +41,7 @@ def rqst_get(*attrs):
             except KeyError:
                 sanic.exceptions.abort(422, 'Missing required attributes.')
             except TypeError as obj:
-                sanic.exceptions.abort(404, f'{str(obj).title()} does not exist.')
+                sanic.exceptions.abort(404, f'{str(obj)[0].upper()+str(obj)[1:]} does not exist.')
             return await func(rqst, *vals, *args, **kwargs)
         return wrapper
     return decorator

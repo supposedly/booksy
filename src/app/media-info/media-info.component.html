@@ -1,1 +1,12 @@
-<span *ngIf="item">{{item | json}}</span>
+<p>{{msg}}</p>
+<button (click)="location.back()">Go back</button>
+<button *ngIf="!item.available && !globals.isCheckoutAccount" (click)="placeOnHold()">Place hold</button>
+<div *ngIf="item">
+  <img [src]="item.image"/>
+  <h3>{{item.title}}</h3>
+  <h4>{{item.author}}</h4>
+  <p>{{item.mid}}</p>
+  <p>{{item.type}}</p>
+  <p>${{item.price}}</p>
+  <p>{{item.length}} pages</p>
+</div>

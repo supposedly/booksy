@@ -132,14 +132,16 @@ class MediaType(AsyncInit, WithLock):
     
 
 class MediaItem(AsyncInit, WithLock):
-    props = ['mid', 'type', 'genre',
-             'isbn', 'lid', 
+    props = ['mid', 'genre', 'type',
+             'isbn', 'lid',
              'title', 'author', 'published', 
-           # 'issued_to', 'due_date', 'fines',
-           # 'acquired', 'maxes',
-             'image']
+             'image', 'price', 'length',
+             'available']
     async def __init__(self, mid, app):
-        self.mid = int(mid)
+        try:
+            self.mid = int(mid)
+        except (ValueError, TypeError):
+            raise TypeError('item with this ID')
         self.app = app
         self.pool = app.pg_pool
         self.acquire = self.pool.acquire
@@ -165,15 +167,10 @@ class MediaItem(AsyncInit, WithLock):
         self.type = await MediaType(self._type, self.lid, self.app)
         self.maxes = None if self.maxes is None else Maxes(self.maxes)
     
-    def __str__(self):
-        return str(self.mid)
-    
-    def to_dict(self, verbose=False):
-        if not verbose:
-          retdir = {attr: str(getattr(self, attr, None)) for attr in self.props}
-        else:
-          pass ###
+    def to_dict(self, verbose=False): # 'verbose' is unused
+        retdir = {attr: str(getattr(self, attr, None)) for attr in self.props}
         retdir['available'] = not self.issued_to
+        retdir['type_'] = self._type
         return retdir
     
     @lockquire()
@@ -752,7 +749,10 @@ class User(AsyncInit, WithLock):
         self.app = app
         self.pool = self.app.pg_pool
         self.acquire = self.pool.acquire
-        self.user_id = self.uid = int(uid)
+        try:
+            self.user_id = self.uid = int(uid)
+        except TypeError:
+            raise ValueError('No user exists with this username!')
         async with self.__class__._aiolock, self.acquire() as conn:
             query = """SELECT username, fullname, lid, rid, manages, email, phone, type, recent, perms, maxes, locks FROM members WHERE uid = $1::bigint;"""
             username, name, lid, rid, manages, email, phone, self._type, recent, permbin, maxbin, lockbin = await conn.fetchrow(query, self.uid)
@@ -885,10 +885,11 @@ class User(AsyncInit, WithLock):
         return [{j: i[j] for j in ('mid', 'title', 'author', 'genre', 'type', 'image')} for i in await conn.fetch(query, self.uid)]
     
     @lockquire()
-    async def holds(self, conn):
+    async def held(self, conn):
         query = """
         SELECT items.mid AS mid,
                items.title AS title,
+               items.type AS type,
                items.author AS author,
                items.genre AS genre
           FROM holds, items

@@ -13,13 +13,18 @@ import { Globals } from './globals';
 
 @Injectable()
 export class LocationService {
-  locItemsURL: string = '/api/location/media';
-  searchURL: string = '/api/location/media/search';
+  private locItemsURL: string = '/api/location/media';
+  private searchURL: string = '/api/location/media/search';
+  private membersURL: string = '/api/location/members';
   
   constructor(
     private globals: Globals,
     private http: HttpClient
   ) {}
+  
+  getAllMembers(cont): Observable<any> {
+    return this.http.get(this.membersURL, {params: {uid: this.globals.uID, cont: cont}});
+  }
   
   getAllMedia(cont): Observable<any> {
     return this.http.get<any>(this.locItemsURL, {params: {uid: this.globals.uID, cont: cont}});
@@ -37,5 +42,6 @@ export class LocationService {
       }
     });
   }
+  
   
 }

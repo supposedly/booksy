@@ -17,6 +17,7 @@ export class CheckoutComponent implements OnInit {
   msg: string = null;
   name: string;
   mid: string;
+  _mid: string;
   username: string = null;
   
   constructor(
@@ -41,25 +42,26 @@ export class CheckoutComponent implements OnInit {
   ngOnInit() {}
   
   submit(mID): void {
+    this._mid = null;
     this.mediaService.getStatus(mID)
       .subscribe(
         status => {
           if (status.available) {
             this.checkoutService.checkOut(mID, this.username).subscribe(
-              resp => this.msg = 'Checked out!',
-              err => {
-                console.log(err);
-                this.msg = err.error?err.error:'Error checking out';
-              }
+              resp => {
+                this.msg = 'Checked out!';
+                this._mid = this.mid;
+              },
+              err => this.msg = err.error?err.error:'Error checking out'
             );
           } else if (this.globals.canReturnItems || (status.issuedTo == this.username && !this.isCheckoutAccount)) {
             this.checkoutService.checkIn(mID, this.username)
               .subscribe(
-                resp => this.msg = 'Checked in!',
-                err => {
-                  console.log(err);
-                  this.msg = err.error?err.error:'Error checking in'
-                }
+                resp => {
+                  this.msg = 'Checked in!';
+                  this._mid = this.mid;
+                },
+                err => this.msg = err.error?err.error:'Error checking in'
               );
           } else {
             this.msg = 'Item is checked out to ' + status.issuedTo.toString() + '.';

@@ -5,6 +5,7 @@ import { Location } from '@angular/common';
 import { MediaItem } from '../classes';
 import { MediaService } from '../media.service';
 
+import { Globals } from '../globals';
 
 @Component({
   selector: 'app-media-info',
@@ -13,21 +14,29 @@ import { MediaService } from '../media.service';
 })
 export class MediaInfoComponent implements OnInit {
   item: MediaItem;
-  
-  @Input() mID: string;
+  mID: string;
+  msg: string;
   
   constructor(
+    public globals: Globals,
     private route: ActivatedRoute,
     private mediaService: MediaService,
     private location: Location
-  ) { }
+  ) {}
   
   ngOnInit(): void {
+    this.mID = this.route.snapshot.paramMap.get('mID');
+    this.getItem();
   }
   
   getItem(): void {
     this.mediaService.getInfo(this.mID)
       .subscribe(item => this.item = item.info);
+  }
+  
+  placeOnHold(): void {
+    this.mediaService.placeHold(this.mID)
+      .subscribe(resp => {}, err => this.msg = err.error?err.error:'Error.');
   }
 
 }
