@@ -47,4 +47,4 @@ async def edit_member(rqst, user, member):
 @uid_get('perms')
 @jwtdec.protected()
 async def check_perms(rqst, perms):
-    return sanic.response.json({'can_edit_media': perms.can_manage_media}, status=200)
+    return sanic.response.json(perms.names, status=200)

@@ -8,6 +8,12 @@ from functools import wraps
 from asyncio import iscoroutinefunction as is_coro
 
 def lockquire(*, lock=True, db=True, sem=False, file=False, no_self=False):
+    # Passing self is necessary because of a weird weird thing where
+    # it'll sometimes raise an exception as "Missing required
+    # attribute 'self'". But then sometimes you'll pass self as is
+    # done below and it'll for whatever reason say "Got multiple
+    # values for argument 'self'" so I have no idea how to fix that
+    # besides suppressing it on a per-oddity basis with no_self
     """
     `lock' can be set to False when the function contains other stuff
     that doesn't require the lock (so as to release it sooner for other

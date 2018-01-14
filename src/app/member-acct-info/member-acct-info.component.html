@@ -1,20 +1,31 @@
 <p>{{msg}}</p>
 <button (click)="location.back()">Go back</button>
 <div *ngIf="member">
-  <h1>{{member.username}}</h1>
-  <p class="low">{{member.name}}</p>
-  <p><input type="text" name="username" [(ngModel)]="member.username" placeholder="Username"/></p>
-  <p><input type="text" name="name" [(ngModel)]="member.name" placeholder="Full name"/></p>
-  <p *ngIf="member.manages" style="color: red">Owns this location</p>
-  <p>Role: <!-- space -->
-    <select name="rid" [(ngModel)]="member.rid">
-      <option [ngValue]="null" disabled>Role</option>
-      <option *ngFor="let role of roles" [ngValue]="role.rid">
-        {{role.name}}
-      </option>
-    </select>
-  </p>
-  <p *ngIf="member.recent">Recently checked out: {{member.recent}}</p>
-  <p *ngIf="uID=='new'"><input type="text" name="password" [(ngModel)]="member.password" placeholder="Default password"/> Note that you will <strong>not</strong> be able to change this password on their behalf later</p> 
-  <button (click)="submit()">Save</button>
+  <div *ngIf="globals.attrs.perms.raw > member.perms.raw; else just_the_info"
+    {{member | json}}
+    <h1>{{member.username}}</h1>
+    <p class="low">{{member.name}}</p>
+    <p><input type="text" name="username" [(ngModel)]="member.username" placeholder="Username"/></p>
+    <p><input type="text" name="name" [(ngModel)]="member.name" placeholder="Full name"/></p>
+    <p *ngIf="member.manages" style="color: red">Owns this location</p>
+    <p>Role: <!-- space -->
+      <select name="rid" [(ngModel)]="member.rid">
+        <!-- only show change-role dropdown if member isn't owner -->
+        <option [ngValue]="null" disabled>Role</option>
+        <option *ngFor="let role of roles" [ngValue]="role.rid">
+          {{role.name}}
+        </option>
+      </select>
+    </p>
+    <p *ngIf="member.recent">Recently checked out: {{member.recent}}</p>
+    <p *ngIf="uID=='new'"><input type="text" name="password" [(ngModel)]="member.password" placeholder="Default password"/> Note that you will <strong>not</strong> be able to change this password on their behalf later</p> 
+    <button (click)="submit()">Save</button>
+  </div>
+  <ng-template #just_the_info>
+    <h1>{{member.username}}</h1>
+    <p class="low">{{member.name}}</p>
+    <p *ngIf="member.manages" style="color: red">Owns this location</p>
+    <p>Role: {{role.name}}</p>
+    <p *ngIf="member.recent">Recently checked out: {{member.recent}}</p>
+  </ng-template>
 </div>

@@ -13,6 +13,7 @@ export class Globals {
   phone: string;
   managesLocation: boolean;
   canReturnItems: boolean;
+  canMakeAdminRoles: boolean;
   isCheckoutAccount: boolean;
   isLoggedIn: boolean = false;
   
@@ -25,7 +26,7 @@ export class Globals {
   hide: boolean = false;
   // messages displayed on checkout; same deal
   checkoutMessages = null;
-  // the Perms, Maxes, and Locks attributes of a role
+  // the Perms, Maxes, and Locks attributes of user's role
   attrs: Object;
   
   // report data received from server

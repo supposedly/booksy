@@ -81,11 +81,8 @@ export class MemberAuthService {
     this.globals.phone = dts.phone;
     
     if (dts.user_id) {
-      this.setupService.getNames(dts.user_id);
-      this.setupService.getMediaTypes(dts.user_id);
-      this.setupService.getGenres(dts.user_id);
+      this.setupService.getAttrs(dts.user_id);
       this.setupService.getPerms(dts.user_id);
-      // XXX XXX XXX: ^ that is REALLY REALLY REALLY slow, I need to put them in one function
     }
   }
   

@@ -6,7 +6,7 @@ from sanic_jwt import decorators as jwtdec
 from .import uid_get, rqst_get
 from .import Location, Role, MediaType, MediaItem, User
 
-roles = sanic.Blueprint('role_attrs_api', url_prefix='/roles')
+roles = sanic.Blueprint('roles_api', url_prefix='/roles')
 
 @roles.get('/me')
 @uid_get()
