@@ -18,7 +18,7 @@ async def put_item_on_hold(rqst, user, item):
         sanic.exceptions.abort(403, "You aren't allowed to place any more holds.")
     if not item._issued_uid:
         sanic.exceptions.abort(409, "This item is already available.")
-    err = await user.hold(title=item.title, author=item.author, genre=item.genre)
+    err = await user.hold(title=item.title, author=item.author, type_=item.type, genre=item.genre)
     if err:
         sanic.exceptions.abort(403, err)
     return sanic.response.raw(b'', status=204)
