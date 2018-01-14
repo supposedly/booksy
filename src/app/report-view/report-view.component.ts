@@ -22,7 +22,6 @@ export class ReportViewComponent implements OnInit {
     this.sort = this.globals.reportDataSortedBy;
     this.key = Object.keys(this.globals.reportData)[0];
     this.data = this.globals.reportData[this.key];
-    console.log(this.data);
   }
 
 }

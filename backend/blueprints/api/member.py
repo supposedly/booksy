@@ -34,10 +34,13 @@ async def get_user_holds(rqst, user):
     return sanic.response.json(await user.held(), status=200)
 
 @member.post('/edit')
-@rqst_get('user', 'username', 'fullname', 'rid') # note that this here is the user TO EDIT, not the one sending the request
+@rqst_get('user', 'member') # note that the 2nd is the user TO EDIT, not the one sending the request
 @jwtdec.protected()
-async def edit_member(rqst, user, username, fullname, rid):
-    await user.edit(username, rid, fullname)
+async def edit_member(rqst, user, member):
+    if not user.perms.can_manage_accounts:
+        sanic.exceptions.abort(403, "You aren't allowed to modify member info.")
+    mbr = await User(member['user_id'], rqst.app)
+    await mbr.edit(username=member['username'], rid=member['rid'], fullname=member['name'])
     return sanic.response.raw(b'', status=204)
 
 @member.get('/check-perms')

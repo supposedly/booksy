@@ -57,17 +57,17 @@ async def edit_location_media_types(rqst, user, location, type_name, action):
 @media.post('/add')
 @rqst_get('user', 'title', 'author', 'published', 'type', 'genre', 'isbn', 'price', 'length')
 @jwtdec.protected()
-async def add_media_item_to_db(rqst, user, *args):
-    if not user.perms.can_manage_items:
+async def add_media_item_to_db(rqst, user, title, author, published, type_, genre, isbn, price, length):
+    if not user.perms.can_manage_media:
         sanic.exceptions.abort(403, "You aren't allowed to add media.")
-    item = await user.location.add_media(*args)
+    item = await user.location.add_media(title, author, published, type_, genre, isbn, price, length)
     return sanic.response.json({'mid': item.mid, 'image': item.image}, status=200)
 
 @media.post('/remove')
 @rqst_get('item', 'user')
 @jwtdec.protected()
 async def remove_media_item_from_db(rqst, item, user):
-    if not user.perms.can_manage_items:
+    if not user.perms.can_manage_media:
         sanic.exceptions.abort(403, "You aren't allowed to remove media.")
     await item.remove()
     return sanic.response.raw(b'', status=204)

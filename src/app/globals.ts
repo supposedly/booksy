@@ -36,6 +36,9 @@ export class Globals {
   locMediaTypes;
   locGenres;
   
+  // roles of location
+  locRoles;
+  
   // permissions
   canEditMedia: boolean;
 }

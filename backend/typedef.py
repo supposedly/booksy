@@ -281,7 +281,7 @@ class MediaItem(AsyncInit, WithLock):
         """
         Just a proxy method for Location().remove_item(MediaItem())
         """
-        await self.location.remove_item(self)
+        await self.location.remove_item(item=self)
 
 
 class Location(AsyncInit, WithLock):
@@ -331,7 +331,7 @@ class Location(AsyncInit, WithLock):
         
         query = 'https://www.googleapis.com/books/v1/volumes?q='
         end = '&maxResults=1'
-        if not all(title, author) and not isbn:
+        if not all((title, author)) and not isbn:
             return None
         if isbn:
             isbn = ''.join(isbn.split('-')[:2]) # get rid of trailing number and remove hyphens
@@ -628,9 +628,8 @@ class Location(AsyncInit, WithLock):
         """
         return [i['genre'] for i in await conn.fetch(query, self.lid)]
     
-    @lockquire(lock=False)
-    async def add_media(self, conn, title=None, author=None, published=None, type_=None, genre=None, isbn=None, price=None, length=None):
-        async with app.sem, app.session.get(self.gb_img_query(title, author, isbn)) as resp:
+    async def add_media(self, title, author, published, type_, genre, isbn, price, length):
+        async with self.app.sem, self.app.session.get(self.gb_image_query(title, author, isbn)) as resp:
             rel = await resp.json()
         ident = rel.get('industryIdentifiers', None)
         img = rel.get('imageLinks', '')
@@ -638,24 +637,25 @@ class Location(AsyncInit, WithLock):
             isbn, *_ = [sub['identifier'] for sub in ident if 'isbn' in sub['type'].lower()]
         if img:
             img = img.get('smallThumbnail', img.get('thumbnail', None))
-        args = type_, genre, isbn, self.lid, title, author, published
+        args = type_, genre, isbn, self.lid, title, author, int(published)
         #async with self.__class__._aiolock:
-        query = """
-        INSERT INTO items (
-                      type, genre,
-                      isbn, lid, 
-                      title, author, published,
-                      acquired, maxes,
-                      image
-                      )
-             SELECT $2::text, $3::text,
-                    $4::text, $5::bigint,
-                    $6::text, $7::text, $8::date,
-                    current_date, NULL,
-                    $1::text;
-        """
-        await conn.execute(query, img, *args)
-        mid = await conn.execute("""SELECT currval(pg_get_serial_sequence('items', 'mid'))""")
+        async with self.app.pg_pool.acquire() as conn:
+            query = """
+            INSERT INTO items (
+                          type, genre,
+                          isbn, lid, 
+                          title, author, published,
+                          acquired, maxes,
+                          image
+                          )
+                 SELECT $2::text, $3::text,
+                        $4::text, $5::bigint,
+                        $6::text, $7::text, $8::int,
+                        current_date, NULL,
+                        $1::text;
+            """
+            await conn.execute(query, img, *args)
+            mid = await conn.fetchval("""SELECT currval(pg_get_serial_sequence('items', 'mid'))""")
         return await MediaItem(mid, self.app)
     
     @lockquire()
@@ -792,6 +792,7 @@ class User(AsyncInit, WithLock):
         rel = {i: getattr(self, i, None) for i in props}
         rel['locname'] = self.location.name
         rel['can_return_items'] = self.perms.can_return_items
+        rel['rolename'] = self.role.name
         return rel
     
     @property
@@ -896,9 +897,9 @@ class User(AsyncInit, WithLock):
         query = """
         UPDATE members
            SET username = $2::text,
-               rid = $3::text,
+               rid = $3::bigint,
                fullname = $4::text
-         WHERE uid = $1::text
+         WHERE uid = $1::bigint
         """
         await conn.execute(query, self.uid, username, rid, fullname)
     

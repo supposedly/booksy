@@ -17,7 +17,6 @@ export class MediaService {
   private infoURL = 'api/media/info';
   private statusURL = 'api/media/check';
   private holdURL = 'api/media/hold';
-  private createItemURL = 'api/location/media/add';
   private editItemURL = 'api/media/edit';
   private deleteItemURL = 'api/media/delete';
 
@@ -49,12 +48,6 @@ export class MediaService {
   
   placeHold(mID: string): Observable<any> {
     return this.http.post<any>(this.holdURL, {uid: this.globals.uID, mid: mID}, httpOptions);
-  }
-  
-  createItem(item): Observable<any> {
-    // might should be in LocationService
-    item.uid = this.globals.uID;
-    return this.http.post<any>(this.createItemURL, item, httpOptions);
   }
   
   editItem(item): Observable<any> {
