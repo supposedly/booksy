@@ -2,7 +2,6 @@
 <button (click)="location.back()">Go back</button>
 <br/>
 <div *ngIf="item">
-  {{item|json}}
   <button class="new" *ngIf="!item.available && !globals.isCheckoutAccount" (click)="placeOnHold()">Place hold</button>
   <h1>{{item.title}}</h1>
   <p class="author">{{item.author}}</p>

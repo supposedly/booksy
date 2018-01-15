@@ -47,7 +47,7 @@ export class CheckoutComponent {
           if (status.available) {
             this.checkoutService.checkOut(mID, this.username).subscribe(
               resp => {
-                this.msg = 'Checked out!';
+                this.msg = 'Checked out! Due ' + resp.due;
                 this._mid = this.mid;
               },
               err => this.msg = err.error?err.error:'Error checking out'
