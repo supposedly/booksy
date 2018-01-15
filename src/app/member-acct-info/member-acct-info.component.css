@@ -9,3 +9,6 @@ p {
 .low {
     margin-bottom: 1em;
 }
+button.bad {
+  background-color: red;
+}

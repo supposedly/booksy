@@ -5,6 +5,8 @@ import { Location } from '@angular/common';
 import { LocationService } from '../location.service';
 import { RoleService } from '../role.service';
 
+import { Globals } from '../globals';
+
 @Component({
   selector: 'app-member-acct-info',
   templateUrl: './member-acct-info.component.html',
@@ -18,6 +20,7 @@ export class MemberAcctInfoComponent implements OnInit {
   
   constructor(
     public location: Location,
+    public globals: Globals,
     private route: ActivatedRoute,
     private roleService: RoleService,
     private locationService: LocationService
@@ -34,6 +37,13 @@ export class MemberAcctInfoComponent implements OnInit {
     }
   }
   
+  checkValid(): boolean {
+    let m = this.member;
+    // I Do Not Understand why the below is necessary and chaining && doesn't work
+    // (I guess this is prettier than && chaining though)
+    return [m.username, m.name, m.rid, this.uID=='new'?m.password:true].every(n => n);
+  }
+  
   getInfo() {
     this.locationService.getMemberInfo(this.uID)
       .subscribe(resp => this.member = resp.member);
@@ -41,25 +51,33 @@ export class MemberAcctInfoComponent implements OnInit {
   
   makeInfo() {
     this.member = {
-      uid: null,
+      perms: {
+        raw: 0
+      },
+      user_id: null,
       username: null,
       name: null,
       rid: null,
       rolename: null,
       manages: false,
       recent: null,
-      password: null
+      password: null,
     }
   }
   
   submit() {
     if (this.uID == 'new') {
       this.locationService.createMember(this.member)
-        .subscribe(resp => {this.uID = resp.uid, this.member.uid = resp.uid, this.msg = 'Successfully created.'}, err => this.msg = err.error?err.error:'Error.');
+        .subscribe(resp => this.location.back(), err => this.msg = err.error?err.error:'Error.');
     } else {
       this.locationService.editMember(this.member)
         .subscribe(resp => this.msg = 'Successfully edited.', err => this.msg = err.error?err.error:'Error.');
     }
+  }
+  
+  removeMember() {
+    this.locationService.removeMember(this.member.user_id)
+      .subscribe(resp => this.location.back(), err => this.msg = err.error?err.error:'Error.')
   }
 
 }

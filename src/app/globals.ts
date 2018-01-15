@@ -13,9 +13,11 @@ export class Globals {
   phone: string;
   managesLocation: boolean;
   canReturnItems: boolean;
-  canMakeAdminRoles: boolean;
   isCheckoutAccount: boolean;
   isLoggedIn: boolean = false;
+  
+  // user's role's permissions object
+  perms: any;
   
   // Whether to hide the homepage sidebar.
   // It's here instead of in sidebar.component.ts because the
@@ -24,10 +26,11 @@ export class Globals {
   // gets reloaded when this happens, so it wouldn't be
   // feasible to keep it there.
   hide: boolean = false;
-  // messages displayed on checkout; same deal
+  // messages displayed on checkout; same deal, if we didn't have them here then they'd
+  // pop up again every time the page is reloaded, even if the user had X-ed them away
   checkoutMessages = null;
-  // the Perms, Maxes, and Locks attributes of user's role
-  attrs: Object;
+  // generic names for the Perms, Maxes, and Locks attributes (shown as descriptions on the edit screens)
+  attrs: any;
   
   // report data received from server
   reportData = null;
@@ -37,9 +40,6 @@ export class Globals {
   locMediaTypes;
   locGenres;
   
-  // roles of location
+  // all roles in location
   locRoles;
-  
-  // permissions
-  canEditMedia: boolean;
 }

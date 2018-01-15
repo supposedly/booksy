@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { MediaItem } from '../classes';
@@ -12,7 +12,7 @@ import { Globals } from '../globals';
   templateUrl: './checkout.component.html',
   styleUrls: ['./checkout.component.css']
 })
-export class CheckoutComponent implements OnInit {
+export class CheckoutComponent {
   isCheckoutAccount: boolean;
   msg: string = null;
   name: string;
@@ -39,8 +39,6 @@ export class CheckoutComponent implements OnInit {
       }
   }
 
-  ngOnInit() {}
-  
   submit(mID): void {
     this._mid = null;
     this.mediaService.getStatus(mID)
@@ -54,7 +52,13 @@ export class CheckoutComponent implements OnInit {
               },
               err => this.msg = err.error?err.error:'Error checking out'
             );
-          } else if (this.globals.canReturnItems || (status.issuedTo == this.username && !this.isCheckoutAccount)) {
+          } else if (this.globals.perms.names.canReturnItems) {
+            // This conditional had previously included  `|| (status.issuedTo == this.username && !this.isCheckoutAccount)`,
+            // i.e. "If the user canReturnItems OR [the item is their own AND they are not on the checkout account],
+            // then let them return the item."
+            // But I've realized that this opens it up to a fair bit of abuse; what's to stop a user from logging in
+            // at home, marking their item 'returned', and then just keeping it?
+            // So yeah it's a much better idea to only allow users with the explicit permission to return items to do so
             this.checkoutService.checkIn(mID, this.username)
               .subscribe(
                 resp => {

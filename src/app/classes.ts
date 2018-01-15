@@ -31,6 +31,7 @@ export class MediaItem {
   acquired?;
   image?;
   available?;
+  fines?;
 }
 export class MediaItemProxy {
   info: MediaItem;
@@ -44,14 +45,4 @@ export class Member {
   email?: string;
   phone?: string;
   manages: boolean;
-}
-export class User {
-  uid: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-}
-export class Location {
-  lid: string;
-  password: string;
 }

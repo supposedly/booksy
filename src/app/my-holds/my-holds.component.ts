@@ -27,5 +27,10 @@ export class MyHoldsComponent implements OnInit {
     this.memberService.getHolds()
       .subscribe(resp => this.items = resp, err => this.msg = err.error?err.error:'Error.')
   }
+  
+  clearHold(mID) {
+    this.memberService.clearHold(mID)
+      .subscribe();
+  }
 
 }

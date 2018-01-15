@@ -1,31 +1,36 @@
 <p>{{msg}}</p>
 <button (click)="location.back()">Go back</button>
 <div *ngIf="member">
-  <div *ngIf="globals.attrs.perms.raw > member.perms.raw; else just_the_info"
-    {{member | json}}
+  <div *ngIf="globals.perms.raw >= member.perms.raw || globals.uID == member.user_id; else just_the_info">
+    <button *ngIf="uID!='new' && globals.uID != member.user_id" class="bad" (click)="removeMember()">Delete member</button>
     <h1>{{member.username}}</h1>
     <p class="low">{{member.name}}</p>
     <p><input type="text" name="username" [(ngModel)]="member.username" placeholder="Username"/></p>
     <p><input type="text" name="name" [(ngModel)]="member.name" placeholder="Full name"/></p>
     <p *ngIf="member.manages" style="color: red">Owns this location</p>
     <p>Role: <!-- space -->
-      <select name="rid" [(ngModel)]="member.rid">
+      <select name="rid" [(ngModel)]="member.rid" *ngIf="!member.manages; else just_the_role">
         <!-- only show change-role dropdown if member isn't owner -->
         <option [ngValue]="null" disabled>Role</option>
         <option *ngFor="let role of roles" [ngValue]="role.rid">
           {{role.name}}
         </option>
       </select>
+      <ng-template #just_the_role>
+        {{member.rolename}}
+      </ng-template>
     </p>
-    <p *ngIf="member.recent">Recently checked out: {{member.recent}}</p>
-    <p *ngIf="uID=='new'"><input type="text" name="password" [(ngModel)]="member.password" placeholder="Default password"/> Note that you will <strong>not</strong> be able to change this password on their behalf later</p> 
-    <button (click)="submit()">Save</button>
+    <p *ngIf="member.recent">Recently checked out: {{member.recent | titlecase}}</p>
+    <p *ngIf="uID=='new'"><input type="text" name="password" [(ngModel)]="member.password" placeholder="Default password"/>
+    <br/>
+    Note that you will <strong>not</strong> be able to change this password on their behalf later</p> 
+    <button *ngIf="checkValid()" (click)="submit()">Save</button>
   </div>
   <ng-template #just_the_info>
     <h1>{{member.username}}</h1>
     <p class="low">{{member.name}}</p>
     <p *ngIf="member.manages" style="color: red">Owns this location</p>
-    <p>Role: {{role.name}}</p>
-    <p *ngIf="member.recent">Recently checked out: {{member.recent}}</p>
+    <p>Role: {{member.rolename}}</p>
+    <p *ngIf="member.recent">Recently checked out: {{member.recent | titlecase}}</p>
   </ng-template>
 </div>

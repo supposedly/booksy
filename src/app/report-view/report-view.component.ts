@@ -23,5 +23,10 @@ export class ReportViewComponent implements OnInit {
     this.key = Object.keys(this.globals.reportData)[0];
     this.data = this.globals.reportData[this.key];
   }
+  
+  check(res) {
+    // yikes. Just a bunch of edge cases
+    return res.length && (res.length==1?res[0][0] && !(res[0] in ['0', 'null']):true);
+  }
 
 }

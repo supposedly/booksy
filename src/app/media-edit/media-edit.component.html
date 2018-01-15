@@ -11,14 +11,14 @@
   <p>Type:
       <select name="media-type" [(ngModel)]="item.type">
         <option *ngFor="let mtype of globals.locMediaTypes" [ngValue]="mtype">
-          {{mtype}}
+          {{mtype | titlecase}}
         </option>
     </select>
   </p>
   <p>Genre:
       <select name="genre" [(ngModel)]="item.genre">
         <option *ngFor="let genre of globals.locGenres" [ngValue]="genre">
-          {{genre}}
+          {{genre | titlecase}}
         </option>
       </select>
       <input type="text" [(ngModel)]="genre_" placeholder="Or a new genre?"/>

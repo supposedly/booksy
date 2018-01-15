@@ -1,95 +1,18 @@
 """
 Just a bunch of type definitions :)
 """
+import io
+import datetime as dt
+import functools as fct
 from decimal import Decimal
 
 import asyncio
-import datetime as dt
 from asyncio import iscoroutinefunction as is_coro
 
 import asyncpg
 
 from .core import AsyncInit, WithLock, lockquire
 from .resources import Perms, Maxes, Locks
-
-# aiofiles isn't working for some reason so screw it I'll just do this
-REGISTER_LOCATION = """
-INSERT INTO locations (
-              name, ip,
-              color, image
-            )
-     SELECT $1::text, $2::text,
-            $2::smallint, $3::bytea;
-
--- ROLES SETUP --
-
-INSERT INTO roles (
-              lid, name,
-              permissions, 
-              maxes, locks
-              )
-     SELECT currval(pg_get_serial_sequence('locations', 'lid')),
-            'Admin'::text,
-            32767::smallint, -- maximum smallint value, so every permission bc admin
-            9223372036854775807::bigint, -- maximum bigint value, so no maxes
-            9223372036854775807::bigint; -- maximum bigint value, so no locks
-
-INSERT INTO roles (
-              lid, name, 
-              permissions, 
-              maxes, locks
-              )
-     SELECT currval(pg_get_serial_sequence('locations', 'lid')),
-            'Organizer'::text,
-            55::smallint, -- 0110111
-            1028::bigint, -- 4, 4, 0...
-            5140::bigint; -- 20, 20, 0 . . .
-
-INSERT INTO roles (
-              lid, name, 
-              permissions, 
-              maxes, locks
-              )
-     SELECT currval(pg_get_serial_sequence('locations', 'lid')),
-            'Subscriber'::text,
-            0::smallint, -- 0000000
-            514::bigint, -- 2, 2, 0 . . .
-            5135::bigint; -- 15, 15, 0 . . .
-
--- END ROLES SETUP --
-
--- ACCOUNTS SETUP --
-
-INSERT INTO members (
-              username, pwhash,
-              lid, rid,
-              fullname,
-              manages, type
-              )
-     SELECT $4::text, $5::bytea, -- checkout acct; username determined by backend (usually school initials plus '-checkout-XX' [unique digits])
-            currval(pg_get_serial_sequence('locations', 'lid')),
-            currval(pg_get_serial_sequence('roles', 'rid')),
-            locations.name + ' Patron',
-            false, 1
-       FROM locations
-      WHERE lid = currval(pg_get_serial_sequence('locations', 'lid'))
-
-INSERT INTO members (
-              username, pwhash,
-              lid, rid,
-              fullname, email, phone,
-              manages, type
-              )
-     SELECT $6::text, $7::bytea, -- admin acct; username determined by backend (usually school initials + '-admin')
-            currval(pg_get_serial_sequence('locations', 'lid')),
-            currval(pg_get_serial_sequence('roles', 'rid')),
-            $8::text, $9::text, $10::text,
-            true, 0;
-
--- END ACCOUNTS SETUP --
-
-SELECT currval(pg_get_serial_sequence('locations', 'lid'))
-"""
 
 class MediaType(AsyncInit, WithLock):
     props = [
@@ -109,7 +32,7 @@ class MediaType(AsyncInit, WithLock):
         return self.name
     
     def to_dict(self):
-        return None # Not implemented?NSDFO:a;sldkjfasd
+        return None # Not implemented
     
     @lockquire()
     async def get_items(self, conn):
@@ -136,7 +59,7 @@ class MediaType(AsyncInit, WithLock):
 
 class MediaItem(AsyncInit, WithLock):
     props = ['mid', 'genre', 'type',
-             'isbn', 'lid',
+             'isbn', 'lid', 'fines',
              'title', 'author', 'published', 
              'image', 'price', 'length',
              'available']
@@ -211,6 +134,16 @@ class MediaItem(AsyncInit, WithLock):
             resp = {i: locals()[i] for i in resp}
         return resp
     
+    @lockquire()
+    async def pay_off(self, conn):
+        query = """
+        UPDATE items
+           SET fines = 0::numeric
+         WHERE mid = $1::bigint
+        """
+        return await conn.execute(query, self.mid)
+    
+  # @lockquire()
     async def edit(self, title, author, genre, type_, price, length, published, isbn):
         print(genre)
         async with self.app.acquire() as conn:
@@ -226,7 +159,7 @@ class MediaItem(AsyncInit, WithLock):
                    isbn = $9::text
              WHERE mid = $1::bigint
             """
-            await conn.execute(query, self.mid, title, author, genre, type_, Decimal(price), int(length), int(published), isbn)
+            await conn.execute(query, self.mid, title, author, genre, type_, round(Decimal(price), 2), int(length), int(published), isbn)
     
     @lockquire(lock=False)
     async def issue_to(self, conn, user):
@@ -352,8 +285,9 @@ class Location(AsyncInit, WithLock):
           'admin_name', 'admin_email', 'admin_phone'
           ]
         args = [kwargs.get(attr, rqst.ip if attr=='ip' else None) for attr in props]
-        async with cls._aiolock, rqst.app.pg_pool.acquire() as conn:
-            lid = await conn.fetchval(REGISTER_LOCATION, *args) # returns lID
+        with open('./backend/sql/register_location.sql') as register_location:
+            async with cls._aiolock, rqst.app.pg_pool.acquire() as conn:
+                lid = await conn.fetchval(register_location.read(), *args) # returns lID
         return cls(lid, rqst.app)
     
     @classmethod
@@ -368,6 +302,52 @@ class Location(AsyncInit, WithLock):
         if result:
             return cls(result, rqst.app)
         return None
+    
+    @lockquire()
+    async def members_from_csv(self, conn, file, rid):
+        """
+        Batch addition of members.
+        
+        Input MUST be in the form of a standards-compliant
+        CSV file WITH a header, and columns in this order:
+        
+        fullname,username,password
+        """
+        def fix(df):
+            """
+            Fix all necessary attributes to match DB in the user CSV dataframe.
+            """
+            # to ensure the generated salt is random, redo it for every row
+            hashpw = fct.partial(bcrypt.hashpw, salt=lambda: bcrypt.gensalt(12))
+            # hash w/ bcrypt using the above partial
+            df.password.apply(hashpw)
+            # assign the given role ID to all members
+            df['rid'] = int(rid)
+            # Rearrange to remain compliant with asyncpg's copy_to_table
+            # Unfortunately this means that it needs to be returned, because
+            # while attributes can be modified 'in-place', the entire object
+            # cannot
+            return df[['rid', 'fullname', 'username', 'password']]
+        # I'm using the 'app.ppe' ProcessPoolExecutor instead of the 'None'
+        # default ThreadPoolExecutor because these are CPU-bound operations
+        # and not I/O-bound (which means you get better performance with a
+        # ProcessPoolExecutor)
+        #
+        # load the file as a Pandas dataframe
+        df = await app.aexec(app.ppe, pandas.read_csv(file))
+        # encode password column to make it usable for bcrypt
+        df.password = app.aexec(app.ppe, lambda: df.password.str.encode('utf-8'))
+        df = await app.aexec(app.ppe, fix, df)
+        async with io.BytesIO() as bIO:
+            app.aexec(app.ppe, df.to_csv(bIO))
+            bIO.seek(0)
+            return await conn.copy_to_table(
+              'members',
+              source=bIO,
+              columns=['rid', 'fullname', 'username', 'pwhash'],
+              format='csv',
+              header=True)
+        # w amre la alla that it works
     
     @lockquire()
     async def report(self, conn, **do):
@@ -463,8 +443,8 @@ class Location(AsyncInit, WithLock):
                   conn.fetch(query)
                 )
                 res[column[0]].append({'ident': item.get(key, None), 'res': await search})
-        # unused
         if items:
+            # unused
             res['items'] = {await conn.fetch("""SELECT count(*) FROM items WHERE lid = $1::bigint""", self.lid)}
         return res
     
@@ -491,6 +471,9 @@ class Location(AsyncInit, WithLock):
     
     @lockquire()
     async def add_member(self, conn, username, pwhash: "hash this beforehand", rid, fullname):
+        # the following is for my own at-home testing (I can't download libffi,
+        # necessary for bcrypt) and will never EVER be triggered in a prod environment.
+        if isinstance(pwhash, str): pwhash = pwhash.encode('utf-8')
         query = """
         INSERT INTO members (
                   username, pwhash,
@@ -498,14 +481,23 @@ class Location(AsyncInit, WithLock):
                   fullname, email, phone,
                   manages, type
                   )
-         SELECT $1::text, $2::text,
-                $3::text, -- self.lid
-                $4::text,
+         SELECT $1::text, $2::bytea,
+                $3::bigint, -- self.lid
+                $4::bigint,
                 $5::text,
-                NULL, NULL, -- not doing these
+                NULL, NULL, -- not going to do these
                 false, 0;
         """
         await conn.execute(query, username, pwhash, self.lid, rid, fullname)
+    
+    @lockquire()
+    async def remove_member(self, conn, uid):
+        # hm. should this be a method of User?
+        query = """
+        DELETE FROM members
+              WHERE uid = $1::bigint
+        """
+        return await conn.execute(query, uid)
     
     @lockquire(lock=False)
     async def search(self, conn, *, title=None, genre=None, type_=None, author=None, cont=0, max_results=20, where_taken=None):
@@ -530,7 +522,7 @@ class Location(AsyncInit, WithLock):
         # I'd have liked to provide a full MediaItem for each result,
         # but that would take so so so so so unbearably long on Heroku's DB speeds,
         # not to mention being just pretty all-around inefficient.
-        # Instead I'll have to have the app shoot a GET request to /media/info
+        # Instead I'll have the app shoot a GET request to /media/info
         # for the pertinent mID when one specific item is requested.
         return [{j: i[j] for j in ('mid', 'title', 'author', 'genre', 'type', 'image')} for i in results]
     
@@ -568,7 +560,7 @@ class Location(AsyncInit, WithLock):
     async def items(self, conn, *, cont=0, max_results=20):
         #async with self.__class__._aiolock:
         query = """
-        SELECT mid, title, author, genre, image
+        SELECT mid, type, title, author, genre, image
           FROM items
          WHERE lid = $1::bigint
       ORDER BY title
@@ -576,7 +568,7 @@ class Location(AsyncInit, WithLock):
         OFFSET {}
         """.format(max_results, cont)
         res = await conn.fetch(query, self.lid)
-        return [{j: i[j] for j in ('mid', 'title', 'author', 'genre', 'image')} for i in res]
+        return [{j: i[j] for j in ('mid', 'type', 'title', 'author', 'genre', 'image')} for i in res]
     
     @lockquire()
     async def edit(self, conn, to_edit, new):
@@ -645,7 +637,7 @@ class Location(AsyncInit, WithLock):
                 ident, *_ = [i['identifier'] for i in ident if 'isbn' in i['type'].lower()]
             if img:
                 img = img.get('smallThumbnail', img.get('thumbnail', None))
-        args = type_, genre, ident or isbn, self.lid, title, author, int(published), Decimal(price), int(length)
+        args = type_, genre, ident or isbn, self.lid, title, author, int(published), round(Decimal(price), 2), int(length)
         #async with self.__class__._aiolock:
         async with self.app.pg_pool.acquire() as conn:
             query = """
@@ -801,7 +793,6 @@ class User(AsyncInit, WithLock):
         props = ['user_id', 'username', 'name', 'lid', 'manages', 'rid', 'email', 'phone', 'is_checkout', 'perms', 'recent']
         rel = {i: getattr(self, i, None) for i in props}
         rel['locname'] = self.location.name
-        rel['can_return_items'] = self.perms.can_return_items
         rel['rolename'] = self.role.name
         return rel
     
@@ -901,6 +892,15 @@ class User(AsyncInit, WithLock):
             await conn.execute(query, self.uid, item.mid)
         except asyncpg.exceptions.UniqueViolationError:
             return 'You already have a hold placed on this item!'
+    
+    @lockquire()
+    async def clear_hold(self, conn, item):
+        query = """
+        DELETE FROM holds
+              WHERE uid = $1::bigint
+                AND mid = $2::bigint
+        """
+        return await conn.execute(query, self.uid, item.mid)
     
     @lockquire()
     async def edit(self, conn, username, rid, fullname):

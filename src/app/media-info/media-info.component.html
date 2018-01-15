@@ -1,7 +1,9 @@
 <p>{{msg}}</p>
 <button (click)="location.back()">Go back</button>
+<br/>
 <div *ngIf="item">
-  <button *ngIf="!item.available && !globals.isCheckoutAccount" (click)="placeOnHold()">Place hold</button>
+  {{item|json}}
+  <button class="new" *ngIf="!item.available && !globals.isCheckoutAccount" (click)="placeOnHold()">Place hold</button>
   <h1>{{item.title}}</h1>
   <p class="author">{{item.author}}</p>
   <p>Published in {{item.published}}</p>
@@ -13,4 +15,8 @@
   <br/>
   <p>${{item.price}}</p>
   <p>{{item.length}} pages</p>
+  <ng-container *ngIf="item.fines && globals.perms.names.canManageMedia">
+    <p style="color: red">Fines: {{item.fines}}</p>
+    <button class="new" (click)="markFinesPaid()">Mark as paid</button>
+  </ng-container>
 </div>

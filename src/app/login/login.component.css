@@ -52,14 +52,7 @@ button {
 button.signup {
   background-color: #2e7fba;
 }
-button:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-button:hover:not(:disabled) {
-  opacity: 0.8;
-}
 button.loading {
   opacity: 0.5;
-  cursor: wheel;
+  cursor: progress;
 }

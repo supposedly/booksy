@@ -36,7 +36,7 @@ export class MediaSearchComponent implements OnInit {
 
   ngOnInit() {
     this.getSuggestions();
- // this.getAllItems(true); // Do I really want this or should I limit it just to searches
+ // this.getAllItems(true); // Do I really want this or should I limit it just to searches?
   }
   
   getSuggestions() {
@@ -48,7 +48,7 @@ export class MediaSearchComponent implements OnInit {
     /* unused currently */
     if (reset) { this.cont = 0; }
     this.locationService.getAllMedia(this.cont)
-      .subscribe(resp => this.items = resp.items);
+      .subscribe(resp => this.items = resp);
   }
   
   checkVisible(): boolean {
@@ -84,3 +84,4 @@ export class MediaSearchComponent implements OnInit {
   }
 
 }
+

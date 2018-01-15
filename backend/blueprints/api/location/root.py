@@ -36,3 +36,8 @@ async def serve_a_report(rqst, location, perms, do):
     if not perms.can_generate_reports:
         sanic.exceptions.abort(403, "You aren't allowed to generate reports.")
     return sanic.response.json(await location.report(**do))
+
+@root.get('/backups/<to_back_up:members|location|roles|holds|items>')
+@uid_get('location', 'perms', user=True)
+async def back_up_info():
+    pass

@@ -15,6 +15,9 @@
 ::ng-deep button:hover, input[type=submit]:hover {
   opacity: 0.8;
 }
+::ng-deep button.new {
+  background-color: #2e7fba;
+}
 ::ng-deep input {
   margin: 2px;
   border-style: solid;

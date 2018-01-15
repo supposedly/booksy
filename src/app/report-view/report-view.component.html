@@ -3,7 +3,7 @@
 <h3>{{sort.replace('_', ' ') | titlecase}}</h3>
 <ul>
   <span *ngFor="let dtm of data">
-    <li *ngIf="dtm.res.length && (dtm.res.length==1?dtm.res[0]!='0':true)">
+    <li *ngIf="check(dtm.res)">
       <b>{{dtm.ident}}</b>
       <br/>
       <ul>

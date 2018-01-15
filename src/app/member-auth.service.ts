@@ -5,7 +5,7 @@ import { LoggingService } from './logging.service';
 import { SetupService } from './setup.service';
 import { RoleService } from './role.service';
 
-import { Location, HttpOptions } from './classes';
+import { HttpOptions } from './classes';
 import { Globals } from './globals';
 
 import { catchError, map, tap } from 'rxjs/operators';
@@ -72,7 +72,6 @@ export class MemberAuthService {
     this.globals.rID = dts.rid;
     this.globals.lID = dts.lid;
     this.globals.isCheckoutAccount = dts.is_checkout;
-    this.globals.canReturnItems = dts.can_return_items;
     this.globals.username = dts.username;
     this.globals.name = dts.name;
     this.globals.managesLocation = dts.manages;
