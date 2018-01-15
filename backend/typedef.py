@@ -182,7 +182,7 @@ class MediaItem(AsyncInit, WithLock):
                due_date = {}, -- time-allowed parameter calculated in python bc would be awful to do in plpgsql
                fines = 0
          WHERE mid = $2::bigint;
-        """.format("'Infinity'::date" if infinite else 'current_date + $4::int')
+        """.format("'Infinity'::date" if infinite else 'current_date + $3::int')
         # as many weeks as specified UNLESS the user has no restrictions on checkout time
         # in which case infinity (which postgres allows in date fields, handily enough)
         params = [query, user.uid, self.mid]
@@ -798,16 +798,17 @@ class User(AsyncInit, WithLock):
     
     @property
     def cannot_check_out(self):
-        if self.maxes.checkout_duration and self.checkouts_left:
-            # success
+        able = self.locks.checkouts, self.maxes.checkout_duration
+        if all(able): # success
             return False
-        ret = "You can't check anything out at the moment."
-        + ('' if able[0] else ' (currently using {} of {} allowed concurrent '
-                                    'checkouts)'.format(self.num_checkouts,
-                                                        self.locks.checkouts)
-               )
-        + '' if able[1] else ' (allowed to check out for 0 weeks)'
-        return ret
+        ret = ("You can't check anything out at the moment"
+        
+        + ('' if able[0] else
+            ' (currently using {} of {} allowed concurrent checkouts'
+                .format(self.num_checkouts, self.locks.checkouts))
+        
+        + ('' if able[1] else '; allowed to check out for 0 weeks'))
+        return ret + ('' if able[0] else ')')
     
     @classmethod
     async def create(cls, app, **kwargs):
