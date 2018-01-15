@@ -1,3 +1,6 @@
+div {
+  padding: 1em;
+}
 /*
 The below is mostly copied from ngx-md's CSS styling, but with the changes necessary to resolve this issue:
 https://github.com/dimpu/ngx-md/issues/118

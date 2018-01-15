@@ -42,4 +42,7 @@ export class Globals {
   
   // all roles in location
   locRoles;
+  
+  // help article info (not the text content though)
+  helpArticles;
 }

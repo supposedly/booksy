@@ -2,24 +2,27 @@ import { Component, OnInit } from '@angular/core';
 
 import { HelpService } from '../help.service';
 
+import { Globals } from '../globals';
+
 @Component({
   selector: 'app-help',
   templateUrl: './help.component.html',
   styleUrls: ['./help.component.css']
 })
 export class HelpComponent implements OnInit {
-  articles: any[] = null;
-  
-  constructor(private helpService: HelpService) { }
+  constructor(
+    public globals: Globals,
+    private helpService: HelpService
+  ) {}
 
   ngOnInit() {
-    this.getArticles()
+    this.getArticles();
   }
   
   getArticles() {
-    if (!this.articles) {
+    if (!this.globals.helpArticles) {
       this.helpService.getArticles()
-        .subscribe(resp => this.articles = resp);
+        .subscribe(resp => this.globals.helpArticles = resp.articles);
     }
   }
 
