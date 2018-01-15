@@ -1,6 +1,5 @@
 """/location/members"""
 import asyncpg
-import bcrypt
 import sanic
 import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
