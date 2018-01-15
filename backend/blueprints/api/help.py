@@ -17,7 +17,7 @@ async def serve_help_titles(rqst):
     """These can be cached because they won't change"""
     async with rqst.app.acquire() as conn:
         titles = await conn.fetch("""SELECT id, title FROM help WHERE true""")
-    return sanic.response.json([{'id': i['id'], 'title': i['title']} for i in titles], status=200)
+    return sanic.response.json({'articles': [{'id': i['id'], 'title': i['title']} for i in titles]}, status=200)
 
 @help.get('/content')
 @rqst_get('id')

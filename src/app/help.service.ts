@@ -15,7 +15,7 @@ export class HelpService {
   
   constructor(private http: HttpClient) {}
   
-  getArticles(): Observable<any> {
+  getArticles(): any {
     return this.http.get<any>(this.titlesURL).shareReplay();
   }
   

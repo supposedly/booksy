@@ -1,7 +1,9 @@
-<h1>Help articles</h1>
-<hr/>
-<ul>
-  <li *ngFor="let article of articles" routerLink="./{{article.id}}">
-    {{article.title}}
-  </li>
-</ul>
+<div id="container">
+  <h1>Help articles</h1>
+  <hr/>
+  <ul>
+    <li *ngFor="let article of globals.helpArticles" routerLink="./{{article.id}}">
+      {{article.title}}
+    </li>
+  </ul>
+</div>

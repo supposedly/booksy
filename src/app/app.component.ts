@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { MemberAuthService } from './member-auth.service';
+import { HelpService } from './help.service';
 import { SetupService } from './setup.service';
 
 @Component({
@@ -13,6 +14,7 @@ export class AppComponent implements OnInit {
 
   constructor(
     private setupService: SetupService,
+    private helpService: HelpService,
     private memberAuthService: MemberAuthService
   ) { }
 
