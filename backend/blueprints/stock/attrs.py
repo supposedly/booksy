@@ -39,7 +39,7 @@ async def serve_attr_names(rqst, perms):
           'Create administrative roles '
           '(ones that can provide other roles with '
           'the "Manage location" permission)')
-    return sanic.response.json(res, status=200)
+    return sanic.response.json(res, status=200, headers={'Cache-Control': 'no-cache, no-store, must-revalidate'})
 
 @attrs.get('/signup-form')
 async def serve_signup_form(rqst):

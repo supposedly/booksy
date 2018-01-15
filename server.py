@@ -163,6 +163,15 @@ async def force_angular(rqst):
         except IndexError:
             return sanic.response.redirect('/index.html')
 
+@app.middleware('response')
+async def force_no_cache(rqst, resp):
+    """
+    This is ABSOLUTELY necessary because browsers will otherwise cache
+    the sidebar buttons(which, of course, are supposed to be delivered
+    by calculating the CURRENT user's permissions)
+    """
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+
 '''
 @app.route('/')
 async def handle_homepage(rqst):
