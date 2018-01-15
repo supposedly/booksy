@@ -63,11 +63,11 @@ export class MediaEditComponent implements OnInit {
   }
   
   submit(): void {
+    if (this.genre_) {
+      this.globals.locGenres.push(this.genre_);
+      this.item.genre = this.genre_;
+    }
     if (this.mID == 'new') {
-      if (this.genre_) {
-        this.globals.locGenres.push(this.item.genre);
-        this.item.genre = this.genre_;
-      }
       this.locationService.addItem(this.item)
         .subscribe(
           resp => {

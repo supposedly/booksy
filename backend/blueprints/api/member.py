@@ -33,18 +33,35 @@ async def get_user_items(rqst, user):
 async def get_user_holds(rqst, user):
     return sanic.response.json(await user.held(), status=200)
 
+@member.post('/clear-hold')
+@rqst_get('user', 'item')
+@jwtdec.protected()
+async def clear_hold(rqst, user, item):
+    await user.clear_hold(item)
+    return sanic.response.raw(b'', status=204)
+
 @member.post('/edit')
 @rqst_get('user', 'member') # note that the 2nd is the user TO EDIT, not the one sending the request
 @jwtdec.protected()
 async def edit_member(rqst, user, member):
     if not user.perms.can_manage_accounts:
         sanic.exceptions.abort(403, "You aren't allowed to modify member info.")
-    mbr = await User(member['user_id'], rqst.app)
-    await mbr.edit(username=member['username'], rid=member['rid'], fullname=member['name'])
+    changing = await User(member['user_id'], rqst.app)
+    if user.perms.raw < changing.perms.raw:
+        sanic.exceptions.abort(403, "You aren't allowed to modify this member's info.")
+    await changing.edit(username=member['username'], rid=member['rid'], fullname=member['name'])
     return sanic.response.raw(b'', status=204)
 
 @member.get('/check-perms')
 @uid_get('perms')
 @jwtdec.protected()
 async def check_perms(rqst, perms):
-    return sanic.response.json(perms.names, status=200)
+    def toCamelCase(inp):
+        """
+        Just so I can access attrs idiomatically in TypeScript,
+        using camelCase instead of snake_case
+        """
+        words = inp.split('_')
+        return 'can' + ''.join(map(str.capitalize, words))
+    perms.names = {toCamelCase(k): v for k, v in perms.names.items()}
+    return sanic.response.json({'perms': perms.all}, status=200)

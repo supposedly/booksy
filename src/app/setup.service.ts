@@ -30,9 +30,6 @@ export class SetupService {
   
   getPerms(uID) {
     return this.http.get<any>(this.permCheckURL, {params: {uid: uID}})
-      .subscribe(resp => {
-          this.globals.canEditMedia = resp.can_manage_media;
-          this.globals.canMakeAdminRoles = resp.can_create_admin_roles;
-      });
+      .subscribe(resp => this.globals.perms = resp.perms);
   }
 }

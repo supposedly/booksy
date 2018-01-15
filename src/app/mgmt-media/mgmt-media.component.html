@@ -3,8 +3,8 @@
   <li *ngFor="let item of items; let i = index" class="item-box">
     <div class="text"> <!-- div in a list ahah yikes -->
       <span class="title link" routerLink="../../media/{{item.mid}}">{{item.title}}</span>
-      <span class="link" *ngIf="globals.canEditMedia" routerLink="../../media/edit/{{item.mid}}"> (edit)</span>
-      <span class="link bad" *ngIf="globals.canEditMedia" (click)="del(item.mid); items.splice(i, 1)"> (delete)</span>
+      <span class="link" *ngIf="globals.perms.names.canManageMedia" routerLink="../../media/edit/{{item.mid}}"> (edit)</span>
+      <span class="link bad" *ngIf="globals.perms.names.canManageMedia" (click)="del(item.mid); items.splice(i, 1)"> (delete)</span>
       <br/>
       <span class="author">{{item.author | titlecase}}</span>
       <br/>

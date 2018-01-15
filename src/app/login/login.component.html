@@ -8,7 +8,7 @@
       name="lid"
       [(ngModel)]="lID"
       [ngModelOptions]="{updateOn: 'submit'}"
-      [class.invalid]="!numRe.test(lid.value)"
+      [class.invalid]="lid.value && !numRe.test(lid.value)"
       autocomplete=section-lid
       placeholder="Location ID">
     <input #uid

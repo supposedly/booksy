@@ -17,7 +17,7 @@ export class MgmtMediaComponent implements OnInit {
   constructor(
     public globals: Globals,
     private locationService: LocationService
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.getItems();

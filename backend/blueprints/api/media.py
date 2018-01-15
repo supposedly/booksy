@@ -19,16 +19,30 @@ async def put_item_on_hold(rqst, user, item):
     if not item._issued_uid:
         sanic.exceptions.abort(409, "This item is already available.")
     err = await user.hold(title=item.title, author=item.author, type_=item.type, genre=item.genre)
-    if err:
+    if err: # if it the user's not allowed to do this it'll return a str, otherwise None
         sanic.exceptions.abort(403, err)
     return sanic.response.raw(b'', status=204)
+
+@media.post('/clear-fines')
+@rqst_get('user', 'item') # user making the request (NOT the user with the fines), and then the item to be paid off
+@jwtdec.protected()
+async def pay_item_off(rqst, user, item):
+    if not user.perms.can_manage_media:
+        sanic.exceptions.abort(403, "You aren't allowed to mark fines paid.")
+    await item.pay_off()
+    return sanic.response.raw(b'', 204)
 
 @media.get('/check')
 @rqst_get('item')
 async def get_bool_available(rqst, item):
     """
-    This might be unnecessary... I might be able to just
+    This may be unnecessary... I should be able to just
     handle the 'check' by aborting from /check/out, no?
+    
+    (I guess it's more convenient for me with this inter-
+    mediary step, bc it allows me to explicitly show an
+    error message if necessary before any further requests
+    occur)
     """
     issued_to = item.issued_to.username if item.issued_to and item.issued_to.username else item._issued_uid
     try:

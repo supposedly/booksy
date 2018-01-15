@@ -16,6 +16,7 @@ export class MemberService {
   private notifURL: string = 'api/member/notifications';
   private suggestionURL: string = 'api/member/suggest';
   private holdsURL: string = 'api/member/held';
+  private clearHoldURL: string = 'api/member/clear-hold';
   private itemsURL: string = 'api/member/checked-out';
   
   constructor(
@@ -38,6 +39,10 @@ export class MemberService {
   
   getHolds(): Observable<any> {
     return this.http.get<any>(this.holdsURL, {params: {uid: this.globals.uID}});
+  }
+  
+  clearHold(mID): Observable<any> {
+    return this.http.post<any>(this.clearHoldURL, {uid: this.globals.uID, mid: mID}, httpOptions);
   }
   
 }

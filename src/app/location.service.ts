@@ -16,13 +16,13 @@ export class LocationService {
   loc: string = 'api/location';
   private locItemsURL: string = this.loc + '/media';
   private searchURL: string = this.loc + '/media/search';
-  private membersURL: string = this.loc + '/members';
+  private allMembersURL: string = this.loc + '/members';
   private memberInfoURL: string = this.loc + '/members/info';
   private createMemberURL: string = this.loc + '/members/add';
-  private editMemberURL: string = 'api/member/edit';
   private deleteMemberURL: string = this.loc + '/members/remove';
   private createItemURL: string = this.loc + '/media/add';
   private delItemURL: string = this.loc + '/media/remove';
+  private editMemberURL: string = 'api/member/edit';
   
   constructor(
     private globals: Globals,
@@ -34,7 +34,7 @@ export class LocationService {
   }
   
   getAllMembers(cont): Observable<any> {
-    return this.http.get(this.membersURL, {params: {uid: this.globals.uID, cont: cont}});
+    return this.http.get(this.allMembersURL, {params: {uid: this.globals.uID, cont: cont}});
   }
   
   getAllMedia(cont): Observable<any> {
@@ -71,8 +71,12 @@ export class LocationService {
   }
   
   addItem(item): Observable<any> {
-    item.uid = this.globals.uID; // so I can grab everything in the backend daf3a we7de
+    item.uid = this.globals.uID; // so I can grab everything in the backend at once
     return this.http.post<any>(this.createItemURL, item, httpOptions);
+  }
+  
+  removeMember(uID): Observable<any> {
+    return this.http.post<any>(this.deleteMemberURL, {uid: this.globals.uID, member: uID}, httpOptions);
   }
   
 }

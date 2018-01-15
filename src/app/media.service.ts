@@ -19,6 +19,7 @@ export class MediaService {
   private holdURL = 'api/media/hold';
   private editItemURL = 'api/media/edit';
   private deleteItemURL = 'api/media/delete';
+  private payFinesURL = 'api/media/pay-fines';
 
   constructor(
     private globals: Globals,
@@ -57,6 +58,10 @@ export class MediaService {
   
   deleteItem(mID): Observable<any> {
     return this.http.post<any>(this.deleteItemURL, {uid: this.globals.uID, mid: mID}, httpOptions);
+  }
+  
+  markFinesPaid(mID): Observable<any> {
+    return this.http.post<any>(this.payFinesURL, {uid: this.globals.uID, mid: mID}, httpOptions);
   }
   
 }
