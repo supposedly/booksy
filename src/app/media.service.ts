@@ -19,7 +19,7 @@ export class MediaService {
   private holdURL = 'api/media/hold';
   private editItemURL = 'api/media/edit';
   private deleteItemURL = 'api/media/delete';
-  private payFinesURL = 'api/media/pay-fines';
+  private payFinesURL = 'api/media/clear-fines';
 
   constructor(
     private globals: Globals,
