@@ -62,7 +62,7 @@ class MediaItem(AsyncInit, WithLock):
              'isbn', 'lid', 'fines',
              'title', 'author', 'published', 
              'image', 'price', 'length',
-             'available']
+             'available', 'due_date']
     async def __init__(self, mid, app):
         try:
             self.mid = int(mid)
@@ -196,7 +196,7 @@ class MediaItem(AsyncInit, WithLock):
         """
         await conn.execute(query, self.mid, user.uid)
         self.issued_to = user
-        self.due_date = dt.datetime.max if infinite else dt.datetime.utcnow() + dt.timedelta(weeks=user.maxes.checkout_duration)
+        self.due_date = 'never.' if infinite else dt.datetime.utcnow() + dt.timedelta(weeks=user.maxes.checkout_duration)
         self.fines = 0
         self.available = False
     
@@ -916,9 +916,9 @@ class User(AsyncInit, WithLock):
     @lockquire()
     async def items(self, conn):
         query = """
-        SELECT mid, title, author, type, genre, image FROM items WHERE issued_to = $1::bigint
+        SELECT mid, title, author, type, genre, image, due_date FROM items WHERE issued_to = $1::bigint
         """
-        return [{j: i[j] for j in ('mid', 'title', 'author', 'genre', 'type', 'image')} for i in await conn.fetch(query, self.uid)]
+        return [{j: str(i[j]) for j in ('mid', 'title', 'author', 'genre', 'type', 'image', 'due_date')} for i in await conn.fetch(query, self.uid)]
     
     @lockquire()
     async def held(self, conn):

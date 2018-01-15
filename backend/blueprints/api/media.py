@@ -86,7 +86,7 @@ async def issue_item(rqst, item, username, location):
         # will never be triggered really unless I forget to query /check first
         sanic.exceptions.abort(409, f'Item is checked out to {issued_to}.')
     await item.issue_to(user=user)
-    return sanic.response.json({'checked': 'out', 'title': item.title, 'author': item.author, 'image': item.image}, status=200)
+    return sanic.response.json({'checked': 'out', 'title': item.title, 'author': item.author, 'image': item.image, 'due': str(item.due_date)}, status=200)
 
 @media.post('/check/in')
 @rqst_get('item', 'username', 'location')

@@ -12,6 +12,7 @@
       <br/>
       <aside class="type">{{item.type | titlecase}}</aside>
       <aside class="barcode">{{item.mid}}</aside>
+      <aside>Due: {{item.due_date}}</aside>
     </div>
       <img *ngIf="item.image && item.image != 'None'" [src]="item.image" [alt]="item.title">
   </li>
