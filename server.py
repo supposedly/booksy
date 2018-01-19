@@ -97,7 +97,7 @@ app.config.SANIC_JWT_COOKIE_SET = True # Store token in cookies instead of makin
                                        # ...this may also open things up for XSRF. but I don't know enough about
                                        # that to be sure regarding how to deal with or ameliorate it
 app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
-app.config.SANIC_JWT_SECRET = os.getenv('SANIC_JWT_SECRET') # it's a secret to everybody!
+app.config.SANIC_JWT_SECRET = os.environ['SANIC_JWT_SECRET'] # it's a secret to everybody!
 app.config.SANIC_JWT_CLAIM_IAT = True # perhaps for long sessions
 # app.config.SANIC_JWT_CLAIM_NBF = True # why not, more security
 # app.config.SANIC_JWT_CLAIM_NBF_DELTA = 2 # token becomes checkable 2s after creation
