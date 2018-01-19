@@ -1,6 +1,9 @@
 """/location/members"""
 import asyncpg
-import bcrypt
+try:
+    import bcrypt
+except ModuleNotFoundError: # means I'm testing
+    pass
 import sanic
 import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
