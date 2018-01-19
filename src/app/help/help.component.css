@@ -1,21 +1,22 @@
 #container {
   padding: 1em;
 }
-hr {
-  display: block;
-  height: 1px;
-  margin: 1em 0;
-  padding: 0;
-  border-top: 2px solid #ccc;
+h1 {
+  border-bottom: 1px solid;
+  border-color: #666;
 }
 ul {
   list-style: none;
+  padding-left: 1em;
 }
 li {
-  text-decoration: underline;
+  font-size: 20px;
+  font-weight: 300;
   cursor: pointer;
-  margin: 5px;
+  width: fit-content;
+  border-bottom: 1px solid black;
 }
-li:hover {
-  text-decoration: none;
+li:hover, li:focus {
+  outline: none;
+  border-bottom: 1px solid transparent;
 }
