@@ -636,7 +636,7 @@ class Location(AsyncInit, WithLock):
                 # get isbn
                 ident, *_ = [i['identifier'] for i in ident if 'isbn' in i['type'].lower()]
             if img:
-                img = img.get('smallThumbnail', img.get('thumbnail', None))
+                img = img.get('smallThumbnail', img.get('thumbnail', '')).replace('http://', 'https://')
         args = type_, genre, ident or isbn, self.lid, title, author, int(published), round(Decimal(price), 2), int(length)
         #async with self.__class__._aiolock:
         async with self.app.pg_pool.acquire() as conn:
