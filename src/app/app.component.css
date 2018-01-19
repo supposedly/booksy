@@ -1,5 +1,5 @@
 ::ng-deep *:not(a) {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Source Sans Pro', sans-serif;
   color: #232323;
 }
 ::ng-deep button, input[type=submit] {

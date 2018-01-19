@@ -1,15 +1,27 @@
-div {
+#help-view {
   padding: 1em;
+}
+::ng-deep #help-view p,
+::ng-deep #help-view strong,
+::ng-deep #help-view ul,
+::ng-deep #help-view li {
+  color: #373D49;
+}
+::ng-deep #help-view h1 {
+  border-bottom: 1px solid;
+  border-color: #666;
+}
+::ng-deep #help-view h4 {
+  border-bottom: 1px solid;
+  border-color: #bdbdbd;
+  font-size: 22px;
 }
 /*
 The below is mostly copied from ngx-md's CSS styling, but with the changes necessary to resolve this issue:
 https://github.com/dimpu/ngx-md/issues/118
 I take no credit for any of the CSS below.
 */
-::ng-deep * {
-  box-sizing: border-box;
-}
-::ng-deep pre {
+::ng-deep #help-view pre {
   display: block;
   padding: 9.5px;
   margin: 0 0 10px;
@@ -22,22 +34,22 @@ I take no credit for any of the CSS below.
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-::ng-deep code {
+::ng-deep #help-view code {
   color: #c7254e;
   background-color: #f9f2f4;
   font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
 }
-::ng-deep *:not(pre) > code {
+::ng-deep #help-view *:not(pre) > code {
   padding: 2px 4px;
   font-size: 90%;
 }
-::ng-deep blockquote {
+::ng-deep #help-view blockquote {
   display: block;
   background: #fff;
   padding: 15px 20px 15px 45px;
   margin: 0 0 20px;
   position: relative;
-  font-family: Ubuntu, sans-serif;
+  font-family: Georgia, serif;
   font-size: 16px;
   line-height: 1.2;
   color: #666;
@@ -46,11 +58,11 @@ I take no credit for any of the CSS below.
   border-right: 2px solid #c76c0c;
   -moz-box-shadow: 0px 0px 2px #ccc;;
   -webkit-box-shadow: 0px 0px 2px #ccc;
-  box-shadow: 0px 0px 2px #ccc;
+  box-shadow: 0px 0px 5px #ccc;
 }
-::ng-deep blockquote::before {
+::ng-deep #help-view blockquote:before {
   content: "\201C";
-  font-family: Ubuntu, sans-serif;
+  font-family: Georgia, serif;
   font-size: 60px;
   font-weight: bold;
   color: #999;
@@ -58,31 +70,25 @@ I take no credit for any of the CSS below.
   left: 10px;
   top: 5px;
 }
-::ng-deep :after, :before {
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-}
-::ng-deep table {
+::ng-deep #help-view table {
   font-size: 14px;
   color: #212121;
   margin: 0 auto;
   border-collapse: collapse;
 }
-::ng-deep table td:last-of-type {
+::ng-deep #help-view table td:last-of-type {
   border-right: 0;
 }
-::ng-deep table tbody tr:nth-child(odd) {
+::ng-deep #help-view table tbody tr:nth-child(odd) {
   background-color: #f6f6f6;
 }
-
-::ng-deep table td {
+::ng-deep #help-view table td {
   height: 40px;
   width: 230px;
   border-bottom: 1px solid #e6e6e6;
   border-right: 1px solid #e6e6e6;
 }
-::ng-deep table thead th {
+::ng-deep #help-view table thead th {
   font-size: 20px;
   color: #212121;
   height: 40px;
@@ -91,7 +97,7 @@ I take no credit for any of the CSS below.
   border-right: 0;
   border-left: 0;
 }
-::ng-deep .token {
+::ng-deep #help-view .token {
     font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
     background-color: transparent !important;
 }

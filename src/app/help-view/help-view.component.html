@@ -1,6 +1,4 @@
-<div *ngIf="article">
+<div id="help-view" *ngIf="article">
   <h1>{{article.title}}</h1>
-  <markdown>
-    {{article.content}}
-  </markdown>
+  <markdown [data]="article.content"></markdown>
 </div>
