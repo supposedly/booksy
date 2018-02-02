@@ -440,7 +440,7 @@ class Location(AsyncInit):
         uid = await self.pool.fetchval(query)
         return await User(uid, self.app, location=self)
     
-    async def members(self, conn, by_role=True, *, limit=True, cont=0, max_results=15):
+    async def members(self, by_role=True, *, limit=True, cont=0, max_results=15):
         roles = {}
         async with self.acquire() as conn:
             if by_role:
