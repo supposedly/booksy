@@ -7,75 +7,13 @@ import struct
 from functools import wraps
 from asyncio import iscoroutinefunction as is_coro
 
-def lockquire(*, lock=True, db=True, sem=False, file=False, no_self=False):
-    # Passing self is necessary because of a weird weird thing where
-    # it'll sometimes raise an exception as "Missing required
-    # attribute 'self'". But then sometimes you'll pass self as is
-    # done below and it'll for whatever reason say "Got multiple
-    # values for argument 'self'" so I have no idea how to fix that
-    # besides suppressing it on a per-oddity basis with no_self
-    """
-    `lock' can be set to False when the function contains other stuff
-    that doesn't require the lock (so as to release it sooner for other
-    class instances to use).
-    I don't think anyone would ever find a practical reason to set `db'
-    to False, but it's still there just in case.
-    
-    db:   Acquire a connection to the sanic app's global postgres
-           connection pool for DB fetching/writing
-    sem:  Acquire a lock with the app's global asyncio.Semaphore(),
-           used to limit concurrent requests to external APIs
-           (namely Google Books here)
-    file: Acquire a lock with the app's other global Semaphore(),
-           this time used for limiting concurrent file reads (NOT
-           WRITES; that would be handled by a lock), because i saw
-           that linux doesn't handle that automatically and it can
-           cause strange stuff if too many reads happen at once
-    """
-    def decorator(func):
-        @wraps(func)
-        async def wrapper(self, *args, **kwargs):
-            """
-            A decorator, equivalent to starting a method with
-            `with await asyncio.Lock()` followed by
-            `async with asyncpg.Pool().acquire()`, picking/
-            choosing as specified above.
-            (lockquire = 'lock and acquire')
-            """
-            # acquire whatever's necessary
-          # if lock: await self.__class__._aiolock.acquire()
-            if db: conn = await self.app.pg_pool.acquire()
-            if sem: await self.app.sem.acquire()
-            if file: await self.app.filesem.acquire()
-            try:
-                # get return value here
-                if no_self:
-                    value = await func(conn=conn, *args, **kwargs)
-                else:
-                    value = await func(self=self, conn=conn, *args, **kwargs)
-            except:
-                # do nothing, let it propagate
-                raise
-            else:
-                # return the above return value
-                return value
-            finally:
-                # ALWAYS release acquisitions
-                if file: await self.app.filesem.acquire()
-                if sem: self.app.sem.release()
-                if db: await self.app.pg_pool.release(conn)
-              # if lock: self.__class__._aiolock.release()
-        return wrapper
-    return decorator
-
-
 class LazyProperty:
     """
     Allows definition of properties calculated once and once only.
     From user Cyclone on StackOverflow; modified slightly to look more
     coherent for my own benefit and to work with asyncio's coroutines.
     
-    UNUSED as of 4 January 2018. May reintroduce in the future; dunno.
+    UNUSED as of 4 January 2018. May reintroduce in the future... dunno.
     """
     def __init__(self, method):
         self.method = method
@@ -103,13 +41,6 @@ class AsyncInit:
         return obj
     async def __init__(self):
         pass
-
-
-class WithLock:
-    @classmethod
-    def _init_lock(cls, loop):
-        cls._aiolock = asyncio.Lock(loop=loop)
-
 
 class PackedByteFieldMixin:
     """
