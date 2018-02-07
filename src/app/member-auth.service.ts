@@ -132,7 +132,6 @@ export class MemberAuthService {
           return false;
         }
     );
-    return this.globals.isLoggedIn; // synchronicity in an async function? uh oh (but it works perf bc caching)
   }
   
   logOut() {

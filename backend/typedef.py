@@ -1,12 +1,11 @@
 """
 Just a bunch of type definitions :)
 """
+import asyncio
 import io
 import datetime as dt
 import functools as fct
 from decimal import Decimal
-
-import asyncio
 from asyncio import iscoroutinefunction as is_coro
 
 import asyncpg
@@ -15,6 +14,10 @@ from .core import AsyncInit
 from .resources import Perms, Maxes, Locks
 
 class MediaType(AsyncInit):
+    """
+    Defines a kind of media, e.g. books or audiotapes.
+    Currently unused but I very much hope to implement it at a later date.
+    """
     props = [
       'name', 
     ]
@@ -24,7 +27,7 @@ class MediaType(AsyncInit):
         self.pool = app.pg_pool
         self.acquire = self.pool.acquire
         self.location = location if isinstance(location, Location) else await Location(int(location), self.app)
-        maxnum = await self.pool.fetchval("""SELECT maxes FROM items WHERE type = $1::text""", self.name)
+        maxnum = await self.pool.fetchval('''SELECT maxes FROM items WHERE type = $1::text''', self.name)
         self.maxes = None if maxnum is None else Maxes(maxnum)
     
     def __str__(self):
@@ -34,27 +37,41 @@ class MediaType(AsyncInit):
         return None # Not implemented
     
     async def get_items(self):
-        query = """
+        query = '''
         SELECT mid
           FROM items
          WHERE media_type == $1
            AND lid = $2::bigint
-        """
+        '''
         return await self.pool.fetch(query, self.name, self.lid)
     
     async def set_maxes(self, newmaxes: Maxes):
         if not isinstance(newmaxes, Maxes):
             raise TypeError('Argument must be of type Maxes')
-        query = """
+        query = '''
         UPDATE items
            SET maxes = $1::bigint
          WHERE media_type = $2::text
-        """
+        '''
         await self.pool.execute(query, newmaxes.num, self.name)
         self.maxes = newmaxes
     
 
 class MediaItem(AsyncInit):
+    """
+    Defines a single item of media.
+    Instance methods include:
+    
+    to_dict: Called to pass item data to front end.
+    set_maxes: Unused currently. Sets item-specific Maxes, and is able
+      to set either on a single instance of an item or across all items
+      with the same title & author & type
+    status: Whether item is checked out
+    pay_off: Clear fines
+    edit: Edits the item's metadata
+    issue_to: Check out to a given user
+    
+    """
     props = ['mid', 'genre', 'type',
              'isbn', 'lid', 'fines',
              'title', 'author', 'published', 
@@ -68,20 +85,21 @@ class MediaItem(AsyncInit):
         self.app = app
         self.pool = app.pg_pool
         self.acquire = self.pool.acquire
-        query = """
+        query = '''
         SELECT type, isbn, lid, author, title, published, genre, issued_to, due_date, fines, acquired, maxes, image, length, price
-         FROM items
-        WHERE mid = $1::bigint
-        """
+          FROM items
+         WHERE mid = $1::bigint
+        '''
         try:
-            # this is so ugly
-            self._type, self.isbn, self.lid, \
-            self.author, self.title,         \
-            self.published, self.genre,      \
-            self._issued_uid, self.due_date, \
-            self.fines, self.acquired,       \
-            self.maxes, self.image,          \
-            self.length, self.price = await self.pool.fetchrow(query, self.mid)
+            (
+             self._type, self.isbn, self.lid,
+             self.author, self.title,
+             self.published, self.genre,
+             self._issued_uid, self.due_date,
+             self.fines, self.acquired,
+             self.maxes, self.image,
+             self.length, self.price
+            ) = await self.pool.fetchrow(query, self.mid)
         except TypeError:
             raise TypeError('item') # to be fed back to the client as "{item} does not exist!"
         self.location = await Location(self.lid, self.app)
@@ -92,30 +110,29 @@ class MediaItem(AsyncInit):
     
     def to_dict(self):
         retdir = {attr: str(getattr(self, attr, None)) for attr in self.props}
-        retdir['available'] = not self.issued_to
-        retdir['type_'] = self._type
+        retdir['type_'], retdir['available'] = self._type, not self.issued_to
         return retdir
     
     async def set_maxes(self, newmaxes: Maxes, *, mid=True):
         if not isinstance(newmaxes, Maxes):
             raise TypeError('Argument must be of type Maxes')
-        query = """
+        query = '''
         UPDATE items
            SET maxes = $1::bigint
          WHERE {}
-        """.format('mid = $2::bigint' if mid else "title ILIKE '%' || $2::text || '%' AND author ILIKE '%' || $3::text || '%'")
+        '''.format('mid = $2::bigint' if mid else "title ILIKE '%' || $2::text || '%' AND author ILIKE '%' || $3::text || '%'") #TODO: add mediatype comparison as well
         await self.pool.execute(query, newmaxes.num, *([self.mid] if mid else [self.title, self.author]))
         self.maxes = newmaxes
     
     async def status(self, *, resp = {'issued_to': None, 'due_date': None, 'fines': None}):
-        query = """
+        query = '''
         SELECT
               CASE
                 WHEN issued_to IS NOT NULL
                 THEN (issued_to, due_date, fines)
               END
          FROM items
-        """
+        '''
         check = await self.pool.fetchrow(query)
         try:
             issued_to, due_date, fines = check
@@ -128,15 +145,15 @@ class MediaItem(AsyncInit):
         return resp
     
     async def pay_off(self):
-        query = """
+        query = '''
         UPDATE items
            SET fines = 0::numeric
          WHERE mid = $1::bigint
-        """
+        '''
         return await self.pool.execute(query, self.mid)
     
     async def edit(self, title, author, genre, type_, price, length, published, isbn):
-        query = """
+        query = '''
         UPDATE items
            SET title = $2::text,
                author = $3::text,
@@ -147,7 +164,7 @@ class MediaItem(AsyncInit):
                published = $8::int,
                isbn = $9::text
          WHERE mid = $1::bigint
-        """
+        '''
         await self.pool.execute(query, self.mid, title, author, genre, type_, round(Decimal(price), 2), int(length), int(published), isbn)
     
     async def issue_to(self, user):
@@ -157,33 +174,32 @@ class MediaItem(AsyncInit):
         and clear the user's holds on the item
         """
         infinite = user.maxes.checkout_duration >= 255
-        
         async with self.acquire() as conn:
-            query = """
+            query = '''
             UPDATE members
                SET recent = $2::text
              WHERE uid = $1::bigint;
-            """
+            '''
             await conn.execute(query, user.uid, self.genre)
             
-            query = """
+            query = '''
             UPDATE items
                SET issued_to = $1::bigint, -- uid given as param
                    due_date = {}, -- time-allowed parameter calculated in python bc would be awful to do in plpgsql
                    fines = 0
              WHERE mid = $2::bigint;
-            """.format("'Infinity'::date" if infinite else 'current_date + $3::int')
+            '''.format("'Infinity'::date" if infinite else 'current_date + $3::int')
             # as many weeks as specified UNLESS the user has no restrictions on checkout time
             # in which case infinity (which postgres allows in date fields, handily enough)
             params = [query, user.uid, self.mid]
             if not infinite:
                 params.append(7*user.maxes.checkout_duration)
             await conn.execute(*params)
-            query = """
+            query = '''
             DELETE FROM holds
              WHERE mid = $1::bigint
                AND uid = $2::bigint
-            """
+            '''
             await conn.execute(query, self.mid, user.uid)
         self.issued_to = user
         self.due_date = 'never.' if infinite else dt.datetime.utcnow() + dt.timedelta(weeks=user.maxes.checkout_duration)
@@ -191,13 +207,13 @@ class MediaItem(AsyncInit):
         self.available = False
     
     async def check_in(self):
-        query = """
+        query = '''
         UPDATE items
            SET issued_to = NULL,
                due_date = NULL,
                fines = NULL
          WHERE mid = $1::bigint;
-        """
+        '''
         await self.pool.execute(query, self.mid)
         self.available = True
     
@@ -222,9 +238,9 @@ class Location(AsyncInit):
         self.acquire = self.pool.acquire
         self.lid = int(lid)
         async with self.acquire() as conn:
-            query = """SELECT name, ip, fine_amt, fine_interval, color, image FROM locations WHERE lid = $1::bigint"""
+            query = '''SELECT name, ip, fine_amt, fine_interval, color, image FROM locations WHERE lid = $1::bigint'''
             name, ip, fine_amt, fine_interval, color, image = await conn.fetchrow(query, self.lid)
-            query = """SELECT uid FROM members WHERE lid = $1 AND manages = true"""
+            query = '''SELECT uid FROM members WHERE lid = $1 AND manages = true'''
             uid = await conn.fetchval(query, self.lid)
         self.owner = await User(uid, self.app, location=self) if owner is None else owner # just for consistency; don't think the `else` will ever be used though
         self.name = name
@@ -248,8 +264,11 @@ class Location(AsyncInit):
         """
         Searches for a book's image using the Google Books API
         """
+        # first two args map to each other; str.maketrans('ab', 'xy') turns a->x and b->y
+        # third arg is chars to map to nothing (i.e. to delete)
+        # so i'm just deleting (almost) all punctuation
         no_punc = str.maketrans('', '', """!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~""")
-        author = author.translate(no_punc) # strip punctuation
+        author = author.translate(no_punc)
         title = title.translate(no_punc)
         isbn = isbn.translate(no_punc)
         
@@ -280,11 +299,11 @@ class Location(AsyncInit):
     
     @classmethod
     async def from_ip(cls, rqst):
-        query = """
+        query = '''
         SELECT lid
           FROM locations
          WHERE ip = $1::text
-        """
+        '''
         result = await rqst.app.pg_pool.fetchval(query, rqst.ip)
         if result:
             return cls(result, rqst.app)
@@ -310,6 +329,8 @@ class Location(AsyncInit):
             # assign the given role ID to all members
             df['rid'] = int(rid)
             # Rearrange to remain compliant with asyncpg's copy_to_table
+            # (that is, to fit with my table setup, because this method
+            # accepts no 'ordering' argument)
             # Unfortunately this means that it needs to be returned, because
             # while attributes can be modified 'in-place', the entire object
             # cannot
@@ -318,7 +339,7 @@ class Location(AsyncInit):
         # default ThreadPoolExecutor because these are CPU-bound operations
         # and not I/O-bound (which means you get better performance with a
         # ProcessPoolExecutor)
-        #
+        
         # load the file as a Pandas dataframe
         df = await app.aexec(app.ppe, pandas.read_csv(file))
         # encode password column to make it usable for bcrypt
@@ -360,67 +381,67 @@ class Location(AsyncInit):
             column = 'checkouts', checkouts
             key = 'name' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
             param = 'rid' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
-            query = """
+            query = '''
             SELECT DISTINCT ON (items.mid) items.title
               FROM members, items
              WHERE items.issued_to IS NOT NULL
-            """
+            '''
         if overdues:
             to_search = all_roles if overdues == 'per_role' else all_users if overdues == 'per_user' else [{}]
             column = 'overdues', overdues
             key = 'name' if overdues == 'per_role' else 'username' if overdues == 'per_user' else None
             param = 'rid' if overdues == 'per_role' else 'username' if overdues == 'per_user' else None
-            query = """
+            query = '''
             SELECT DISTINCT ON (items.mid) items.title
               FROM members, items
              WHERE items.issued_to IS NOT NULL
                AND items.due_date < current_date
-            """
+            '''
         
         if fines:
             to_search = all_roles if fines == 'per_role' else all_users if fines == 'per_user' else [{}]
             column = 'fines', fines
             key = 'name' if fines == 'per_role' else 'username' if fines == 'per_user' else None
             param = 'rid' if fines == 'per_role' else 'username' if fines == 'per_user' else None
-            query = """
+            query = '''
             SELECT sum(items.fines)
               FROM members, items
              WHERE items.issued_to IS NOT NULL
-            """
+            '''
         
         if holds:
             to_search = all_roles if holds == 'per_role' else all_users if holds == 'per_user' else [{}]
             column = 'holds', holds
             key = 'name' if holds == 'per_role' else 'username' if holds == 'per_user' else None
             param = 'rid' if holds == 'per_role' else 'username' if holds == 'per_user' else None
-            query = """
+            query = '''
             SELECT DISTINCT ON (items.mid) items.title
               FROM members, holds, items
              WHERE (SELECT lid FROM members WHERE uid = holds.uid) = ${}::bigint
-            """.format(1 if holds == 'all' else 2)
+            '''.format(1 if holds == 'all' else 2)
         
         async with self.acquire() as conn:
             if any((checkouts, overdues, fines, holds)):
                 res[column[0]] = []
-                query += ("""
+                query += ('''
                  AND (
                        SELECT username
                          FROM members
                         WHERE uid = items.issued_to
                      ) = $1::text
-                """ if column[1] == 'per_user' else """
+                ''' if column[1] == 'per_user' else '''
                  AND (
                        SELECT rid
                          FROM members
                         WHERE uid = items.issued_to
                      ) = $1::bigint
-                """ if column[1] == 'per_role' else """
+                ''' if column[1] == 'per_role' else '''
                  AND (
                        SELECT username
                          FROM members
                         WHERE uid = items.issued_to
                      ) IS NOT NULL
-                """)
+                ''')
                 for item in to_search:
                     search = (
                       conn.fetch(query, self.lid) if holds and holds == 'all' else
@@ -432,11 +453,11 @@ class Location(AsyncInit):
             if items:
                 # unused
                 # I'm not even sure what I was trying to do, in retrospect. Why is this a set?
-                res['items'] = {await conn.fetchval("""SELECT count(*) FROM items WHERE lid = $1::bigint""", self.lid)}
+                res['items'] = {await conn.fetchval('''SELECT count(*) FROM items WHERE lid = $1::bigint''', self.lid)}
         return res
     
     async def get_user(self, username: str):
-        query = """SELECT uid FROM members WHERE username = $1::text AND lid = $2::bigint AND type = 0"""
+        query = '''SELECT uid FROM members WHERE username = $1::text AND lid = $2::bigint AND type = 0'''
         uid = await self.pool.fetchval(query)
         return await User(uid, self.app, location=self)
     
@@ -445,19 +466,19 @@ class Location(AsyncInit):
         async with self.acquire() as conn:
             if by_role:
                 for role in await self.roles():
-                    query = """SELECT uid, username, fullname FROM members WHERE lid = $1::bigint AND rid = $2::bigint AND type = 0""" \
-                            + ("""LIMIT {} OFFSET {}""".format(max_results, cont) if limit else '')
+                    query = '''SELECT uid, username, fullname FROM members WHERE lid = $1::bigint AND rid = $2::bigint AND type = 0''' \
+                            + ('''LIMIT {} OFFSET {}'''.format(max_results, cont) if limit else '')
                     roles[role['name']] = (role['rid'], await conn.fetch(query, self.lid, role['rid']))
                 return [{'name': role, 'rid': rid, 'data': [{j: i[j] for j in ('uid', 'username', 'fullname')} for i in user]} for role, (rid, user) in roles.items()]
-            query = """SELECT uid, username, fullname FROM members WHERE lid = $1::bigint AND type = 0""" \
+            query = '''SELECT uid, username, fullname FROM members WHERE lid = $1::bigint AND type = 0''' \
                     + ("""LIMIT {} OFFSET {}""".format(max_results, cont) if limit else '')
             return [{j: i[j] for j in ('uid', 'username', 'fullname')} for i in await conn.fetch(query, self.lid)]
     
     async def add_member(self, username, pwhash: "hash this beforehand", rid, fullname):
-        # the following is for my own at-home testing (I can't download libffi,
-        # necessary for bcrypt) and will never EVER be triggered in a prod environment.
+        # the following is for my own at-home testing (I can't download libffi, which
+        # bcrypt depends on); it will never EVER be triggered in a prod environment.
         if isinstance(pwhash, str): pwhash = pwhash.encode('utf-8')
-        query = """
+        query = '''
         INSERT INTO members (
                   username, pwhash,
                   lid, rid,
@@ -470,30 +491,30 @@ class Location(AsyncInit):
                 $5::text,
                 NULL, NULL, -- not going to do these
                 false, 0;
-        """
+        '''
         await self.pool.execute(query, username, pwhash, self.lid, rid, fullname)
     
     async def remove_member(self, uid):
         # hm. should this be a method of User?
-        query = """
+        query = '''
         DELETE FROM members
               WHERE uid = $1::bigint
-        """
+        '''
         return await self.pool.execute(query, uid)
     
     async def search(self, *, title=None, genre=None, type_=None, author=None, cont=0, max_results=20, where_taken=None):
         search_terms = title, genre, author, type_
         query = (
-              """SELECT DISTINCT ON (lower(title)) title, mid, author, genre, type, image FROM items WHERE true """ # stupid hack coming up
-              + ("""AND title ILIKE '%' || ${}::text || '%' """ if title else '')
-              + ("""AND genre ILIKE '%' || ${}::text || '%' """ if genre else '')
-              + ("""AND author ILIKE '%' || ${}::text || '%' """ if author else '')
-              + ("""AND type ILIKE '%' || ${}::text || '%' """ if type_ else '')
-              + ("""AND false """ if not any(search_terms) else '') # because 'WHERE true' otherwise returns everything if not any(search_terms)
-              + ("""AND issued_to IS {} NULL """.format(('', 'NOT')[where_taken]) if where_taken is not None else '')
-              + ("""ORDER BY lower(title) """) # just to establish a consistent order for `cont' param
+              '''SELECT DISTINCT ON (lower(title)) title, mid, author, genre, type, image FROM items WHERE true ''' # stupid hack coming up
+              + ('''AND title ILIKE '%' || ${}::text || '%' ''' if title else '')
+              + ('''AND genre ILIKE '%' || ${}::text || '%' ''' if genre else '')
+              + ('''AND author ILIKE '%' || ${}::text || '%' ''' if author else '')
+              + ('''AND type ILIKE '%' || ${}::text || '%' ''' if type_ else '')
+              + ('''AND false ''' if not any(search_terms) else '') # because 'WHERE true' otherwise returns everything if not any(search_terms)
+              + ('''AND issued_to IS {} NULL '''.format(('', 'NOT')[where_taken]) if where_taken is not None else '')
+              + ('''ORDER BY lower(title) ''') # just to establish a consistent order for `cont' param
             ).format(*range(1, 1+sum(map(bool, search_terms)))) \
-            + ("""LIMIT {} OFFSET {} """).format(max_results, cont) # these are ok not to parameterize because they're internal
+            + ('''LIMIT {} OFFSET {} ''').format(max_results, cont) # these are ok not to parameterize because they're internal
         results = await self.pool.fetch(query, *filter(bool, search_terms))
         if where_taken is not None: # this means I'm calling it from in here and so I probably want an actual MediaItem or at least no junk
             if max_results == 1:
@@ -508,10 +529,10 @@ class Location(AsyncInit):
     
     async def roles(self):
         async with self.acquire() as conn:
-            query = """
+            query = '''
             SELECT rid, name, permissions AS perms,  maxes, locks FROM roles WHERE lid = $1
-            """
-            q2ery = """SELECT count(*) FROM members WHERE rid = $1::bigint"""
+            '''
+            q2ery = '''SELECT count(*) FROM members WHERE rid = $1::bigint'''
             res = [{j: i[j] for j in ('rid', 'name', 'perms', 'maxes', 'locks')} for i in await conn.fetch(query, self.lid)]
             for i in res:
                 i['perms'] = Perms(i['perms']).all
@@ -523,27 +544,27 @@ class Location(AsyncInit):
     async def add_role(self, name, *, kws=None, seqs=None):
         perms, maxes, locks = Role.attrs_from(seqs=seqs, kws=kws)
         async with self.acquire() as conn:
-            query = """
+            query = '''
             INSERT INTO roles (
                           lid, name,
                           permissions, maxes, locks
                           )
                  SELECT $1::bigint, $2::text,
                         $3::smallint, $4::bigint, $5::bigint;
-            """
+            '''
             await conn.execute(query, self.lid, name, perms.raw, maxes.raw, locks.raw)
-            rid = await conn.fetchval("""SELECT currval(pg_get_serial_sequence('roles', 'rid'))""")
+            rid = await conn.fetchval('''SELECT currval(pg_get_serial_sequence('roles', 'rid'))''')
         return await Role(rid, self.app, location=self)
     
     async def items(self, *, cont=0, max_results=20):
-        query = """
+        query = '''
         SELECT mid, type, title, author, genre, image
           FROM items
          WHERE lid = $1::bigint
       ORDER BY title
          LIMIT {}
         OFFSET {}
-        """.format(max_results, cont)
+        '''.format(max_results, cont)
         res = await self.pool.fetch(query, self.lid)
         return [{j: i[j] for j in ('mid', 'type', 'title', 'author', 'genre', 'image')} for i in res]
     
@@ -564,32 +585,32 @@ class Location(AsyncInit):
         # and may never be ...
     
     async def media_types(self):
-        query = """SELECT media_types FROM locations WHERE lid = $1::bigint"""
+        query = '''SELECT media_types FROM locations WHERE lid = $1::bigint'''
         # fetchval because it's an array (not a bunch of records)
         return await self.pool.fetchval(query, self.lid)
     
     async def add_media_type(self, type_name: str):
-        query = """
+        query = '''
         UPDATE locations
            SET media_types = array_append(media_types, $1::text)
          WHERE lid = $2::bigint
-        """
+        '''
         await self.pool.execute(query, type_name, self.lid)
         return await self.media_type(type_name)
     
     async def remove_media_type(self, type_name: str):
-        query = """
+        query = '''
         UPDATE locations
            SET media_types = array_remove(media_types, $1::text)
          WHERE lid = $2::bigint
-        """
+        '''
         await self.pool.execute(query, type_name, self.lid)
         return 'success' ###
     
     async def genres(self):
-        query = """
+        query = '''
         SELECT DISTINCT lower(genre) AS genre FROM items WHERE lid = $1::bigint ORDER BY lower(genre)
-        """
+        '''
         return [i['genre'] for i in await self.pool.fetch(query, self.lid)]
     
     async def add_media(self, title, author, published, type_, genre, isbn, price, length):
@@ -609,7 +630,7 @@ class Location(AsyncInit):
                 img = img.get('smallThumbnail', img.get('thumbnail', '')).replace('http://', 'https://')
         args = type_, genre, ident or isbn, self.lid, title, author, int(published), round(Decimal(price), 2), int(length)
         async with self.acquire() as conn:
-            query = """
+            query = '''
             INSERT INTO items (
                           type, genre,
                           isbn, lid, 
@@ -624,17 +645,17 @@ class Location(AsyncInit):
                         $9::numeric, $10::int,
                         current_date, NULL,
                         $1::text;
-            """
+            '''
             await conn.execute(query, img, *args)
-            mid = await conn.fetchval("""SELECT currval(pg_get_serial_sequence('items', 'mid'))""")
+            mid = await conn.fetchval('''SELECT currval(pg_get_serial_sequence('items', 'mid'))''')
         return await MediaItem(mid, self.app)
     
     async def remove_item(self, item):
         item = item if isinstance(item, MediaItem) else await MediaItem(item, self.app)
-        query = """
+        query = '''
         DELETE FROM items
         WHERE mid = $1::bigint
-        """
+        '''
         return await self.pool.execute(query, item.mid)
     
 class Role(AsyncInit):
@@ -643,7 +664,7 @@ class Role(AsyncInit):
         self.pool = self.app.pg_pool
         self.acquire = self.pool.acquire
         self.rid = int(rid)
-        query = """SELECT lid, name, permissions, maxes, locks FROM roles WHERE rid = $1::bigint"""
+        query = '''SELECT lid, name, permissions, maxes, locks FROM roles WHERE rid = $1::bigint'''
         try:
             lid, name, permbin, maxbin, lockbin = await self.pool.fetchrow(query, self.rid)
         except TypeError:
@@ -679,14 +700,14 @@ class Role(AsyncInit):
           }
     
     async def set_attrs(self, perms, maxes, locks, name):
-        query = """
+        query = '''
         UPDATE roles
            SET name = $2::text,
                permissions = $3::smallint,
                maxes = $4::bigint,
                locks = $5::bigint
          WHERE rid = $1::bigint
-        """
+        '''
         await self.pool.execute(query, self.rid, name, perms.raw, maxes.raw, locks.raw)
     
     @staticmethod
@@ -703,11 +724,11 @@ class Role(AsyncInit):
     
     
     async def delete(self):
-        query = """DELETE FROM roles WHERE rid = $1::bigint"""
+        query = '''DELETE FROM roles WHERE rid = $1::bigint'''
         await self.pool.execute(query, self.rid)
     
     async def num_members(self):
-        query = """SELECT count(*) FROM members WHERE rid = $1::bigint"""
+        query = '''SELECT count(*) FROM members WHERE rid = $1::bigint'''
         return await self.pool.fetchval(query, self.rid)
     
     @property
@@ -732,11 +753,11 @@ class User(AsyncInit):
         except TypeError:
             raise ValueError('No user exists with this username!')
         async with self.acquire() as conn:
-            query = """SELECT username, fullname, lid, rid, manages, email, phone, type, recent, perms, maxes, locks FROM members WHERE uid = $1::bigint;"""
+            query = '''SELECT username, fullname, lid, rid, manages, email, phone, type, recent, perms, maxes, locks FROM members WHERE uid = $1::bigint;'''
             username, name, lid, rid, manages, email, phone, self._type, recent, permbin, maxbin, lockbin = await conn.fetchrow(query, self.uid)
-            query = """SELECT count(*) FROM holds WHERE uid = $1::bigint"""
+            query = '''SELECT count(*) FROM holds WHERE uid = $1::bigint'''
             holds = await conn.fetchval(query, self.uid)
-            query = """SELECT count(*) FROM items WHERE issued_to = $1::bigint"""
+            query = '''SELECT count(*) FROM items WHERE issued_to = $1::bigint'''
             self.num_checkouts = await conn.fetchval(query, self.uid)
         self.location = await Location(lid, self.app) if location is None else location
         self.role = await Role(rid, self.app, location=self.location) if role is None else role
@@ -777,7 +798,7 @@ class User(AsyncInit):
     @classmethod
     async def create(cls, app, **kwargs):
         props = ['username', 'pwhash', 'lid', 'email', 'phone']
-        query = """
+        query = '''
         INSERT INTO members (
                       username, pwhash,
                       lid,
@@ -786,7 +807,7 @@ class User(AsyncInit):
              SELECT $1::text, $2::bytea,
                     $3::bigint,
                     $4::text, $5::text
-        """
+        '''
         await app.pg_pool.execute(query, *(kwargs[i] for i in props))
         return await cls(uid, app)
     
@@ -799,7 +820,7 @@ class User(AsyncInit):
         """
         if lid and location is None:
             location = await Location(int(lid), app)
-        query = """SELECT uid FROM members WHERE username = $1::text AND lid = $2::bigint"""
+        query = '''SELECT uid FROM members WHERE username = $1::text AND lid = $2::bigint'''
         uid = await app.pg_pool.fetchval(query, username, location.lid)
         return await cls(uid, app)
     
@@ -812,9 +833,9 @@ class User(AsyncInit):
     async def notifs(self):
         async with self.acquire() as conn:
             # could probably do this in one line
-            holds = await conn.fetchval("""SELECT count(*) FROM holds WHERE uid = $1::bigint""", self.uid)
-            fines = await conn.fetchval("""SELECT sum(fines) AS fines FROM items WHERE issued_to = $1::bigint""", self.uid)
-            overdue = await conn.fetchval("""SELECT count(*) AS overdue FROM items WHERE due_date < current_date;""")
+            holds = await conn.fetchval('''SELECT count(*) FROM holds WHERE uid = $1::bigint''', self.uid)
+            fines = await conn.fetchval('''SELECT sum(fines) AS fines FROM items WHERE issued_to = $1::bigint''', self.uid)
+            overdue = await conn.fetchval('''SELECT count(*) AS overdue FROM items WHERE due_date < current_date;''')
         
         response = []
         def add(type_, message):
@@ -833,55 +854,55 @@ class User(AsyncInit):
     async def hold(self, *, title, author, type_, genre, item=None):
         if item is None:
             item = await self.location.search(title=title, genre=genre, type_=str(type_), author=author, max_results=1, where_taken=True)
-        templ = """
+        templ = '''
        SELECT count(*)
          FROM items
         WHERE lower(title) = lower($1::text)
           AND lower(author) = lower($2::text)
           AND lower(type) = lower($3::text)
           AND lower(genre) = lower($4::text)
-        """
+        '''
         async with self.acquire() as conn:
             if await conn.fetchval(templ + """AND issued_to IS NULL""", title, author, str(type_), genre):
                 return 'Item is already available!'
             if await conn.fetchval(templ + """AND issued_to = $5::bigint""", title, author, str(type_), genre, self.uid):
                 return 'You have this item checked out already!'
-            query = """
+            query = '''
             INSERT INTO holds
               (uid, mid, created)
             SELECT $1::bigint, $2::bigint, current_date
-            """
+            '''
             try:
                 await conn.execute(query, self.uid, item.mid)
             except asyncpg.exceptions.UniqueViolationError:
                 return 'You already have a hold placed on this item!'
     
     async def clear_hold(self, item):
-        query = """
+        query = '''
         DELETE FROM holds
               WHERE uid = $1::bigint
                 AND mid = $2::bigint
-        """
+        '''
         return await self.pool.execute(query, self.uid, item.mid)
     
     async def edit(self, username, rid, fullname):
-        query = """
+        query = '''
         UPDATE members
            SET username = $2::text,
                rid = $3::bigint,
                fullname = $4::text
          WHERE uid = $1::bigint
-        """
+        '''
         await self.pool.execute(query, self.uid, username, rid, fullname)
     
     async def items(self):
-        query = """
+        query = '''
         SELECT mid, title, author, type, genre, image, due_date FROM items WHERE issued_to = $1::bigint
-        """
+        '''
         return [{j: str(i[j]) for j in ('mid', 'title', 'author', 'genre', 'type', 'image', 'due_date')} for i in await self.pool.fetch(query, self.uid)]
     
     async def held(self):
-        query = """
+        query = '''
         SELECT items.mid AS mid,
                items.title AS title,
                items.type AS type,
@@ -890,7 +911,7 @@ class User(AsyncInit):
                items.image AS image
           FROM holds, items
          WHERE holds.uid = $1::bigint AND items.mid = holds.mid
-        """
+        '''
         return [{j: i[j] for j in ('mid', 'title', 'author', 'genre', 'type', 'image')} for i in await self.pool.fetch(query, self.uid)]
     
     @property
