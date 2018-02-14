@@ -68,6 +68,8 @@ export class MemberAuthService {
   }
   
   saveToGlobals(dts): void {
+    this.uID = dts.user_id;
+    
     this.globals.uID = dts.user_id;
     this.globals.rID = dts.rid;
     this.globals.lID = dts.lid;
@@ -102,36 +104,12 @@ export class MemberAuthService {
     }, httpOptions)
   }
   
-  verify(): any /* boolean */ {
-    this.http.get<any>(this.verifyURL).pipe(
-      tap(_ => this.log(`verified current user's access token`)))
-      .subscribe(
-        resp => {
-          this.globals.isLoggedIn = resp && resp.valid;
-          if (this.globals.isLoggedIn) {
-            this.storeMeInfo();
-            return true;
-          } else {
-            this.http.post<any>(this.refreshURL, httpOptions).pipe(
-              tap(_ => this.log(`found expired access token so attempted to refresh it`)))
-              .subscribe(
-                resp => {
-                  this.globals.isLoggedIn = resp && (resp.access_token || resp.valid);
-                  if (this.globals.isLoggedIn) { this.storeMeInfo(); }
-                  return this.globals.isLoggedIn;
-                }, err => {
-                  console.log(err);
-                  this.globals.isLoggedIn = false;
-                  return false;
-                }
-            );
-          }
-        }, err => {
-          console.log(err);
-          this.globals.isLoggedIn = false;
-          return false;
-        }
-    );
+  verify(): any {
+    return this.http.get<any>(this.verifyURL);
+  }
+  
+  refresh(): any {
+    return this.http.post<any>(this.refreshURL, httpOptions);
   }
   
   logOut() {

@@ -37,7 +37,7 @@ export class LoginComponent implements OnInit {
   ngOnInit() {
     this.isLocationRegistered = this.memberAuthService.isRegistered;
     this.returnURL = this.route.snapshot.queryParams['returnURL'] || '/home';
-    if (this.memberAuthService.verify()) {
+    if (this.globals.isLoggedIn) {
       //this.zone.run(() => window.location.href = this.returnURL);
       //window.location.href = this.returnURL;
       this.router.navigateByUrl(this.returnURL);
@@ -51,7 +51,7 @@ export class LoginComponent implements OnInit {
           if (resp) {
             this.memberAuthService.getInfo()
               .subscribe(res => {
-                this.memberAuthService.saveToGlobals(res.me);
+                this.memberAuthService.saveToGlobals(res.me)
                 this.globals.isLoggedIn = true;
                 this.err = false;
                 this.msg = 'Thank you! You may now navigate to the HOME tab.'; // this should never be shown!
@@ -69,9 +69,6 @@ export class LoginComponent implements OnInit {
           this.msg = 'Invalid login credentials';
           this.loading = false;
           this.globals.isLoggedIn = false;
-        },
-        () => { //on completion
-          this.router.navigateByUrl(this.returnURL);
         }
     );
   }
