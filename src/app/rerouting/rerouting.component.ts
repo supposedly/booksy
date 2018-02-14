@@ -9,23 +9,26 @@ import { Globals } from '../globals';
   styleUrls: ['./rerouting.component.css']
 })
 export class ReroutingComponent implements OnInit {
-  redirect: string = '/';
-  
   constructor(
     private globals: Globals,
     private router: Router,
     private route: ActivatedRoute
-  ) {
-    this.router.errorHandler = (error: any) => {
-        this.router.navigate(['home']); // or redirect to default route
-    }
-  }
+  ) {}
   ngOnInit() {
     if (this.globals.isLoggedIn) {
-      this.router.navigate(['home'])
+      this.router.navigate(['home']);
     }
-    this.redirect = this.route.snapshot.queryParams['redirect'] || '/';
-    this.router.navigateByUrl(this.redirect, {});
+    setTimeout(
+      () => {
+        this.router.navigate(['/']);
+      },
+    500);
+    // Guess that counts as a 'stupid hack' -- its purpose is just to delay the redirection
+    // so that the requisite setup stuff can happen (because without that 500ms delay, this
+    // will try to do its thing first and end up with a blank sidebar amid other fun things
+    
+    this.router.navigateByUrl(this.route.snapshot.queryParams['redirect'] || '/login', {});
+    //TODO: See if you can figure out how to make it redirect like it should...
   }
 
 }
