@@ -1,4 +1,6 @@
 <button routerLink="../edit/new">Add item</button>
+<button *ngIf="cont>=5" (click)="cont=cont-5;getItems()">Prev</button>
+<button *ngIf="items.length>=5" (click)="cont=cont+5;getItems()">Next</button>
 <ul>
   <li *ngFor="let item of items; let i = index" class="item-box">
     <div class="text"> <!-- div in a list ahah yikes -->
@@ -17,5 +19,3 @@
       <img *ngIf="item.image && item.image != 'None'" [src]="item.image" [alt]="item.title">
   </li>
 </ul>
-<button *ngIf="cont>=5" (click)="cont=cont-5;getItems()">Prev</button>
-<button *ngIf="items.length>=5" (click)="cont=cont+5;getItems()">Next</button>

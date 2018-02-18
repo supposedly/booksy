@@ -46,7 +46,7 @@ export class LocationService {
       params: {
         uid: this.globals.uID,
         cont: cont.toString(),
-        title: title?title:null,     // doesn't produce the expected result if I don't do the ternary :thonk:
+        title: title?title:null,     // doesn't produce the expected result if I don't do the ternary, hmm.
         author: author?author:null,  // It may also be that I had another error that I fixed at the same time
         genre: genre?genre:null,     // as I was messing with the ternary, and so I myself am erroneously
         media_type: type_?type_:null // ascribing the error's cause to something to do with the ternary...
