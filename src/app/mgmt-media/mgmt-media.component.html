@@ -17,5 +17,5 @@
       <img *ngIf="item.image && item.image != 'None'" [src]="item.image" [alt]="item.title">
   </li>
 </ul>
-<button *ngIf="cont>=15" (click)="cont=cont-15;getItems()">Prev</button>
-<button *ngIf="items.length==15" (click)="cont=cont+15;getItems()">Next</button>
+<button *ngIf="cont>=5" (click)="cont=cont-5;getItems()">Prev</button>
+<button *ngIf="items.length>=5" (click)="cont=cont+5;getItems()">Next</button>

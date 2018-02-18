@@ -39,5 +39,5 @@ async def serve_a_report(rqst, location, perms, do):
 
 @root.get('/backups/<to_back_up:members|location|roles|holds|items>')
 @uid_get('location', 'perms', user=True)
-async def back_up_info():
+async def back_up_info(rqst):
     pass
