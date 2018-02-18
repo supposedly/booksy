@@ -517,7 +517,7 @@ class Location(AsyncInit):
               + ('''AND author ILIKE '%' || ${}::text || '%' ''' if author else '')
               + ('''AND type ILIKE '%' || ${}::text || '%' ''' if type_ else '')
               + ('''AND false ''' if not any(search_terms) else '') # because 'WHERE true' otherwise returns everything if not any(search_terms)
-              + ('''AND issued_to IS {} NULL '''.format(('', 'NOT')[where_taken]) if where_taken is not None else '')
+              + ('''AND issued_to IS {} NULL '''.format(('', 'NOT')[where_taken or 0]))
               + ('''ORDER BY lower(title) ''') # just to establish a consistent order for `cont' param
             ).format(*range(1, 1+sum(map(bool, search_terms)))) \
             + ('''LIMIT {} OFFSET {} ''').format(max_results, cont) # these are ok not to parameterize because they're internal
@@ -562,7 +562,7 @@ class Location(AsyncInit):
             rid = await conn.fetchval('''SELECT currval(pg_get_serial_sequence('roles', 'rid'))''')
         return await Role(rid, self.app, location=self)
     
-    async def items(self, *, cont=0, max_results=20):
+    async def items(self, *, cont=0, max_results=5):
         query = '''
         SELECT mid, type, title, author, genre, image
           FROM items
@@ -576,14 +576,14 @@ class Location(AsyncInit):
     
     async def edit(self, to_edit, new):
         """
-        :to_edit: can be any value; this method
-        handles typecasting on its own.
+        This is insecure. Very insecure.
         """
-        query = f"""
+        to_edit = to_edit.replace('=', '') # should take care of it but still ew
+        query = f'''
         UPDATE locations
            SET {to_edit} = $1::{'bytea' if to_edit=='image' else 'text'}
          WHERE lid = $2
-        """
+        '''
         await self.pool.execute(query, new, self.lid)
     
     async def image(self):
