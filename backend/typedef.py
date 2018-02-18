@@ -2,13 +2,14 @@
 Just a bunch of type definitions :)
 """
 import asyncio
+import functools
 import io
 import datetime as dt
-import functools as fct
 from decimal import Decimal
 from asyncio import iscoroutinefunction as is_coro
 
 import asyncpg
+import pandas
 
 from .core import AsyncInit
 from .resources import Perms, Maxes, Locks
@@ -70,7 +71,8 @@ class MediaItem(AsyncInit):
     pay_off: Clear fines
     edit: Edits the item's metadata
     issue_to: Check out to a given user
-    
+    check_in: Check item in
+    remove: Delete from library's records
     """
     props = ['mid', 'genre', 'type',
              'isbn', 'lid', 'fines',
@@ -225,6 +227,10 @@ class MediaItem(AsyncInit):
 
 
 class Location(AsyncInit):
+    """
+    Defines a library. Instance methods:
+        
+    """
     props = [
       'lid',
       'name', 'ip',
@@ -241,8 +247,8 @@ class Location(AsyncInit):
             query = '''SELECT name, ip, fine_amt, fine_interval, color, image FROM locations WHERE lid = $1::bigint'''
             name, ip, fine_amt, fine_interval, color, image = await conn.fetchrow(query, self.lid)
             query = '''SELECT uid FROM members WHERE lid = $1 AND manages = true'''
-            uid = await conn.fetchval(query, self.lid)
-        self.owner = await User(uid, self.app, location=self) if owner is None else owner # just for consistency; don't think the `else` will ever be used though
+            ouid = await conn.fetchval(query, self.lid)
+        self.owner = await User(ouid, self.app, location=self) if owner is None else owner # just for consistency; don't think the `else` will ever be used though
         self.name = name
         self.ip = ip
         self.fine_amt = fine_amt
@@ -251,6 +257,7 @@ class Location(AsyncInit):
         self.image = image
     
     def __str__(self):
+        """Unused but eh"""
         return str(self.lid)
     
     def to_dict(self):
@@ -262,7 +269,7 @@ class Location(AsyncInit):
     @staticmethod
     def gb_image_query(title='', author='', isbn=''):
         """
-        Searches for a book's image using the Google Books API
+        Generates a query to find a book's image using the Google Books API
         """
         # first two args map to each other; str.maketrans('ab', 'xy') turns a->x and b->y
         # third arg is chars to map to nothing (i.e. to delete)
@@ -320,12 +327,10 @@ class Location(AsyncInit):
         """
         def fix(df):
             """
-            Fix all necessary attributes to match DB in the user CSV dataframe.
+            Fix+reorder all necessary attributes to match DB in the user CSV dataframe.
             """
             # to ensure the generated salt is random, redo it for every row
-            hashpw = fct.partial(bcrypt.hashpw, salt=lambda: bcrypt.gensalt(12))
-            # hash w/ bcrypt using the above partial
-            df.password.apply(hashpw)
+            df.password.apply(df.password.str.encode, 'utf-8')#functools.partial(bcrypt.hashpw, salt=lambda: bcrypt.gensalt(12)))
             # assign the given role ID to all members
             df['rid'] = int(rid)
             # Rearrange to remain compliant with asyncpg's copy_to_table
@@ -341,19 +346,20 @@ class Location(AsyncInit):
         # ProcessPoolExecutor)
         
         # load the file as a Pandas dataframe
-        df = await app.aexec(app.ppe, pandas.read_csv(file))
+        df = await self.app.aexec(None, pandas.read_csv, file)
         # encode password column to make it usable for bcrypt
-        df.password = app.aexec(app.ppe, lambda: df.password.str.encode('utf-8'))
-        df = await app.aexec(app.ppe, fix, df)
-        async with io.BytesIO() as bIO, self.acquire() as conn:
-            app.aexec(app.ppe, df.to_csv(bIO))
+        df.password = self.app.aexec(None, df.password.str.encode, 'utf-8')
+        df = await self.app.aexec(None, fix, df)
+        with io.BytesIO() as bIO:
+            await self.app.aexec(None, df.to_csv, bIO)
             bIO.seek(0)
-            return await conn.copy_to_table(
-              'members',
-              source=bIO,
-              columns=['rid', 'fullname', 'username', 'pwhash'],
-              format='csv',
-              header=True)
+            async with self.acquire() as conn:
+                return await conn.copy_to_table(
+                  'members',
+                  source=bIO,
+                  columns=['rid', 'fullname', 'username', 'pwhash'],
+                  format='csv',
+                  header=True)
         # w amre la alla that it works
     
     async def report(self, **do):
