@@ -6,7 +6,7 @@ from .. import uid_get, rqst_get
 from .help import help
 from .location import location
 from .media import media
-from .member import member
+from .member import mbr as member
 from .signup import signup
 from .roles import roles
 from .root import root

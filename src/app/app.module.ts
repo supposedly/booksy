@@ -34,14 +34,14 @@ import { MgmtHeaderComponent } from './mgmt-header/mgmt-header.component';
 import { MgmtLocationComponent } from './mgmt-location/mgmt-location.component';
 import { MgmtMediaComponent } from './mgmt-media/mgmt-media.component';
 import { MgmtRolesPermsComponent } from './mgmt-roles-perms/mgmt-roles-perms.component';
-import { MyHoldsComponent } from './my-holds/my-holds.component';
-import { MyItemsComponent } from './my-items/my-items.component';
 import { NotificationsComponent } from './notifications/notifications.component';
 import { ReportsComponent } from './reports/reports.component';
 import { ReportViewComponent } from './report-view/report-view.component';
 import { ReroutingComponent } from './rerouting/rerouting.component';
 import { RoleDetailComponent } from './role-detail/role-detail.component';
+import { PersonalHoldsComponent } from './personal-holds/personal-holds.component';
 import { PersonalInfoComponent } from './personal-info/personal-info.component';
+import { PersonalMediaComponent } from './personal-media/personal-media.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { SignupComponent } from './signup/signup.component';
 
@@ -89,8 +89,8 @@ import { SideButtonService } from './side-button.service';
     ReportViewComponent,
     PersonalInfoComponent,
     MediaEditComponent,
-    MyItemsComponent,
-    MyHoldsComponent,
+    PersonalMediaComponent,
+    PersonalHoldsComponent,
     DashHeaderComponent,
     HelpViewComponent,
   ],

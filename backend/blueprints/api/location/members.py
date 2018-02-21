@@ -1,15 +1,29 @@
 """/location/members"""
 import asyncpg
-try:
-    import bcrypt
-except ModuleNotFoundError: # means I'm testing
-    pass
+
 import sanic
 import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
 
 from . import uid_get, rqst_get
 from . import Location, Role, MediaType, MediaItem, User
+
+#################################################
+try:
+    import bcrypt
+except ModuleNotFoundError:
+    import types
+    # means I'm testing
+    
+    def __hshpw(pw, *_):
+        return pw
+    def __gnslt(*_):
+        return 0
+    bcrypt = types.SimpleNamespace(
+      hashpw = __hshpw,
+      gensalt = __gnslt
+    )
+#################################################
 
 mbrs = sanic.Blueprint('location_members_api', url_prefix='/members')
 
@@ -24,10 +38,10 @@ async def serve_location_members(rqst, location, cont):
 @uid_get('perms')
 @rqst_get('check')
 @jwtdec.protected()
-async def serve_specific_member(rqst, to_check, perms):
+async def serve_specific_member(rqst, check, perms):
     if not perms.can_manage_accounts:
         sanic.exceptions.abort(403, "You aren't allowed to view member info.")
-    user = await User(to_check, rqst.app)
+    user = await User(check, rqst.app)
     return sanic.response.json({'member': user.to_dict()}, status=200)
 
 @mbrs.post('/add')

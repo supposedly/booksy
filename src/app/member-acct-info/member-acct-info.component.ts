@@ -17,6 +17,7 @@ export class MemberAcctInfoComponent implements OnInit {
   uID: string;
   member: any;
   roles: any[] = [];
+  showMediaLink: boolean = false;
   
   constructor(
     public location: Location,
@@ -39,14 +40,19 @@ export class MemberAcctInfoComponent implements OnInit {
   
   checkValid(): boolean {
     let m = this.member;
-    // I Do Not Understand why the below is necessary and chaining && doesn't work
-    // (I guess this is prettier than && chaining though)
+    // i do Not Understand why the below is necessary and chaining && doesn't work
+    // (I guess this is prettier than &&-chaining though)
     return [m.username, m.name, m.rid, this.uID=='new'?m.password:true].every(n => n);
   }
   
   getInfo() {
     this.locationService.getMemberInfo(this.uID)
-      .subscribe(resp => this.member = resp.member);
+      .subscribe(
+        resp => {
+          this.showMediaLink = resp.member.user_id != this.globals.uID;
+          this.member = resp.member;
+        }
+      );
   }
   
   makeInfo() {

@@ -2,7 +2,8 @@
 <button (click)="location.back()">Go back</button>
 <div *ngIf="member">
   <div *ngIf="globals.perms.raw >= member.perms.raw || globals.uID == member.user_id; else just_the_info">
-    <button *ngIf="uID!='new' && globals.uID != member.user_id" class="bad" (click)="removeMember()">Delete member</button>
+    <button class="bad" *ngIf="uID!='new' && globals.uID != member.user_id" (click)="removeMember()">Delete member</button>
+    <button class="info" *ngIf="showMediaLink" routerLink="./dashboard/{{uID}}">Checked-out items</button>
     <h1>{{member.username}}</h1>
     <p class="low">{{member.name}}</p>
     <p><input type="text" name="username" [(ngModel)]="member.username" placeholder="Username"/></p>
