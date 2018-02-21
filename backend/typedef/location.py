@@ -339,10 +339,10 @@ class Location(AsyncInit):
         async with self.acquire() as conn:
             query = '''
             INSERT INTO roles (
-                          lid, name,
+                          lid, name, isdefault,
                           permissions, maxes, locks
                           )
-                 SELECT $1::bigint, $2::text,
+                 SELECT $1::bigint, $2::text, FALSE,
                         $3::smallint, $4::bigint, $5::bigint;
             '''
             await conn.execute(query, self.lid, name, perms.raw, maxes.raw, locks.raw)

@@ -19,9 +19,9 @@ import { MgmtLocationComponent } from './mgmt-location/mgmt-location.component';
 import { MgmtAccountsComponent } from './mgmt-accounts/mgmt-accounts.component';
 import { MgmtRolesPermsComponent } from './mgmt-roles-perms/mgmt-roles-perms.component';
 import { MgmtMediaComponent } from './mgmt-media/mgmt-media.component';
-import { MyHoldsComponent } from './my-holds/my-holds.component';
-import { MyItemsComponent } from './my-items/my-items.component';
+import { PersonalHoldsComponent } from './personal-holds/personal-holds.component';
 import { PersonalInfoComponent } from './personal-info/personal-info.component';
+import { PersonalMediaComponent } from './personal-media/personal-media.component';
 import { ReportsComponent } from './reports/reports.component';
 import { ReportViewComponent } from './report-view/report-view.component';
 import { RoleDetailComponent } from './role-detail/role-detail.component';
@@ -47,8 +47,8 @@ const routes: Routes = [
     {path: 'checkout', component: CheckoutComponent},
     {path: 'dashboard', component: DashboardComponent, children: [
       {path: '', redirectTo: 'items', pathMatch: 'full'},
-      {path: 'items', component: MyItemsComponent},
-      {path: 'holds', component: MyHoldsComponent}
+      {path: 'items/:uID', component: PersonalMediaComponent},
+      {path: 'holds/:uID', component: PersonalHoldsComponent}
     ]},
     {path: 'reports/view', component: ReportViewComponent}, // these won't work as children ... even though they well should
     {path: 'reports', component: ReportsComponent},

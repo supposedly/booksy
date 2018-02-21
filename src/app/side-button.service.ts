@@ -13,7 +13,6 @@ export class SideButtonService {
   buttons: Observable<SideButton[]> = null;
   
   constructor(
-    private loggingService: LoggingService,
     private http: HttpClient,
   ) {}
   
@@ -24,7 +23,7 @@ export class SideButtonService {
       this.buttons = this.http.get<SideButton[]>(this.buttonsURL, {params: {uid: uID}})
       .shareReplay();
     }
-    return of(this.buttons);
+    return this.buttons;
   }  
 
 }

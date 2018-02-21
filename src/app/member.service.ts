@@ -32,13 +32,13 @@ export class MemberService {
     return this.http.get<any>(this.suggestionURL, {params: {uid: this.globals.uID}});
   }
   
-  getItems(): Observable<any> {
+  getItems(uID): Observable<any> {
     // checked-out items
-    return this.http.get<any>(this.itemsURL, {params: {uid: this.globals.uID}});
+    return this.http.get<any>(this.itemsURL, {params: {uid: this.globals.uID, member: uID || this.globals.uID}});
   }
   
-  getHolds(): Observable<any> {
-    return this.http.get<any>(this.holdsURL, {params: {uid: this.globals.uID}});
+  getHolds(uID): Observable<any> {
+    return this.http.get<any>(this.holdsURL, {params: {uid: this.globals.uID, member: uID || this.globals.uID}});
   }
   
   clearHold(mID): Observable<any> {
