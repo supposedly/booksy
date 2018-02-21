@@ -3,9 +3,9 @@ import sanic
 import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
 
-from .import uid_get, rqst_get
-from .import Location, Role, MediaType, MediaItem, User
-from ...resources import Perms, Maxes, Locks
+from . import uid_get, rqst_get
+from . import Location, Role, MediaType, MediaItem, User
+from ...attributes import Perms, Maxes, Locks
 
 attrs = sanic.Blueprint('attr_stock', url_prefix='/attrs')
 

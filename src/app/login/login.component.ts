@@ -23,7 +23,7 @@ export class LoginComponent implements OnInit {
   uid;
   lid;
   numRe = /^\d+$/
-    
+  
   constructor(
     private globals: Globals,
     private memberAuthService: MemberAuthService,

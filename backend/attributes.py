@@ -1,9 +1,7 @@
-"""
-Just the three types: Perms, Maxes, Locks.
-I may actually be able to remove this entirely and just implement the
-distinct types as some sort of dictionary with the mixins...
-"""
+"""Essentially just data classes. They store their 'names' attributes."""
+
 from .core import PackedByteFieldMixin, PackedBigIntMixin
+
 
 class Perms(PackedByteFieldMixin):
     _names = [
@@ -15,9 +13,6 @@ class Perms(PackedByteFieldMixin):
       'generate_reports',
       'return_items',
       ]
-    
-    def __init__(self, permnum):
-        super().__init__(permnum)
 
 
 class Maxes(PackedBigIntMixin):
@@ -31,9 +26,6 @@ class Maxes(PackedBigIntMixin):
       False,
       None
       ]
-    
-    def __init__(self, maxnum):
-        super().__init__(maxnum)
 
 
 class Locks(PackedBigIntMixin):
@@ -47,6 +39,4 @@ class Locks(PackedBigIntMixin):
       False,
       None
       ]
-    
-    def __init__(self, locknum):
-        super().__init__(locknum)
+

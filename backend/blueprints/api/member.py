@@ -3,8 +3,8 @@ import sanic
 import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
 
-from .import uid_get, rqst_get
-from .import Location, Role, MediaType, MediaItem, User
+from . import uid_get, rqst_get
+from . import Location, Role, MediaType, MediaItem, User
 
 member = sanic.Blueprint('member_api', url_prefix='/member')
 
@@ -12,6 +12,9 @@ member = sanic.Blueprint('member_api', url_prefix='/member')
 @rqst_get('location', 'username')
 @jwtdec.protected()
 async def get_notifs(rqst, location, username):
+    """
+    Serves the user's notifications -- overdue items, readied holds, etc.
+    """
     user = await User.from_identifiers(username, location, app=rqst.app)
     return sanic.response.json(await user.notifs(), status=200)
 
@@ -19,32 +22,48 @@ async def get_notifs(rqst, location, username):
 @uid_get('location', 'recent')
 @jwtdec.protected()
 async def get_recent(rqst, location, recent):
-    return sanic.response.json({'items': await location.search(genre=recent, max_results=3)}, status=200)
+    """
+    Serves what's shown in the 'based on your most-recent checkout'
+    section of the 'Find Media' page, given a genre to match for.
+    """
+    return sanic.response.json({'items': await location.search(genre=recent, max_results=2)}, status=200)
 
 @member.get('/checked-out')
 @uid_get()
 @jwtdec.protected()
 async def get_user_items(rqst, user):
+    """
+    Serves user's checked-out items.
+    """
     return sanic.response.json(await user.items(), status=200)
 
 @member.get('/held')
 @uid_get()
 @jwtdec.protected()
 async def get_user_holds(rqst, user):
+    """
+    Serves user's currently-active holds.
+    """
     return sanic.response.json(await user.held(), status=200)
 
 @member.post('/clear-hold')
 @rqst_get('user', 'item')
 @jwtdec.protected()
 async def clear_hold(rqst, user, item):
+    """
+    Clears a hold the user has on an item.
+    """
     await user.clear_hold(item)
     return sanic.response.raw(b'', status=204)
 
 @member.post('/edit')
-@rqst_get('user', 'member') # note that the 2nd is the user TO EDIT, not the one sending the request
+@rqst_get('user', 'member') # i.e. ('requester', 'user to edit')
 @jwtdec.protected()
 async def edit_member(rqst, user, member):
-    if not user.perms.can_manage_accounts:
+    """
+    Endpoint for editing user information. Works for both 
+    """
+    if not (user.uid == member or user.can_manage_accounts):
         sanic.exceptions.abort(403, "You aren't allowed to modify member info.")
     changing = await User(member['user_id'], rqst.app)
     if user.perms.raw < changing.perms.raw:
@@ -58,10 +77,10 @@ async def edit_member(rqst, user, member):
 async def check_perms(rqst, perms):
     def toCamelCase(inp):
         """
-        Just so I can access attrs idiomatically in TypeScript,
+        Just so I can access perms idiomatically in TypeScript,
         using camelCase instead of snake_case
+        e.g. user.can_check_out in Python, but user.canCheckOut in TS
         """
-        words = inp.split('_')
-        return 'can' + ''.join(map(str.capitalize, words))
-    perms.names = {toCamelCase(k): v for k, v in perms.names.items()}
-    return sanic.response.json({'perms': perms.all}, status=200)
+        return 'can' + ''.join(map(str.capitalize, inp.split('_')))
+    perms.namemap = {toCamelCase(k): v for k, v in perms.namemap.items()}
+    return sanic.response.json({'perms': perms.props}, status=200)

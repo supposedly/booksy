@@ -3,8 +3,8 @@ import sanic
 import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
 
-from .import uid_get, rqst_get
-from .import Location, Role, MediaType, MediaItem, User
+from . import uid_get, rqst_get
+from . import Location, Role, MediaType, MediaItem, User
 
 root = sanic.Blueprint('attrs_api', url_prefix='')
 
@@ -13,18 +13,18 @@ root = sanic.Blueprint('attrs_api', url_prefix='')
 @jwtdec.protected()
 async def serve_attrs(rqst, perms, location):
     """
-    Catch-all combination of the location-related attributes
+    Catch-all combination of location-related attributes
     """
     resp = {}
     resp['types'] = await location.media_types()
     resp['genres'] = await location.genres()
     resp['names'] = {
       'perms': [
-      # 'Manage location (edit name, info, etc.)',
+      # -- line 43 --
         'Manage accounts (edit names, usernames and passwords)',
         'Manage media (add items, edit metadata)',
         'Manage roles (edit permissions and names)',
-       # Create administrative roles (yada yada)
+       # -- line 45 --
         'Generate & view reports',
         'Return items',
         ],
@@ -39,10 +39,14 @@ async def serve_attrs(rqst, perms, location):
       ]
     }
     if perms.can_manage_location:
-        resp['names']['perms'].insert(0, 
-          'Manage location (edit name, info, etc.)')
-        resp['names']['perms'].insert(3, 
+        resp['names']['perms'].insert(
+          0, 
+          'Manage location (edit name, info, etc.)'
+          )
+        resp['names']['perms'].insert(
+          3,
           'Create administrative roles '
           '(ones that can provide other roles with '
-          'the "Manage location" permission)')
+          'the "Manage location" permission)'
+          )
     return sanic.response.json(resp, status=200)
