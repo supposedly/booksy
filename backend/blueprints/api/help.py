@@ -7,8 +7,8 @@ import sanic
 import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
 
-from .import uid_get, rqst_get
-from .import Location, Role, MediaType, MediaItem, User
+from . import uid_get, rqst_get
+from . import Location, Role, MediaType, MediaItem, User
 
 help = sanic.Blueprint('api_help', url_prefix='/help')
 

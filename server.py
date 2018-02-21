@@ -25,6 +25,8 @@ asyncio.set_event_loop_policy(uvloop.EventLoopPolicy()) # make it go faster <3
 
 # Create a Sanic application for this file.
 app = Sanic('Booksy')
+# For checking API access later. (See function force_angular())
+app.safe_segments = ('?', '.html', '.js', '.ts', '/auth', 'auth/', 'api/', 'stock/')
 
 # "Blueprints", i.e. separate files containing endpoint info to
 # avoid clogging up this main file.
@@ -92,8 +94,9 @@ jwt.initialize(app,
   retrieve_refresh_token=retrieve_rtoken,
   revoke_refresh_token=revoke_rtoken)
 
-# Config variables for JWT authentication. See sanic-jwt docs on GitHub
+# Config variables for JWT authentication. See sanic-jwt docs on GitLab
 # for more info, or the README.md on my own fork bc I added some stuff
+
 app.config.SANIC_JWT_COOKIE_SET = True # Store token in cookies instead of making the client webapp send them
                                        # ...this may also open things up for XSRF. but I don't know enough about
                                        # that to be sure as to how to deal with or ameliorate it
@@ -130,6 +133,7 @@ async def set_up_dbs(app, loop):
     app.pg_pool = await asyncpg.create_pool(dsn=os.getenv('DATABASE_URL'), max_size=15, loop=loop)
     app.acquire = app.pg_pool.acquire
     
+    [i.do_imports() for i in [Location, Role, MediaType, MediaItem, User]]
     async with app.acquire() as conn:
         await setup.create_pg_tables(conn)
     if os.getenv('REDIS_URL', None) is None: # can't do nothin bout this
@@ -176,5 +180,6 @@ async def force_no_cache(rqst, resp):
     """
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
 
-# more than 1 worker and you get too many DB connections :((
-app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)), debug=True, workers=1)
+if __name__ == '__main__':
+    # more than 1 worker and you get too many DB connections :((
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)), debug=True, workers=1)

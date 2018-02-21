@@ -4,6 +4,7 @@ import sanic
 
 from .typedef import Location, Role, MediaType, MediaItem, User
 
+
 def uid_get(*attrs, user=False):
     def decorator(func):
         @wraps(func)

@@ -3,8 +3,8 @@ import sanic
 import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
 
-from .import uid_get, rqst_get
-from .import Location, Role, MediaType, MediaItem, User
+from . import uid_get, rqst_get
+from . import Location, Role, MediaType, MediaItem, User
 
 roles = sanic.Blueprint('location_roles_api', url_prefix='/roles')
 

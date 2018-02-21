@@ -3,8 +3,8 @@ import sanic
 import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
 
-from .import uid_get, rqst_get
-from .import Location, Role, MediaType, MediaItem, User
+from . import uid_get, rqst_get
+from . import Location, Role, MediaType, MediaItem, User
 
 roles = sanic.Blueprint('roles_api', url_prefix='/roles')
 
@@ -27,15 +27,13 @@ async def provide_me_attrs(rqst, user):
 @jwtdec.protected()
 async def provide_specific_me_attr(rqst, user, attr):
     """
-    Provides a specific attribute of the three above for current role.
-    
-    Requires current session's Role ID from client.
+    Provides a specific attribute (of perms/maxes/locks) for requesting role.
     """
     if attr not in ('perms', 'maxes', 'locks'):
         # won't ever be called, for obvious reason
+        # (i.e. bc of the regex in the roles.get deco)
         sanic.exceptions.abort(422)
-    resp = getattr(user, attr)
-    return sanic.response.json(resp, status=200)
+    return sanic.response.json(getattr(user, attr), status=200)
 
 @roles.post('/edit')
 @rqst_get('role', 'user', 'name', 'seqs')
@@ -52,7 +50,7 @@ async def edit_role(rqst, role, user, name, seqs):
 async def delete_role(rqst, role, user):
     if await role.num_members():
         sanic.exceptions.abort(403, "You can't delete a role with members assigned to it.")
-    if role.name.lower() in ('admin', 'organizer', 'subscriber'): # sorta useless because they can change the name (I should've put a flag in the DB for this)
+    if role.is_default:
         sanic.exceptions.abort("Default roles cannot be deleted.")
     await role.delete()
     return sanic.response.raw('', status=204)
