@@ -30,6 +30,8 @@ async def expose_header_buttons(rqst):
 @rqst_get('user')
 @jwtdec.protected()
 async def expose_home_sidebar_buttons(rqst, user):
+    # Doesn't matter how long my function names are because I'm not
+    # calling them directly, heh
     """
     Almost a static resource like above, but this time varies depending
     on user's role. I'm ALMOST positive it should work alright this way
@@ -54,8 +56,6 @@ async def expose_home_sidebar_buttons(rqst, user):
     
     Requires current session's Role ID from client.
     """
-    # Doesn't matter how long my function names are because I'm not
-    # calling them directly, heh
     side_buttons = [
       {"text": 'checkout'},
     ]
@@ -69,7 +69,7 @@ async def expose_home_sidebar_buttons(rqst, user):
             side_buttons.append({"text": 'reports', "color": '#97fb97'})
         if user.perms.can_manage_media:
             side_buttons.append({"text": 'manage media', "dest": 'media/manage', "color": '#ffcaca'})
-        if int(user.perms.bin[0:5]):
+        if any(user.perms.seq[:5]):
             # if has any of the following permissions:
             # Manage Location Info, Manage Accounts, Manage Roles,
             # Create Administrative Roles, Manage Media

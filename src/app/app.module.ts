@@ -28,6 +28,8 @@ import { LoginComponent } from './login/login.component';
 import { MediaEditComponent } from './media-edit/media-edit.component';
 import { MediaInfoComponent } from './media-info/media-info.component';
 import { MediaSearchComponent } from './media-search/media-search.component';
+import { MediaSearchBarComponent } from './media-search/media-search-bar.component';
+import { MediaSuggestionComponent } from './media-search/media-suggestion.component';
 import { MemberAcctInfoComponent } from './member-acct-info/member-acct-info.component';
 import { MgmtAccountsComponent } from './mgmt-accounts/mgmt-accounts.component';
 import { MgmtHeaderButtonService } from './mgmt-header-button.service';
@@ -100,7 +102,9 @@ import { SideButtonService } from './side-button.service';
     HelpTooltipComponent,
     TooltipComponent,
     TooltipContainerDirective,
-    TooltipDirective
+    TooltipDirective,
+    MediaSearchBarComponent,
+    MediaSuggestionComponent,
   ],
   entryComponents: [
     TooltipComponent

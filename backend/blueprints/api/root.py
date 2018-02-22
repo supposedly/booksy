@@ -15,16 +15,18 @@ async def serve_attrs(rqst, perms, location):
     """
     Catch-all combination of location-related attributes
     """
-    resp = {}
-    resp['types'] = await location.media_types()
-    resp['genres'] = await location.genres()
+    resp = {
+      'types': await location.media_types(),
+      'genres': await location.genres(),
+      'color': location.color,
+      }
     resp['names'] = {
       'perms': [
-      # -- line 43 --
+       # -- line 42 --
         'Manage accounts (edit names, usernames and passwords)',
         'Manage media (add items, edit metadata)',
         'Manage roles (edit permissions and names)',
-       # -- line 45 --
+       # -- line 43 --
         'Generate & view reports',
         'Return items',
         ],
@@ -36,17 +38,12 @@ async def serve_attrs(rqst, perms, location):
       'locks': [
         'Maximum concurrent checkouts allowed',
         'Maximum $USD in fines allowed at a time',
-      ]
-    }
+        ]
+      }
     if perms.can_manage_location:
-        resp['names']['perms'].insert(
-          0, 
-          'Manage location (edit name, info, etc.)'
-          )
-        resp['names']['perms'].insert(
-          3,
+        resp['names']['perms'].insert(0, 'Manage location (edit name, info, etc.)')
+        resp['names']['perms'].insert(3,
           'Create administrative roles '
           '(ones that can provide other roles with '
-          'the "Manage location" permission)'
-          )
+          'the "Manage location" permission)')
     return sanic.response.json(resp, status=200)

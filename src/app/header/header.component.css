@@ -18,7 +18,7 @@ a {
   color: #888;
   font-weight: bold;
   font-size: 20px;
-  text-decoration: none !important;
+  text-decoration: none;
   line-height: 1;
   text-transform: uppercase;
   background-color: transparent;
@@ -33,15 +33,15 @@ a:active {
   color: #f7f7f7;
 }
 a.selected {
-  background-color: #bfc8cc !important;
-  color: #f7f7f7 !important;
+  background-color: #bfc8cc;
+  color: #f7f7f7;
 }
 a.logout {
   float: right;
-  background-color: #f3cbcb !important;
+  background-color: #f3cbcb;
 }
 a.logout:active {
-  background-color: #c34545 !important;
+  background-color: #c34545;
 }
 @media only screen and (max-width: 450px) {
   a { padding: 15px 9px; }

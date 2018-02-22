@@ -26,6 +26,7 @@ async def get_recent(rqst, location, recent):
     Serves what's shown in the 'based on your most-recent checkout'
     section of the 'Find Media' page, when given a genre to match for.
     """
+    print(await location.search(genre='fantasy', max_results=2))
     return sanic.response.json({'items': await location.search(genre=recent, max_results=2)}, status=200)
 
 @mbr.get('/checked-out')
