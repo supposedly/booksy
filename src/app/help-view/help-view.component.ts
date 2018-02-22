@@ -24,7 +24,7 @@ export class HelpViewComponent implements OnInit {
   
   getArticle() {
     this.helpService.getArticle(this.id)
-      .subscribe(resp => this.article = resp.article)
+      .subscribe(resp => this.article = resp.help)
   }
 
 }

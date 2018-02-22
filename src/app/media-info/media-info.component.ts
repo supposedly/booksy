@@ -34,7 +34,7 @@ export class MediaInfoComponent implements OnInit {
       .subscribe(
         item => {
           this.item = item.info;
-          if (this.item.fines == 'None') { // because Python isn't properly serializing None to null for some reason
+          if (this.item.fines == 'None') { // because Python fails to properly serialize None to null for some reason
             this.item.fines = null;
           }
         });

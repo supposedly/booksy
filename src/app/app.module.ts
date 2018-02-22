@@ -19,6 +19,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { DashHeaderComponent } from './dash-header/dash-header.component';
 import { HeaderComponent } from './header/header.component';
 import { HelpComponent } from './help/help.component';
+import { HelpTooltipComponent } from './tooltip/help-tooltip.component';
 import { HelpViewComponent } from './help-view/help-view.component';
 import { HomePageComponent } from './home-page/home-page.component';
 import { LocationMgmtComponent } from './location-mgmt/location-mgmt.component';
@@ -44,6 +45,9 @@ import { PersonalInfoComponent } from './personal-info/personal-info.component';
 import { PersonalMediaComponent } from './personal-media/personal-media.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { SignupComponent } from './signup/signup.component';
+import { TooltipComponent, TooltipContainerDirective } from './tooltip/tooltip.component';
+
+import { TooltipDirective } from './tooltip/tooltip.directive';
 
 import { CheckoutService } from './checkout.service';
 import { CurrentMediaSessionService } from './current-media-session.service';
@@ -93,6 +97,13 @@ import { SideButtonService } from './side-button.service';
     PersonalHoldsComponent,
     DashHeaderComponent,
     HelpViewComponent,
+    HelpTooltipComponent,
+    TooltipComponent,
+    TooltipContainerDirective,
+    TooltipDirective
+  ],
+  entryComponents: [
+    TooltipComponent
   ],
   imports: [
     MarkdownModule.forRoot(),
@@ -122,4 +133,4 @@ import { SideButtonService } from './side-button.service';
     ],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}
