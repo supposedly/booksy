@@ -20,9 +20,12 @@ import { HelpService } from '../help.service';
         ></span>
         <span
           class="link"
+          [attr.target]="inplace?'_self':'_blank'"
           [attr.data-ident]="ident"
           [class.visible]="showLink"
-        ><a [routerLink]="linkUrl">{{linkText}}</a></span>
+        >
+          <a [routerLink]="linkUrl">{{linkText}}</a>
+        </span>
       </div>
     `,
     styleUrls: ['./help-tooltip.component.css']
@@ -31,6 +34,7 @@ import { HelpService } from '../help.service';
 export class HelpTooltipComponent implements OnInit {
     @Input() ident: string;
     @Input() relative = true;
+    @Input('newtab') inplace = true; // open in place == not in a new tab
     // `relative` is input as the opposite of what it should be;
     // this is so I can write <tag ... relative> instead of <tag ... relative="meaningless value but evals to truthy">
     showLink: boolean = false;

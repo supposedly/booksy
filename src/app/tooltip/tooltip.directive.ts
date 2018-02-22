@@ -30,8 +30,8 @@ export class TooltipDirective {
     private vcr: ViewContainerRef
   ) {}
   
-  @Input('relative') relative: boolean;
-  @Input('content') content: string; // Content to display
+  @Input() relative: boolean;
+  @Input() content: string; // Content to display
   @Input('ident') id: string; // Identifier, used partially for checking whether the tooltip is being clicked on
   // This system works nicely for my specific setup because I only have to (and will always) supply the ident
   // and the content will be grabbed by the help icon

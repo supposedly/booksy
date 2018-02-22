@@ -30,7 +30,7 @@ export class Globals {
   // pop up again every time the page is reloaded, even if the user had X-ed them away
   checkoutMessages = null;
   // generic names for the Perms, Maxes, and Locks attributes (shown as descriptions on the edit screens)
-  attrs: any;
+  attrs;
   
   // report data received from server
   reportData = null;
@@ -42,6 +42,9 @@ export class Globals {
   
   // all roles in location
   locRoles;
+  
+  // header color, customizable per location
+  locColor: number = 0xf7f7f7;
   
   // help article info (not the text content though)
   helpArticles;

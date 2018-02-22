@@ -2,9 +2,6 @@ import os
 import asyncio
 
 import asyncpg
-import uvloop
-
-asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 query = """
 UPDATE items
@@ -18,7 +15,7 @@ UPDATE items
  WHERE mid = currval(pg_get_serial_sequence('items', 'mid'));
 """
 
-# I COULD do this synchronously and with much less boilerplate using
+# I COULD do this synchronously and with less boilerplate using
 # regular ol' psycopg2, but asyncpg is faster by a lot so eh
 
 async def update_fines():

@@ -25,6 +25,7 @@ export class SetupService {
         this.globals.attrs = resp.names;
         this.globals.locMediaTypes = resp.types;
         this.globals.locGenres = resp.genres;
+        this.globals.locColor = resp.locColor || 0xf7f7f7;
       });
   }
   
