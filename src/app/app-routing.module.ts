@@ -47,8 +47,10 @@ const routes: Routes = [
     {path: 'checkout', component: CheckoutComponent},
     {path: 'dashboard', component: DashboardComponent, children: [
       {path: '', redirectTo: 'items', pathMatch: 'full'},
-      {path: 'items/:uID', component: PersonalMediaComponent},
-      {path: 'holds/:uID', component: PersonalHoldsComponent}
+      {path: 'items', component: PersonalMediaComponent},
+      {path: 'holds', component: PersonalHoldsComponent},
+      {path: ':uID/items', component: PersonalMediaComponent},
+      {path: ':uID/holds', component: PersonalHoldsComponent},
     ]},
     {path: 'reports/view', component: ReportViewComponent}, // these won't work as children ... even though they well should
     {path: 'reports', component: ReportsComponent},

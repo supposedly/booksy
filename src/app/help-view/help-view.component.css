@@ -7,6 +7,11 @@
 ::ng-deep #help-view li {
   color: #373D49;
 }
+::ng-deep #help-view p,
+::ng-deep #help-view li {
+  font-size: 18px;
+  font-weight: 300;
+}
 ::ng-deep #help-view h1 {
   border-bottom: 1px solid;
   border-color: #666;

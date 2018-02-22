@@ -1,0 +1,56 @@
+div {
+  display: inline;
+  position: relative;
+}
+.owo::before {
+  content: '?';
+  display: inline-block;
+  color: #fff;
+  line-height: 18px;
+  width: 18px;
+  text-align: center;
+  font-size: 16px;
+  font-family: sans-serif;
+}
+.owo {
+  display: inline-block;
+  position: relative;
+  border-radius: 50%;
+  border: 2px solid #bbb;
+  background-color: #ccc;
+  cursor: pointer;
+  z-index: 1;
+  }
+.link {
+  display: inline-block;
+  position: absolute;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+  line-height: 35px;
+  background-color: #eee;
+
+  top: 2px;
+  left: 10px;
+  max-width: 0;
+  height: 35px;
+  border-radius: 8px;
+
+  z-index: 0;
+  transition: padding 100ms, max-width 1s;
+}
+.visible {
+  width: auto;
+  padding: 0 10px;
+  max-width: 30em;
+}
+a {
+  font-style: italic;
+  font-size: 18px;
+  color: #0000cc;
+  cursor: pointer;
+}
+a:hover {
+  text-decoration: none;
+}

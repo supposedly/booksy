@@ -12,6 +12,7 @@ const httpOptions = HttpOptions;
 export class HelpService {
   private titlesURL = 'api/help/titles';
   private contentURL = 'api/help/content';
+  private quickhelpURL = 'api/help/brief';
   
   constructor(private http: HttpClient) {}
   
@@ -20,7 +21,11 @@ export class HelpService {
   }
   
   getArticle(id): Observable<any> {
-    return this.http.get<any>(this.contentURL, {params: {id: id}});
+    return this.http.get<any>(this.contentURL, {params: {ID: id}});
+  }
+  
+  getBrief(id): Observable<any> {
+    return this.http.get<any>(this.quickhelpURL, {params: {ID: id}});
   }
 
 }

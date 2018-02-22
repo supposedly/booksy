@@ -14,6 +14,7 @@ export class PersonalHoldsComponent implements OnInit {
   msg: string = '';
   items: any[] = [];
   cont: number = 0;
+  uID: string;
 
   constructor(
     public globals: Globals,
@@ -22,8 +23,8 @@ export class PersonalHoldsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    let uID = this.route.snapshot.paramMap.get('uID');
-    this.getHolds(uID || this.globals.uID);
+    this.uID = this.route.snapshot.paramMap.get('uID');
+    this.getHolds(this.uID || this.globals.uID);
   }
   
   getHolds(uID) {
