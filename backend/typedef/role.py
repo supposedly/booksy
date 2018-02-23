@@ -56,6 +56,7 @@ class Role(AsyncInit):
         return {
           'rid': self.rid,
           'name': self.name,
+          'perms_raw': self.perms.raw,
           'perms': self.perms.props,
           'maxes': self.maxes.props,
           'locks': self.locks.props

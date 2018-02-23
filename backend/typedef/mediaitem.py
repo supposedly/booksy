@@ -179,3 +179,21 @@ class MediaItem(AsyncInit):
         Just a proxy method for Location().remove_item(MediaItem())
         """
         await self.location.remove_item(item=self)
+    
+    @property
+    def perms(self):
+        if self._permnum is None:
+            return self.type.perms
+        return Perms(self._permnum)
+    
+    @property
+    def maxes(self):
+        if self._maxnum is None:
+            return self.type.maxes
+        return Maxes(self._maxnum)
+    
+    @property
+    def locks(self):
+        if self._locknum is None:
+            return self.type.locks
+        return Locks(self._locknum)

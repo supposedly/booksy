@@ -92,4 +92,4 @@ async def check_perms(rqst, perms):
         """
         return 'can' + ''.join(map(str.capitalize, inp.split('_')))
     perms.namemap = {toCamelCase(k): v for k, v in perms.namemap.items()}
-    return sanic.response.json({'perms': perms.props}, status=200)
+    return sanic.response.json({'perms': perms.props, 'raw': perms.raw}, status=200)

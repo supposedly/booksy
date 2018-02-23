@@ -18,6 +18,7 @@ export class Globals {
   
   // user's role's permissions object
   perms: any;
+  rawPermNum: number;
   
   // Whether to hide the homepage sidebar.
   // It's here instead of in sidebar.component.ts because the

@@ -22,11 +22,11 @@ async def serve_attrs(rqst, perms, location):
       }
     resp['names'] = {
       'perms': [
-       # -- line 42 --
+        None, # -- line 42 --
         'Manage accounts (edit names, usernames and passwords)',
         'Manage media (add items, edit metadata)',
         'Manage roles (edit permissions and names)',
-       # -- line 43 --
+        None, # -- line 43 --
         'Generate & view reports',
         'Return items',
         ],
@@ -41,9 +41,10 @@ async def serve_attrs(rqst, perms, location):
         ]
       }
     if perms.can_manage_location:
-        resp['names']['perms'].insert(0, 'Manage location (edit name, info, etc.)')
-        resp['names']['perms'].insert(3,
+        resp['names']['perms'][0] = 'Manage location (edit name, info, etc.)'
+        resp['names']['perms'][4] = (
           'Create administrative roles '
           '(ones that can provide other roles with '
-          'the "Manage location" permission)')
+          'the "Manage location" permission)'
+          )
     return sanic.response.json(resp, status=200)

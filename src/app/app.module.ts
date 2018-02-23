@@ -23,8 +23,10 @@ import { HelpTooltipComponent } from './tooltip/help-tooltip.component';
 import { HelpViewComponent } from './help-view/help-view.component';
 import { HomePageComponent } from './home-page/home-page.component';
 import { LocationMgmtComponent } from './location-mgmt/location-mgmt.component';
+import { LocksComponent } from './attrs/locks.component';
 import { LoggingComponent } from './logging/logging.component';
 import { LoginComponent } from './login/login.component';
+import { MaxesComponent } from './attrs/maxes.component';
 import { MediaEditComponent } from './media-edit/media-edit.component';
 import { MediaInfoComponent } from './media-info/media-info.component';
 import { MediaSearchComponent } from './media-search/media-search.component';
@@ -42,6 +44,7 @@ import { ReportsComponent } from './reports/reports.component';
 import { ReportViewComponent } from './report-view/report-view.component';
 import { ReroutingComponent } from './rerouting/rerouting.component';
 import { RoleDetailComponent } from './role-detail/role-detail.component';
+import { PermsComponent } from './attrs/perms.component';
 import { PersonalHoldsComponent } from './personal-holds/personal-holds.component';
 import { PersonalInfoComponent } from './personal-info/personal-info.component';
 import { PersonalMediaComponent } from './personal-media/personal-media.component';
@@ -105,6 +108,9 @@ import { SideButtonService } from './side-button.service';
     TooltipDirective,
     MediaSearchBarComponent,
     MediaSuggestionComponent,
+    PermsComponent,
+    MaxesComponent,
+    LocksComponent,
   ],
   entryComponents: [
     TooltipComponent

@@ -39,19 +39,23 @@ async def provide_specific_me_attr(rqst, user, attr):
 @rqst_get('role', 'user', 'name', 'seqs')
 @jwtdec.protected()
 async def edit_role(rqst, role, user, name, seqs):
-    if not user.perms.can_manage_roles:
-        sanic.exceptions.abort(403, "You aren't allowed to modify roles.")
-    await role.set_attrs(*Role.attrs_from(kws=seqs), name=name)
+    new = Role.attrs_from(kws=seqs) # element [0] == perms
+    # Users can only modify roles *below* them in hierarchy
+    if user.perms.raw <= new[0].raw or not user.perms.can_manage_roles:
+        sanic.exceptions.abort(403, "You aren't allowed to modify this role.")
+    await role.set_attrs(*new, name=name)
     return sanic.response.raw(b'', status=204)
 
 @roles.put('/delete')
-@rqst_get('role', 'user')
+@rqst_get('user', 'role')
 @jwtdec.protected()
-async def delete_role(rqst, role, user):
+async def delete_role(rqst, user, role):
     if await role.num_members():
         sanic.exceptions.abort(403, "You can't delete a role with members assigned to it.")
     if role.is_default:
         sanic.exceptions.abort("Default roles cannot be deleted.")
+    if user.perms.raw <= role.perms.raw or not user.perms.can_manage_roles:
+        sanic.exceptions.abort("You aren't allowed to delete this role.")
     await role.delete()
     return sanic.response.raw('', status=204)
 
@@ -63,5 +67,5 @@ async def provide_specific_role(rqst, role, user):
     Provides attributes for a requested role.
     """
     if not user.perms.can_manage_roles:
-        sanic.exceptions.abort(403, "You aren't allowed to modify roles.")
+        sanic.exceptions.abort(403, "You aren't allowed to view role properties.")
     return sanic.response.json(role.to_dict(), status=200)
