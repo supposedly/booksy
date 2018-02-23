@@ -20,11 +20,12 @@ import { HelpService } from '../help.service';
         ></span>
         <span
           class="link"
-          [attr.target]="inplace?'_self':'_blank'"
           [attr.data-ident]="ident"
           [class.visible]="showLink"
         >
-          <a [routerLink]="linkUrl">{{linkText}}</a>
+          <a
+            [routerLink]="linkUrl"
+          >{{linkText}}</a>
         </span>
       </div>
     `,

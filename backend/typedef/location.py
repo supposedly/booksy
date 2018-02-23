@@ -286,15 +286,13 @@ class Location(AsyncInit):
         '''
         await self.pool.execute(query, username, pwhash, self.lid, rid, fullname)
     
-    async def remove_member(self, uid):
-        # hm. should this be a method of User?
-        query = '''
-        DELETE FROM members
-              WHERE uid = $1::bigint
-        '''
-        return await self.pool.execute(query, uid)
-    
     async def search(self, *, title=None, genre=None, type_=None, author=None, cont=0, max_results=5, where_taken=None):
+        """
+        The below weirdness is necessary because asyncpg does not allow
+        keyword-based arguments in queries, and it also does not support
+        'ignoring' certain arguments, so I have to instead construct a
+        query with *only* the expressions I'm looking for.
+        """
         search_terms = title, genre, author, type_
         query = (
               '''SELECT DISTINCT ON (lower(title)) title, mid, author, genre, type, image FROM items WHERE true ''' # stupid hack coming up
@@ -314,18 +312,18 @@ class Location(AsyncInit):
             return [i['mid'] for i in results]
         # I'd have liked to provide a full MediaItem for each result,
         # but that would take so so so so so unbearably long on Heroku's DB speeds,
-        # not to mention being just pretty all-around inefficient.
-        # Instead I'll have the app shoot a GET request to /media/info
-        # for the pertinent mID when one specific item is requested.
+        # not to mention being just pretty all-around inefficient
         return [{j: i[j] for j in ('mid', 'title', 'author', 'genre', 'type', 'image')} for i in results]
     
     async def roles(self):
         async with self.acquire() as conn:
             query = '''
-            SELECT rid, name, permissions AS perms,  maxes, locks FROM roles WHERE lid = $1
+            SELECT rid, name, isdefault, permissions AS perms, maxes, locks
+              FROM roles
+             WHERE lid = $1::bigint
             '''
             q2ery = '''SELECT count(*) FROM members WHERE rid = $1::bigint'''
-            res = [{j: i[j] for j in ('rid', 'name', 'perms', 'maxes', 'locks')} for i in await conn.fetch(query, self.lid)]
+            res = [{j: i[j] for j in ('rid', 'name', 'isdefault', 'perms', 'maxes', 'locks')} for i in await conn.fetch(query, self.lid)]
             for i in res:
                 i['perms'] = Perms(i['perms']).props
                 i['maxes'] = Maxes(i['maxes']).props
@@ -374,7 +372,8 @@ class Location(AsyncInit):
                  ip = COALESCE($2::text, ip),
                  fine_amt = COALESCE($3::numeric, fine_amt),
                  fine_interval = COALESCE($4::numeric, fine_interval),
-                 media_types = media_types
+                 image = COALESCE($5::bytea, image),
+                 color = COALESCE($6::smallint, color)
            WHERE lid = $2::bigint
         '''
         await self.pool.execute(query, new, self.lid)

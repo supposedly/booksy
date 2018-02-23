@@ -1,5 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
 
 import { HelpService } from '../help.service';
 
@@ -13,6 +14,7 @@ export class HelpViewComponent implements OnInit {
   article: string;
 
   constructor(
+    public location: Location,
     private helpService: HelpService,
     private route: ActivatedRoute
   ) {}

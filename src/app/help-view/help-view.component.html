@@ -1,4 +1,4 @@
 <div id="help-view" *ngIf="article">
-  <h1>{{article.title}}</h1>
+  <div id="title-container"><span id="title">{{article.title}}</span>&nbsp;&nbsp;&nbsp;<span id="back-button" (click)="location.back()">(back)</span></div>
   <markdown [data]="article.content"></markdown>
 </div>

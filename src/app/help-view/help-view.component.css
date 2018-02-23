@@ -1,6 +1,31 @@
 #help-view {
   padding: 1em;
 }
+#back-button {
+  cursor: pointer;
+  font-weight: 300;
+  width: fit-content;
+}
+#back-button:hover, #back-button:focus {
+  outline: none;
+  font-weight: 400;
+}
+#title-container #title {
+  display: inline-block;
+  font-size: 2em;
+  margin-top: 0.67em;
+  font-weight: bold;
+}
+#title-container,
+::ng-deep #help-view h1 {
+  border-bottom: 1px solid;
+  border-color: #666;
+}
+::ng-deep #help-view h4 {
+  border-bottom: 1px solid;
+  border-color: #bdbdbd;
+  font-size: 22px;
+}
 ::ng-deep #help-view p,
 ::ng-deep #help-view strong,
 ::ng-deep #help-view ul,
@@ -11,15 +36,6 @@
 ::ng-deep #help-view li {
   font-size: 18px;
   font-weight: 300;
-}
-::ng-deep #help-view h1 {
-  border-bottom: 1px solid;
-  border-color: #666;
-}
-::ng-deep #help-view h4 {
-  border-bottom: 1px solid;
-  border-color: #bdbdbd;
-  font-size: 22px;
 }
 /*
 The below is mostly copied from ngx-md's CSS styling, but with the changes necessary to resolve this issue:

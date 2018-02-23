@@ -7,12 +7,12 @@
   [(ngModel)]="roleName"
   [attr.disabled]="+globals.rawPermNum <= +rawPermNum ? 'true' : null"
   />
-  <whatsthis ident="2"></whatsthis>
+<whatsthis ident="2"></whatsthis>
 <div *ngIf="permArr && maxArr && lockArr">
   <form name="role-information" (ngSubmit)="submit()" *ngIf="rID">
-      <app-perms [attr.just-view]="+globals.rawPermNum > +rawPermNum || rID == 'new'?'y':null" [arr]="permArr"></app-perms>
-      <app-maxes [attr.just-view]="+globals.rawPermNum > +rawPermNum || rID == 'new'?'y':null" [arr]="maxArr"></app-maxes>
-      <app-locks [attr.just-view]="+globals.rawPermNum > +rawPermNum || rID == 'new'?'y':null" [arr]="lockArr"></app-locks>
-      <input *ngIf="+globals.rawPermNum > +rawPermNum || rID == 'new'" type="submit" value="Submit"/>
+      <app-perms [attr.just-view]="checkView()" [arr]="permArr"></app-perms>
+      <app-maxes [attr.just-view]="checkView()" [arr]="maxArr"></app-maxes>
+      <app-locks [attr.just-view]="checkView()" [arr]="lockArr"></app-locks>
+      <input *ngIf="globals.rawPermNum == 127 || checkView()" type="submit" value="Submit"/>
   </form>
 </div>

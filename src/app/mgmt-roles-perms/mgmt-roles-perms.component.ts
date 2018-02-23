@@ -23,14 +23,14 @@ export class MgmtRolesPermsComponent implements OnInit {
   ngOnInit() {
     this.roleService.getAll()
       .subscribe(
-        res => this.roles = res.roles.sort((a, b) => a.name.localeCompare(b.name)),
+        res => this.roles = res.roles.sort((a, b) => a.name.localeCompare(b.name)), // sort received roles alphabetically by name
         err => this.msg = err.error?err.error:'Error.'
       );
   }
   
   deleteRole(rID, index) {
     this.roleService.delete(rID)
-      .subscribe(resp => this.roles.splice(index, 1))
+      .subscribe(resp => this.roles.splice(index, 1));
   }
 
 }

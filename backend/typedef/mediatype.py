@@ -40,13 +40,11 @@ class MediaType(AsyncInit):
         '''
         return await self.pool.fetch(query, self.name, self.lid)
     
-    async def set_maxes(self, newmaxes: Maxes):
-        if not isinstance(newmaxes, Maxes):
-            raise TypeError('Argument must be of type Maxes')
+    async def set_maxes(self, newmaxnum):
         query = '''
         UPDATE items
            SET maxes = $1::bigint
          WHERE media_type = $2::text
         '''
-        await self.pool.execute(query, newmaxes.num, self.name)
+        await self.pool.execute(query, newmaxnum, self.name)
         self.maxes = newmaxes

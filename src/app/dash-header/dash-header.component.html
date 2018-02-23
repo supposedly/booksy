@@ -1,14 +1,1 @@
-<div id="spacer">
-  <nav *ngIf="uID; else no_u">
-    <a routerLink="./{{uID}}/{{button.hasOwnProperty('dest')?button.dest:button.text}}"
-      routerLinkActive="selected"
-      *ngFor="let button of buttons">{{button.text}}</a>
-  </nav>
-  <ng-template #no_u>
-    <nav>
-      <a routerLink="./{{button.hasOwnProperty('dest')?button.dest:button.text}}"
-        routerLinkActive="selected"
-        *ngFor="let button of buttons">{{button.text}}</a>
-    </nav>
-  </ng-template>
-</div>
+<generic-header [buttons]="buttons" [inbetween]="uID"></generic-header>
