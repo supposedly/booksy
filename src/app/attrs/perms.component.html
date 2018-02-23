@@ -1,0 +1,32 @@
+<h3>Permissions</h3>
+<div *ngIf="editable; else just_view">
+  <label *ngFor="let name of keys(arr.names); let i = index">
+    <span *ngIf="globals.attrs.perms[i]">
+      <input
+        [name]="name"
+        type="checkbox"
+        [value]="arr.names[name]"
+        [(ngModel)]="arr.names[name]"
+        />
+      {{globals.attrs.perms[i]}}
+      <br/>
+    </span>
+  </label>
+</div>
+<ng-template #just_view>
+  <div>
+    <label *ngFor="let name of keys(arr.names); let i = index">
+    <span *ngIf="globals.attrs.perms[i]">
+      <input
+        [name]="name"
+        type="checkbox"
+        [value]="arr.names[name]"
+        [(ngModel)]="arr.names[name]"
+        disabled
+        />
+      {{globals.attrs.perms[i]}}
+      <br/>
+    </span>
+    </label>
+  </div>
+</ng-template>

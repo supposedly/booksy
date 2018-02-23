@@ -16,7 +16,6 @@ class Location(AsyncInit):
       'lid',
       'name', 'ip',
       'color', 'image',
-      'username',
       'fine_amt', 'fine_interval'
       ]
     
@@ -362,14 +361,21 @@ class Location(AsyncInit):
         return [{j: i[j] for j in ('mid', 'type', 'title', 'author', 'genre', 'image')} for i in res]
     
     async def edit(self, to_edit, new):
-        """
-        This is insecure. Very insecure.
-        """
-        to_edit = to_edit.replace('=', '') # should take care of it but still ew
+        props = [
+          'media_types',
+          'name', 'ip',
+          'color', 'image',
+          'fine_amt', 'fine_interval'
+          ]
+        col_names = props[1:] + ['media_types']
         query = f'''
-        UPDATE locations
-           SET {to_edit} = $1::{'bytea' if to_edit=='image' else 'text'}
-         WHERE lid = $2
+          UPDATE locations
+             SET name = COALESCE($1::text, name),
+                 ip = COALESCE($2::text, ip),
+                 fine_amt = COALESCE($3::numeric, fine_amt),
+                 fine_interval = COALESCE($4::numeric, fine_interval),
+                 media_types = media_types
+           WHERE lid = $2::bigint
         '''
         await self.pool.execute(query, new, self.lid)
     

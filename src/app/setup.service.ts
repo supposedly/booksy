@@ -31,6 +31,9 @@ export class SetupService {
   
   getPerms(uID) {
     return this.http.get<any>(this.permCheckURL, {params: {uid: uID}})
-      .subscribe(resp => this.globals.perms = resp.perms);
+      .subscribe(resp => {
+        this.globals.perms = resp.perms;
+        this.globals.rawPermNum = resp.raw;
+      });
   }
 }
