@@ -11,25 +11,27 @@ import { Globals } from '../globals';
   styleUrls: ['./media-search.component.css']
 })
 export class MediaSearchBarComponent implements OnInit {
-  items: any[] = [];
+  items: any[] = []; // items to show in enumerating search results
   cont: number = 0;
   
   msg: string;
-  query: any;
+  query: any = null; // search query
   
-  title: string;
+  title: string; // media attributes
   author: string;
   genre: string;
   type_: string;
 
-  _title: string;
+  _title: string; // 'pseudo'-versions of the above vars for displaying
   _author: string;
   _genre: string;
   _type_: string;
   
-  @Input() heading: string;
-  @Input('manage') notManaging: true;
-  @Input('all-items') showAll: true;
+  PAGELEN: number = 5; // perhaps subject to change
+  
+  @Input() heading: string; // message that shows up top
+  @Input() default: string = 'blank'; // if 'all', shows all of location's items when query is blank
+  @Input('with-delete') forbidDeletion: boolean = true; // opposite trick like in tooltip.component; controls whether the red (delete) link shows
   
   constructor(
     public globals: Globals,
@@ -38,37 +40,48 @@ export class MediaSearchBarComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    if (this.showAll) {
+    if (this.default == 'all') {
       this.getAllItems(true);
     }
   }
   
   reset() {
-    this.title = this.author = this.genre = this.type_ = null;
-    this.getAllItems();
+    this.query = this.cont = this.title = this.author = this.genre = this.type_ = null;
+    if (this.default == 'all') {
+      this.getAllItems(true);
+    }
+  }
+  
+  del(mID) {
+    this.locationService.deleteItem(mID)
+      .subscribe(
+        resp => this.msg = 'Deleted successfully.',
+        err => this.msg = err.error?err.error:'Error.',
+        () => this.search(false)
+      );
   }
   
   getAllItems(reset: boolean = false) {
     if (reset) { this.cont = 0; }
     this.locationService.getAllMedia(this.cont)
-      .subscribe(resp => this.items = resp.items);
+      .subscribe(resp => this.items = resp.items, err => this.msg = err.error?err.error:'Error.');
   }
   
   checkVisible(): boolean {
-    return [this.title, this.author, this.genre, this.type_].some(a => !!((a != 'null') && a));
+    return [this.title, this.author, this.genre, this.type_].some(a => a && a != 'null');
   }
   
   search(reset: boolean = false) {
-    if (reset) { this.cont = 0; }
-    if (![this.title, this.author, this.genre, this.type_].some(a => !!a)) {
-      this.getAllItems(true);
-      return null;
+    if (this.default == 'all' && !this.checkVisible()) {
+      this.getAllItems(reset);
+      return;
     }
+    if (reset) { this.cont = 0; }
     this.locationService.searchMedia(this.cont, this.title, this.author, this.genre, this.type_)
       .subscribe(
         resp => {
           this.query = {
-            page: this.cont/20,
+            page: this.cont/this.PAGELEN,
             title: this.title,
             author: this.author,
             genre: this.genre,

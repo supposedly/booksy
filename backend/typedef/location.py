@@ -295,7 +295,7 @@ class Location(AsyncInit):
         '''
         return await self.pool.execute(query, uid)
     
-    async def search(self, *, title=None, genre=None, type_=None, author=None, cont=0, max_results=20, where_taken=None):
+    async def search(self, *, title=None, genre=None, type_=None, author=None, cont=0, max_results=5, where_taken=None):
         search_terms = title, genre, author, type_
         query = (
               '''SELECT DISTINCT ON (lower(title)) title, mid, author, genre, type, image FROM items WHERE true ''' # stupid hack coming up

@@ -9,6 +9,9 @@ ul {
   text-decoration: underline;
   cursor: pointer;
 }
+.link.bad {
+  color: red;
+}
 .link:hover {
   text-decoration: none;
 }

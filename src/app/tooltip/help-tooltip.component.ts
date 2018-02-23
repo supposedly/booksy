@@ -16,7 +16,7 @@ import { HelpService } from '../help.service';
         <span
           class="owo"
           (click)="showLink=true"
-          tooltip [content]="content" [attr.ident]="ident" [attr.relative]="!relative"
+          tooltip [content]="content" [attr.ident]="ident" [attr.relative]="!absolute"
         ></span>
         <span
           class="link"
@@ -33,10 +33,12 @@ import { HelpService } from '../help.service';
 
 export class HelpTooltipComponent implements OnInit {
     @Input() ident: string;
-    @Input() relative = true;
-    @Input('newtab') inplace = true; // open in place == not in a new tab
-    // `relative` is input as the opposite of what it should be;
-    // this is so I can write <tag ... relative> instead of <tag ... relative="meaningless value but evals to truthy">
+    @Input('relative') absolute: boolean = true;
+    @Input('newtab') inplace: boolean = true; // open in place == not in a new tab
+    // `absolute` and `inplace` are input as the opposite of what they should be;
+    // this is so I can write <tag ... relative> instead of <tag ... relative="meaningless value that evals to truthy">
+    // This way, if the tag *doesn't* contain the name `relative`, the variable `absolute` will be set to `true`
+    // and if the tag *does* contain the name `relative` without a value, `absolute` will be undefined (which is falsey).
     showLink: boolean = false;
     linkText: string;
     linkUrl: string;
