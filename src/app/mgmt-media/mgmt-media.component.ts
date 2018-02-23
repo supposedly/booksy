@@ -1,36 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+// This file formerly had some logic
+// but it was pretty-much-entirely redundant to the media-search stuff
+// so I made the search bar into a modular component and replaced this with that
+// (component being media-search-bar)
 
-import { LocationService } from '../location.service';
-
-import { Globals } from '../globals';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-mgmt-media',
-  templateUrl: './mgmt-media.component.html',
-  styleUrls: ['./mgmt-media.component.css']
+  template: '<media-search-bar with-delete default="all"></media-search-bar>',
+  styles: [],
 })
-export class MgmtMediaComponent implements OnInit {
-  msg: string = '';
-  items: any[] = [];
-  cont: number = 0;
-
-  constructor(
-    public globals: Globals,
-    private locationService: LocationService
-  ) {}
-
-  ngOnInit() {
-    this.getItems();
-  }
-  
-  getItems() {
-    this.locationService.getAllMedia(this.cont)
-      .subscribe(resp => this.items = resp.items);
-  }
-  
-  del(mID) {
-    this.locationService.deleteItem(mID)
-      .subscribe(resp => this.msg = 'Deleted successfully.', err => this.msg = err.error?err.error:'Error.');
-  }
-
-}
+export class MgmtMediaComponent {}

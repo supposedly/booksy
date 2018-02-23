@@ -20,20 +20,24 @@
   <input type="submit" *ngIf="checkVisible()" value="Search"/>
 </form>
 
+<button class="new" *ngIf="default == 'all' && query" (click)="reset()">Reset query (show all items)</button>
 <p *ngIf="items.length">
-  Page {{+query.page+1}} of results for your search <!--space-->
-  <span *ngIf="_title">— title "{{_title}}" </span>
-  <span *ngIf="_author">— author "{{_author}}" </span>
-  <span *ngIf="_genre && _genre != 'null'">— genre "{{_genre}}" </span>
-  <span *ngIf="_type_ && _type_ != 'null'">— type "{{_type_}}"</span>
-  :
+  Page {{+query?.page+1}} of {{query?'results for your search':'all items:'}}
+  <span *ngIf="query">
+    <span *ngIf="_title">— title "{{_title}}" </span>
+    <span *ngIf="_author">— author "{{_author}}" </span>
+    <span *ngIf="_genre && _genre != 'null'">— genre "{{_genre}}" </span>
+    <span *ngIf="_type_ && _type_ != 'null'">— type "{{_type_}}"</span>
+    :
+  </span>
 </p>
 <!-- TODO: (?) maybe move this along with media-suggestion's identical block to its own item-list.component or something -->
 <ul>
-  <li *ngFor="let item of items" class="item-box result">
+  <li *ngFor="let item of items" class="item-box" [class.result]="query">
     <div class="text"> <!-- div in a list ahah yikes -->
       <span class="title link" routerLink="../{{item.mid}}">{{item.title}}</span>
       <span class="link" *ngIf="globals.perms.names.canManageMedia" routerLink="../edit/{{item.mid}}"> (edit)</span>
+      <span class="link bad" *ngIf="!forbidDeletion && globals.perms.names.canManageMedia" (click)="del(item.mid); items.splice(i, 1)"> (delete)</span>
       <br/>
       <span class="author">{{item.author | titlecase}}</span>
       <br/>
@@ -46,6 +50,6 @@
       <img *ngIf="item.image && item.image != 'None'" [src]="item.image" [alt]="item.title">
   </li>
 </ul>
-<button *ngIf="cont>=20" (click)="cont=cont-20;search(false)">Prev</button>
-<button *ngIf="items.length==20" (click)="cont=cont+20;search(false)">Next</button>
+<button *ngIf="cont>=PAGELEN" (click)="cont=cont-PAGELEN;search(false)">Prev</button>
+<button *ngIf="items.length==PAGELEN" (click)="cont=cont+PAGELEN;search(false)">Next</button>
 
