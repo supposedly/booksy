@@ -1,8 +1,6 @@
 import datetime as dt
 from decimal import Decimal
 
-# 
-
 from ..core import AsyncInit
 from ..attributes import Perms, Maxes, Locks
 
@@ -54,16 +52,15 @@ class MediaItem(AsyncInit):
              self.published, self.genre,
              self._issued_uid, self.due_date,
              self.fines, self.acquired,
-             self.maxes, self.image,
+             self._maxnum, self.image,
              self.length, self.price
             ) = await self.pool.fetchrow(query, self.mid)
         except TypeError:
-            raise TypeError('item') # to be fed back to the client as "{item} does not exist!"
+            raise TypeError('item') # to be fed back to the client as "item does not exist!"
         self.location = await Location(self.lid, self.app)
         self.available = not self._issued_uid
         self.issued_to = None if self._issued_uid is None else await User(self._issued_uid, self.app, location=self.location)
         self.type = await MediaType(self._type, self.lid, self.app)
-        self.maxes = None if self.maxes is None else Maxes(self.maxes)
     
     def to_dict(self):
         retdir = {attr: str(getattr(self, attr, None)) for attr in self.props}

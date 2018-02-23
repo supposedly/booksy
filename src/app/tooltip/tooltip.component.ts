@@ -1,4 +1,4 @@
-// Made with partial help of a wonderful article by Netanel Basal:
+// Made under partial guidance of a wonderful article by Netanel Basal:
 // https://netbasal.com/create-advanced-components-in-angular-e0655df5dde6
 import {
   Component,

@@ -49,6 +49,13 @@ export class RoleDetailComponent implements OnInit {
     if (obj) { return Object.keys(obj); }
   }
   
+  checkView() {
+    if (+this.globals.rawPermNum > +this.rawPermNum || this.rID == 'new') {
+      return true;
+    }
+    return null;
+  }
+  
   getArrs() {
     this.roleService.getArrs(this.rID)
       .subscribe(

@@ -17,6 +17,7 @@ import { CheckoutComponent } from './checkout/checkout.component';
 import { CheckoutSessionComponent } from './checkout-session/checkout-session.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { DashHeaderComponent } from './dash-header/dash-header.component';
+import { GenericHeaderComponent } from './generic-header/generic-header.component';
 import { HeaderComponent } from './header/header.component';
 import { HelpComponent } from './help/help.component';
 import { HelpTooltipComponent } from './tooltip/help-tooltip.component';
@@ -111,6 +112,7 @@ import { SideButtonService } from './side-button.service';
     PermsComponent,
     MaxesComponent,
     LocksComponent,
+    GenericHeaderComponent,
   ],
   entryComponents: [
     TooltipComponent

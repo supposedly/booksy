@@ -5,8 +5,8 @@ import { Globals } from '../globals';
 
 @Component({
   selector: 'app-rerouting',
-  templateUrl: './rerouting.component.html',
-  styleUrls: ['./rerouting.component.css']
+  template: '',
+  styles: ['']
 })
 export class ReroutingComponent implements OnInit {
   constructor(

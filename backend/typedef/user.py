@@ -109,6 +109,26 @@ class User(AsyncInit):
     def edit_perms_from_seq(self, *new):
         self.perms.edit_from_seq(*new)
     
+    async def delete(self, uid):
+        """
+        Get rid of & clean up after a member on deletion.
+        """
+        queries = '''
+        DELETE FROM members
+         WHERE uid = $1::bigint
+        ''', '''
+        DELETE FROM holds
+         WHERE uid = $1::bigint  
+        ''', '''
+        UPDATE items
+           SET issued_to = NULL,
+               due_date = NULL,
+               fines = NULL
+         WHERE issued_to = $1::bigint
+        '''
+        async with self.acquire() as conn:
+            [await conn.execute(query, uid) for query in queries]
+    
     async def notifs(self):
         async with self.acquire() as conn:
             # could probably do this in one line
