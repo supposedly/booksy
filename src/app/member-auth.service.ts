@@ -1,14 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { LoggingService } from './logging.service';
 import { SetupService } from './setup.service';
 import { RoleService } from './role.service';
 
 import { HttpOptions } from './classes';
 import { Globals } from './globals';
 
-import { catchError, map, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
 import 'rxjs/add/operator/shareReplay';
@@ -48,22 +46,17 @@ export class MemberAuthService {
     private http: HttpClient,
     private roleService: RoleService,
     private setupService: SetupService,
-    private loggingService: LoggingService
   ) {
       this.isLocationRegistered()
         .subscribe(value => this.isRegistered = value.registered, err => this.isRegistered = false);
   }
   
   isLocationRegistered(): Observable<any> {
-    return this.http.get<any>(this.locInfoURL).pipe(
-      tap(_ => this.log(`inquired whether the location's IP is registered w/ booksy`)),
-      )
+    return this.http.get<any>(this.locInfoURL);
   }
   
   getInfo(): Observable<any> {
-    return this.http.get<Observable<any>>(this.infoURL, {params: {uid: this.uID}}).pipe(
-      tap(_ => this.log(`requested user info`)),
-      )
+    return this.http.get<Observable<any>>(this.infoURL, {params: {uid: this.uID}})
       .shareReplay();
   }
   
@@ -87,7 +80,7 @@ export class MemberAuthService {
     }
   }
   
-  storeMeInfo(): void {
+  storeMeInfo(): void { // store info about currently-logged-in user on login
     this.getInfo()
       .subscribe(res => {
         this.saveToGlobals(res.me);
@@ -114,13 +107,8 @@ export class MemberAuthService {
   
   logOut() {
     this.globals.isLoggedIn = false
-    return this.http.post(this.logoutURL, httpOptions).pipe(
-      tap(_ => this.log(`logged out`)),
-    )
-    .subscribe(resp => this.globals.isLoggedIn = false, err => console.log(err));
+    return this.http.post(this.logoutURL, httpOptions)
+      .subscribe(resp => this.globals.isLoggedIn = false, err => console.log(err));
   }
   
-  private log(message: string, error?: boolean) {
-    this.loggingService.add((error?'memberAuthService: ':'memberAuthService just ') + message);
-  }
 }

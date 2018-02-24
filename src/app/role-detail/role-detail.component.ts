@@ -37,7 +37,6 @@ export class RoleDetailComponent implements OnInit {
   
   ngOnInit() {
     this.rID = this.route.snapshot.paramMap.get('rID');
-    console.log(this.rID, this.globals.rID);
     if (this.rID == 'new') {
       this.makeArrs();
     } else {

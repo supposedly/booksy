@@ -1,8 +1,9 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
+import { ButtonService } from '../button.service';
+
 import { SideButton } from '../classes';
-import { SideButtonService } from '../side-button.service';
 import { Globals } from '../globals';
 
 @Component({
@@ -11,16 +12,15 @@ import { Globals } from '../globals';
   styleUrls: ['./sidebar.component.css']
 })
 export class SidebarComponent /*implements OnInit*/ {
-  buttons: SideButton[] = null;
-  /* public hide: boolean = false; */
   public san;
+  buttons: SideButton[] = null;
   
   constructor(
-    private globals: Globals,
-    private sideButtonService: SideButtonService,
+    public globals: Globals,
+    private buttonService: ButtonService,
     private sanitizer: DomSanitizer
   ) {
-      this.san = sanitizer.bypassSecurityTrustStyle;
+      this.san = sanitizer.bypassSecurityTrustStyle; // so I can use it from the template
   }
   
   @Input() uID: string;
@@ -36,8 +36,8 @@ export class SidebarComponent /*implements OnInit*/ {
   */
   
   getButtons(): void {
-    this.sideButtonService.getButtons(this.uID)
-      .subscribe(buttons => this.buttons = buttons)
+    this.buttonService.getSidebarButtons(this.uID)
+      .subscribe(resp => this.buttons = resp.buttons)
   }
 
 }
