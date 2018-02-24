@@ -12,6 +12,10 @@ import { Globals } from '../globals';
 export class MediaSuggestionComponent implements OnInit {
   suggested: any[] = [];
   msg: string;
+  
+  breadcrumbs: string;
+  
+  @Input() level: number = 2;
   @Input() heading: string;
   
   constructor(
@@ -20,6 +24,8 @@ export class MediaSuggestionComponent implements OnInit {
   ) {}
   
   ngOnInit() {
+    this.breadcrumbs = this.level<=1 ? '.'.repeat(this.level) : '../'.repeat(this.level-1);
+    // see media-search-bar for brief explanation
     this.getSuggestions();
   }
   

@@ -30,7 +30,7 @@ export class MgmtRolesPermsComponent implements OnInit {
   
   deleteRole(rID, index) {
     this.roleService.delete(rID)
-      .subscribe(resp => this.roles.splice(index, 1));
+      .subscribe(_ => this.roles.splice(index, 1));
   }
 
 }

@@ -14,14 +14,18 @@ import { Globals } from './globals';
 @Injectable()
 export class LocationService {
   loc: string = 'api/location';
+  
   private locItemsURL: string = this.loc + '/media';
   private searchURL: string = this.loc + '/media/search';
+  
   private allMembersURL: string = this.loc + '/members';
   private memberInfoURL: string = this.loc + '/members/info';
   private createMemberURL: string = this.loc + '/members/add';
   private deleteMemberURL: string = this.loc + '/members/remove';
+  
   private createItemURL: string = this.loc + '/media/add';
   private delItemURL: string = this.loc + '/media/remove';
+  
   private editMemberURL: string = 'api/member/edit';
   
   constructor(
@@ -54,7 +58,7 @@ export class LocationService {
     });
   }
   
-  deleteMember(uID): Observable<any> {
+  deleteMember(uID): Observable<any> { // FIXME: One of these is redundant
     return this.http.post<any>(this.deleteMemberURL, {uid: this.globals.uID, remove: uID});
   }
   
@@ -75,7 +79,7 @@ export class LocationService {
     return this.http.post<any>(this.createItemURL, item, httpOptions);
   }
   
-  removeMember(uID): Observable<any> {
+  removeMember(uID): Observable<any> { // FIXME: One of these is redundant
     return this.http.post<any>(this.deleteMemberURL, {uid: this.globals.uID, member: uID}, httpOptions);
   }
   

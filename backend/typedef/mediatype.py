@@ -5,11 +5,9 @@ from ..attributes import Perms, Maxes, Locks
 class MediaType(AsyncInit):
     """
     Defines a kind of media, e.g. books or audiotapes.
-    Currently unused but I very much hope to implement it at a later date.
+    Have maxes defined on them that override user/role maxes
+    and are overridden by item maxes.
     """
-    props = [
-      'name', 
-    ]
     
     @staticmethod
     def do_imports():
@@ -18,33 +16,29 @@ class MediaType(AsyncInit):
     
     async def __init__(self, name, location, app):
         self.name = name
-        self.app = app
+        self._app = app
         self.pool = app.pg_pool
         self.acquire = self.pool.acquire
-        self.location = location if isinstance(location, Location) else await Location(int(location), self.app)
-        maxnum = await self.pool.fetchval('''SELECT maxes FROM items WHERE type = $1::text''', self.name)
-        self.maxes = None if maxnum is None else Maxes(maxnum)
+        self.location = location if isinstance(location, Location) else await Location(int(location), self._app)
+        check = await self.pool.fetchval('''SELECT name FROM mtypes WHERE name = $1::text AND lid = $2::bigint''', self.name, self.location.lid)
+        if not check:
+            raise ValueError('This type does not exist yet')
+        maxnum = await self.pool.fetchval('''SELECT maxes FROM mtypes WHERE name = $1::text AND lid = $2::bigint''', self.name, self.location.lid)
+        self.maxes = None if maxnum is None else Maxes(maxnum) # or `maxnum and Maxes(maxnum)`
     
     def __str__(self):
         return self.name
     
     def to_dict(self):
-        return None # Not implemented
-    
-    async def get_items(self):
+        return {'name': self.name, 'maxes': self.maxes.props}
+
+    async def edit(self, *, maxes=None, name=None):
         query = '''
-        SELECT mid
-          FROM items
-         WHERE media_type == $1
-           AND lid = $2::bigint
+        UPDATE mtypes
+          SET maxes = COALESCE($3::bigint, maxes),
+              name = COALESCE($4::text, name)
+        WHERE name = $1::text
+          AND lid = $2::bigint
         '''
-        return await self.pool.fetch(query, self.name, self.lid)
-    
-    async def set_maxes(self, newmaxnum):
-        query = '''
-        UPDATE items
-           SET maxes = $1::bigint
-         WHERE media_type = $2::text
-        '''
-        await self.pool.execute(query, newmaxnum, self.name)
-        self.maxes = newmaxes
+        await self.pool.execute(query, self.name, self.location.lid, maxes, name)
+        self.maxes, self.name = Maxes(maxes), name

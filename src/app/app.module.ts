@@ -34,7 +34,6 @@ import { MediaSuggestionComponent } from './media-search/media-suggestion.compon
 import { MemberAcctInfoComponent } from './member-acct-info/member-acct-info.component';
 import { MgmtAccountsComponent } from './mgmt-accounts/mgmt-accounts.component';
 import { MgmtLocationComponent } from './mgmt-location/mgmt-location.component';
-import { MgmtMediaComponent } from './mgmt-media/mgmt-media.component';
 import { MgmtRolesPermsComponent } from './mgmt-roles-perms/mgmt-roles-perms.component';
 import { NotificationsComponent } from './notifications/notifications.component';
 import { ReportsComponent } from './reports/reports.component';
@@ -48,6 +47,12 @@ import { PersonalMediaComponent } from './personal-media/personal-media.componen
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { SignupComponent } from './signup/signup.component';
 import { TooltipComponent, TooltipContainerDirective } from './tooltip/tooltip.component';
+import {
+  MgmtMediaComponent,
+  MgmtMediaListComponent,
+  MgmtMediaGenresComponent
+} from './mgmt-media/mgmt-media.component';
+import { MgmtMediaTypesComponent, MediaTypeDetailComponent } from './mgmt-media/mgmt-media-types.component';
 
 import { TooltipDirective } from './tooltip/tooltip.directive';
 
@@ -56,6 +61,7 @@ import { CheckoutService } from './checkout.service';
 import { HelpService } from './help.service';
 import { LocationService } from './location.service';
 import { MediaService } from './media.service';
+import { MediaTypeService } from './media-type.service';
 import { MemberAuthService } from './member-auth.service';
 import { MemberService } from './member.service';
 import { ReportsService } from './reports.service';
@@ -87,6 +93,10 @@ import { SetupService } from './setup.service';
     NotificationsComponent,
     RoleDetailComponent,
     MgmtMediaComponent,
+    MgmtMediaListComponent,
+    MgmtMediaTypesComponent,
+    MediaTypeDetailComponent,
+    MgmtMediaGenresComponent,
     ReportViewComponent,
     PersonalInfoComponent,
     MediaEditComponent,
@@ -127,6 +137,7 @@ import { SetupService } from './setup.service';
     ReportsService,
     LocationService,
     HelpService,
+    MediaTypeService,
     Globals
     ],
   bootstrap: [AppComponent]

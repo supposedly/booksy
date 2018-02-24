@@ -38,7 +38,7 @@ export class RoleDetailComponent implements OnInit {
   ngOnInit() {
     this.rID = this.route.snapshot.paramMap.get('rID');
     if (this.rID == 'new') {
-      this.makeArrs();
+      this.permArr = this.maxArr = this.lockArr = null;
     } else {
       this.getArrs();
     }
@@ -66,34 +66,6 @@ export class RoleDetailComponent implements OnInit {
           this.roleName = seqs.name;
         }
       );
-  }
-  
-  makeArrs() {
-    this.permArr = {
-      names: { // put every attr here and globals.perms.names[i] will take care of hiding appropriate ones
-          manage_location: false,
-          manage_accounts: false,
-          manage_roles: false,
-          create_admin_roles: false,
-          manage_media: false,
-          generate_reports: false,
-          return_items: false
-      }
-    }
-    this.maxArr = {
-      names: {
-        checkout_duration: 0,
-        renewals: 0,
-        holds: 0
-      }
-    }
-    this.lockArr = {
-      names: {
-        checkouts: 0,
-        fines: 0
-      }
-    }
-    this.roleName = 'New role';
   }
   
   submit() {

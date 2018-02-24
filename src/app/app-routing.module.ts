@@ -18,7 +18,6 @@ import { MemberAcctInfoComponent } from './member-acct-info/member-acct-info.com
 import { MgmtLocationComponent } from './mgmt-location/mgmt-location.component';
 import { MgmtAccountsComponent } from './mgmt-accounts/mgmt-accounts.component';
 import { MgmtRolesPermsComponent } from './mgmt-roles-perms/mgmt-roles-perms.component';
-import { MgmtMediaComponent } from './mgmt-media/mgmt-media.component';
 import { PersonalHoldsComponent } from './personal-holds/personal-holds.component';
 import { PersonalInfoComponent } from './personal-info/personal-info.component';
 import { PersonalMediaComponent } from './personal-media/personal-media.component';
@@ -27,10 +26,18 @@ import { ReportViewComponent } from './report-view/report-view.component';
 import { RoleDetailComponent } from './role-detail/role-detail.component';
 import { ReroutingComponent } from './rerouting/rerouting.component';
 import { SignupComponent } from './signup/signup.component';
+import {
+  MgmtMediaComponent,
+  MgmtMediaListComponent,
+  MgmtMediaGenresComponent
+} from './mgmt-media/mgmt-media.component';
+import {
+  MgmtMediaTypesComponent,
+  MediaTypeDetailComponent,
+} from './mgmt-media/mgmt-media-types.component';
 
 const routes: Routes = [
-  /* Free-for-all signup would be a bad idea to include in the FBLA demo */
-  //{path: 'signup/:type', component: SignupComponent},
+  {path: 'signup/:type', component: SignupComponent},
   {path: 'login', component: LoginComponent},
   {path: '', redirectTo: 'home', pathMatch: 'full', canActivate: [AuthGuard]},
   {path: 'index.html', component: ReroutingComponent},
@@ -38,7 +45,13 @@ const routes: Routes = [
     // routed to by the sidebar
     {path: '', redirectTo: 'checkout', pathMatch: 'full'},
     {path: 'media/search', component: MediaSearchComponent},
-    {path: 'media/manage', component: MgmtMediaComponent},
+    {path: 'media/manage', component: MgmtMediaComponent, children:[
+      {path: '', redirectTo: 'list', pathMatch: 'full'},
+      {path: 'list', component: MgmtMediaListComponent},
+      {path: 'types/:name', component: MediaTypeDetailComponent},
+      {path: 'types', component: MgmtMediaTypesComponent},
+      {path: 'genres', component: MgmtMediaGenresComponent}
+    ]},
     {path: 'media/edit/:mID', component: MediaEditComponent},
     {path: 'media/:mID', component: MediaInfoComponent},
     {path: 'roles/:rID', component: RoleDetailComponent},
@@ -52,7 +65,7 @@ const routes: Routes = [
       {path: ':uID/items', component: PersonalMediaComponent},
       {path: ':uID/holds', component: PersonalHoldsComponent},
     ]},
-    {path: 'reports/view', component: ReportViewComponent}, // these won't work as children ... even though they well should
+    {path: 'reports/view', component: ReportViewComponent}, // this won't work as a child for some reason ... even though it well should
     {path: 'reports', component: ReportsComponent},
     {path: 'manage', component: LocationMgmtComponent, children: [
       {path: '', redirectTo: 'location', pathMatch: 'full'},

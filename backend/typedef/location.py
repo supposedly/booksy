@@ -25,8 +25,8 @@ class Location(AsyncInit):
         from . import Location, Role, MediaItem, MediaType, User
     
     async def __init__(self, lid, app, *, owner=None):
-        self.app = app
-        self.pool = self.app.pg_pool
+        self._app = app
+        self.pool = self._app.pg_pool
         self.acquire = self.pool.acquire
         self.lid = int(lid)
         async with self.acquire() as conn:
@@ -34,7 +34,7 @@ class Location(AsyncInit):
             name, ip, fine_amt, fine_interval, color, image = await conn.fetchrow(query, self.lid)
             query = '''SELECT uid FROM members WHERE lid = $1 AND manages = true'''
             ouid = await conn.fetchval(query, self.lid)
-        self.owner = await User(ouid, self.app, location=self) if owner is None else owner # just for consistency; don't think the `else` will ever be used though
+        self.owner = await User(ouid, self._app, location=self) if owner is None else owner # just for consistency; don't think the `else` will ever be used though
         self.name = name
         self.ip = ip
         self.fine_amt = fine_amt
@@ -48,9 +48,6 @@ class Location(AsyncInit):
     
     def to_dict(self):
         return {i: getattr(self, i, None) for i in self.props} + {'owner_id', (self.owner).id}
-    
-    async def media_type(self, type_name: str):
-        return await MediaType(type_name, self, self.app)
     
     @staticmethod
     def gb_image_query(title='', author='', isbn=''):
@@ -132,12 +129,12 @@ class Location(AsyncInit):
         # ProcessPoolExecutor)
         
         # load the file as a Pandas dataframe
-        df = await self.app.aexec(None, pandas.read_csv, file)
+        df = await self._app.aexec(None, pandas.read_csv, file)
         # encode password column to make it usable for bcrypt
-        df.password = self.app.aexec(None, df.password.str.encode, 'utf-8')
-        df = await self.app.aexec(None, fix, df)
+        df.password = self._app.aexec(None, df.password.str.encode, 'utf-8')
+        df = await self._app.aexec(None, fix, df)
         with io.BytesIO() as bIO:
-            await self.app.aexec(None, df.to_csv, bIO)
+            await self._app.aexec(None, df.to_csv, bIO)
             bIO.seek(0)
             async with self.acquire() as conn:
                 return await conn.copy_to_table(
@@ -251,7 +248,7 @@ class Location(AsyncInit):
     async def get_user(self, username: str):
         query = '''SELECT uid FROM members WHERE username = $1::text AND lid = $2::bigint AND type = 0'''
         uid = await self.pool.fetchval(query)
-        return await User(uid, self.app, location=self)
+        return await User(uid, self._app, location=self)
     
     async def members(self, by_role=True, *, limit=True, cont=0, max_results=15):
         roles = {}
@@ -308,7 +305,7 @@ class Location(AsyncInit):
         results = await self.pool.fetch(query, *filter(bool, search_terms))
         if where_taken is not None: # this means I'm calling it from in here and so I probably want an actual MediaItem or at least no junk
             if max_results == 1:
-                return await MediaItem(results[0]['mid'], app=self.app)
+                return await MediaItem(results[0]['mid'], app=self._app)
             return [i['mid'] for i in results]
         # I'd have liked to provide a full MediaItem for each result,
         # but that would take so so so so so unbearably long on Heroku's DB speeds,
@@ -344,7 +341,7 @@ class Location(AsyncInit):
             '''
             await conn.execute(query, self.lid, name, perms.raw, maxes.raw, locks.raw)
             rid = await conn.fetchval('''SELECT currval(pg_get_serial_sequence('roles', 'rid'))''')
-        return await Role(rid, self.app, location=self)
+        return await Role(rid, self._app, location=self)
     
     async def items(self, *, cont=0, max_results=5):
         query = '''
@@ -383,27 +380,28 @@ class Location(AsyncInit):
         # and may never be ...
     
     async def media_types(self):
-        query = '''SELECT media_types FROM locations WHERE lid = $1::bigint'''
-        # fetchval because it's an array (not a bunch of records)
-        return await self.pool.fetchval(query, self.lid)
+        query = '''SELECT name, maxes FROM mtypes WHERE lid = $1::bigint'''
+        return [{'name': i['name'], 'maxes': Maxes(i['maxes'])} for i in await self.pool.fetch(query, self.lid)]
     
-    async def add_media_type(self, type_name: str):
+    async def add_media_type(self, name, maxes): # maxes are actually Maxes.names-equivalent
         query = '''
-        UPDATE locations
-           SET media_types = array_append(media_types, $1::text)
-         WHERE lid = $2::bigint
+        INSERT INTO mtypes (name, maxes, lid)
+        SELECT $1::text, $2::bigint, $3::bigint
         '''
-        await self.pool.execute(query, type_name, self.lid)
-        return await self.media_type(type_name)
+        await self.pool.execute(query, name, Maxes.from_kwargs(**maxes).raw, self.lid)
+        return await MediaType(name, self, self._app)
     
-    async def remove_media_type(self, type_name: str):
+    async def remove_media_type(self, name):
         query = '''
-        UPDATE locations
-           SET media_types = array_remove(media_types, $1::text)
-         WHERE lid = $2::bigint
+        DELETE FROM mtypes
+         WHERE name = $1::text
+           AND lid = $2::bigint
         '''
-        await self.pool.execute(query, type_name, self.lid)
-        return 'success' ###
+        await self.pool.execute(query, name, self.lid)
+    
+    async def edit_media_type(self, mtype, *, maxes=None, name=None):
+        mtype = await MediaType(mtype, self, self._app)
+        await mtype.edit(maxes=maxes and Maxes.from_kwargs(**maxes).raw, name=name)
     
     async def genres(self):
         query = '''
@@ -414,7 +412,7 @@ class Location(AsyncInit):
     async def add_media(self, title, author, published, type_, genre, isbn, price, length):
         ident = img = ''
         try:
-            async with self.app.sem, self.app.session.get(self.gb_image_query(title, author)) as resp:
+            async with self._app.sem, self._app.session.get(self.gb_image_query(title, author)) as resp:
                 rel = (await resp.json())['items'][0]['volumeInfo']
         except KeyError:
             pass
@@ -446,10 +444,10 @@ class Location(AsyncInit):
             '''
             await conn.execute(query, img, *args)
             mid = await conn.fetchval('''SELECT currval(pg_get_serial_sequence('items', 'mid'))''')
-        return await MediaItem(mid, self.app)
+        return await MediaItem(mid, self._app)
     
     async def remove_item(self, item):
-        item = item if isinstance(item, MediaItem) else await MediaItem(item, self.app)
+        item = item if isinstance(item, MediaItem) else await MediaItem(item, self._app)
         query = '''
         DELETE FROM items
         WHERE mid = $1::bigint

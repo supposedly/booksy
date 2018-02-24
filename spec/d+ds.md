@@ -1,4 +1,4 @@
-### **NOTE:** This document is NOT intended to be viewed as a formatted Markdown file.
+### **NOTE:** This document is NOT intended to be viewed as a formatted Markdown file!
 **Please click the `</>` button above to turn it into a monospaced, syntax-highlighted-but-otherwise-plaintext document.**
 
 ----
@@ -9,8 +9,8 @@ __[DESIGN SPEC]__
 ### NAVIGATION ###
    >> All navigation should be handled by way of "nav" elements, i.e. headers and sidebars.
       The main application header is of course the most prominent of these, right after it
-      being the home-page sidebar then the sub-headers found in the "Manage location" and
-      "dashboard/My media" sections thereof.
+      being the home-page sidebar then the headers found in the "Manage location" and
+      "dashboard/My media" subsections thereof.
 ### ACCESSIBILITY ###
    >> The application should be responsive to some extent; Angular works great on mobile
       browsers, and it'd be awful of me not to take advantage of that, so most content will
@@ -20,6 +20,9 @@ __[DESIGN SPEC]__
       to choose two or three of their own colors; to match their school's team colors, for
       instance... colors should not NOT be jarring or overly-contrasting in any way, since
       the foremost goal is of course readability.
+  >> The difference in color between the header background and an active routerLink's in it
+     is 3682091, and the difference between the header background and an *:active* (ie
+     a being-clicked) header button is 7303023.
 
 __[CONCEPTS]__
 ![!][NOTE:] These are the abstract ideas and terms utilized in the rest of the documentation.
@@ -91,8 +94,8 @@ __[CONCEPTS]__
          ║ mid (PRIMARY KEY      ║ type       ║ isbn               ║ lid          ║ title ║ author ║ published ║ issued_to    ║ due_date     ║ fines      ║ acquired        ║ genre      ║ maxes            ║
          ╠═══════════════════════╬════════════╬════════════════════╬══════════════╬═══════╬════════╬═══════════╬══════════════╬══════════════╬════════════╬═════════════════╬════════════╬══════════════════╣
          ║ BIGSERIAL             ║ TEXT       ║ TEXT               ║ BIGINT       ║ TEXT  ║ TEXT   ║ DATE      ║ BIGINT       ║ DATE         ║ MONEY      ║ TIMESTAMP       ║ TEXT       ║ BIGINT           ║
-         ║ (internal ID of item) ║ ('book' or ║ (maybe bigint)     ║ (internal id ║       ║        ║           ║ (user ID, or ║ (determined  ║ (overdue   ║ (when this copy ║ (app sorts ║ (per-item maxes, ║ <= value of 255 == defer to role maxes
-         ║                       ║ whatever)  ║ (null if not book) ║ of location) ║       ║        ║           ║ NULL if not  ║ according to ║ fines on   ║ was added to    ║ by type &  ║ overrides role   ║ <= ergo, 255 is default
+         ║ (internal ID of item) ║ ('book' or ║ (maybe bigint)     ║ (internal id ║       ║        ║           ║ (user ID, or ║ (determined  ║ (overdue   ║ (when this copy ║ (app sorts ║ (per-item maxes, ║ <= value of NULL == defer to role maxes
+         ║                       ║ whatever)  ║ (null if not book) ║ of location) ║       ║        ║           ║ NULL if not  ║ according to ║ fines on   ║ was added to    ║ by type &  ║ overrides role   ║ <= NULL is default ofc
          ║                       ║            ║                    ║              ║       ║        ║           ║ checked out) ║ user's role) ║ this item) ║ the location)   ║ genre)     ║ maxes)           ║
          ╚═══════════════════════╩════════════╩════════════════════╩══════════════╩═══════╩════════╩═══════════╩══════════════╩══════════════╩════════════╩═════════════════╩════════════╩══════════════════╝
    > holds:
@@ -164,7 +167,7 @@ __[CONCEPTS]__
      mean returning a book, paying off a fine, re-verifying their account, ...)
      NOTE again that a value of 255, binary [11111111], in any one byte field is interpreted
      as *infinity* -- i.e. no limit.
-     NOTE also again that 
+     NOTE yet further that the values are little-endian and so are 'flipped'.
       1st byte: CHECKOUT THRESHOLD
          Maximum amount of items this role may check out at a time
          before being barred from checking out new media.

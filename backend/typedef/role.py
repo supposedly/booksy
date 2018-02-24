@@ -20,8 +20,8 @@ class Role(AsyncInit):
         from . import Location, Role, MediaItem, MediaType, User
     
     async def __init__(self, rid, app, *, location=None):
-        self.app = app
-        self.pool = self.app.pg_pool
+        self._app = app
+        self.pool = self._app.pg_pool
         self.acquire = self.pool.acquire
         self.rid = int(rid)
         query = '''SELECT lid, name, isdefault, permissions, maxes, locks FROM roles WHERE rid = $1::bigint'''
@@ -29,7 +29,7 @@ class Role(AsyncInit):
             lid, name, default, permbin, maxbin, lockbin = await self.pool.fetchrow(query, self.rid)
         except TypeError:
             raise TypeError('role') # to be fed back to application as '{role} does not exist!'
-        self.location = await Location(lid, self.app) if location is None else location
+        self.location = await Location(lid, self._app) if location is None else location
         self.name = name
         self.is_default = default
         # Comments below pertain to these three lines

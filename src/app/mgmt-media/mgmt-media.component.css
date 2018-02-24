@@ -1,0 +1,17 @@
+#container {
+  position: relative;
+  display: grid;
+  grid-template: 35px 1em 1fr / 100%;
+  grid-template-areas: "header"
+                       "dash-header"
+                       "main";
+}
+#spacer {
+  grid-area: header;
+}
+generic-header {
+  grid-area: dash-header;
+}
+router-outlet {
+  grid-area: main;
+}

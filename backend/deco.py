@@ -15,13 +15,13 @@ def uid_get(*attrs, user=False):
             requested info out of it.
             """
             try:
-                uid = getattr(rqst, 'raw_args' if rqst.method == 'GET' else 'json')['uid']
+                uid = (rqst.raw_args if rqst.method == 'GET' else rqst.json)['uid']
                 user_obj = await User(uid, rqst.app)
             except KeyError:
                 sanic.exceptions.abort(422, 'No user ID given')
-            vals = [user_obj] if user or not attrs else []
-            vals += [getattr(user_obj, i) for i in attrs]
-            return await func(rqst, *vals, *args, **kwargs)
+            vals = {'user': user_obj} if user or not attrs else {}
+            vals.update({i: getattr(user_obj, i) for i in attrs})
+            return await func(rqst, *args, **vals, **kwargs)
         return wrapper
     return decorator
 
@@ -31,18 +31,17 @@ def rqst_get(*attrs):
         async def wrapper(rqst, *args, **kwargs):
             """
             Another try-except abstraction.
-            Grabs any requested info from a request and, if matching
-            some keyword, converts it to its object; else just gives
-            the text
+            Grabs requested info from a request and, if matching
+            an object name, converts it; else just returns data
             """
             maps = {'item': (MediaItem, 'mid'), 'location': (Location, 'lid'), 'role': (Role, 'rid'), 'user': (User, 'uid')}
-            container = getattr(rqst, 'raw_args' if rqst.method == 'GET' else 'json')
+            container = rqst.raw_args if rqst.method == 'GET' else rqst.json
             try:
-                vals = [await maps[i][0](container[maps[i][1]], rqst.app) if i in maps else None if i == 'null' else container[i] for i in attrs]
+                vals = {i: await maps[i][0](container[maps[i][1]], rqst.app) if i in maps else None if i == 'null' else container[i] for i in attrs}
             except KeyError:
                 sanic.exceptions.abort(422, 'Missing required attributes.')
             except TypeError as obj:
                 sanic.exceptions.abort(404, f'{str(obj)[0].upper()+str(obj)[1:]} does not exist.')
-            return await func(rqst, *vals, *args, **kwargs)
+            return await func(rqst, *args, **vals, **kwargs)
         return wrapper
     return decorator

@@ -17,8 +17,8 @@ import { MemberService } from '../member.service';
 export class DashboardComponent implements OnInit {
   uID: string;
   buttons = [
-    {'text': 'items'},
-    {'text': 'holds'}
+    {text: 'items'},
+    {text: 'holds'}
   ]
   
   constructor(private route: ActivatedRoute) {}

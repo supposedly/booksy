@@ -41,7 +41,7 @@ async def get_bool_available(rqst, item):
     
     (I guess it's more convenient for me with this inter-
     mediary step, bc it allows me to explicitly show an
-    error message if necessary before any further requests
+    error message if necessary before any further user requests
     occur)
     """
     issued_to = item.issued_to.username if item.issued_to and item.issued_to.username else item._issued_uid

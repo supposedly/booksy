@@ -14,6 +14,7 @@ export class MediaSearchBarComponent implements OnInit {
   items: any[] = []; // items to show in enumerating search results
   cont: number = 0;
   
+  
   msg: string;
   query: any = null; // search query
   
@@ -27,9 +28,11 @@ export class MediaSearchBarComponent implements OnInit {
   _genre: string;
   _type_: string;
   
+  breadcrumbs: string; // the dots representing what directory to go to, eg ./dir/ or ../../dir/
   PAGELEN: number = 5; // perhaps subject to change
   
   @Input() heading: string; // message that shows up top
+  @Input() level: number = 2; // how many levels up to go in item links (1 for same level, 2 for one up, 3 for two up...)
   @Input() default: string = 'blank'; // if 'all', shows all of location's items when query is blank
   @Input('with-delete') forbidDeletion: boolean = true; // opposite trick like in tooltip.component; controls whether the red (delete) link shows
   
@@ -40,6 +43,7 @@ export class MediaSearchBarComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.breadcrumbs = this.level<=1 ? '.'.repeat(this.level) : '../'.repeat(this.level-1);
     if (this.default == 'all') {
       this.getAllItems(true);
     }
