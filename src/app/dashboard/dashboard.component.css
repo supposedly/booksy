@@ -9,7 +9,7 @@
 #spacer {
   grid-area: header;
 }
-app-mgmt-header {
+generic-header {
   grid-area: dash-header;
 }
 router-outlet {

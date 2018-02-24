@@ -19,12 +19,12 @@ async def expose_header_buttons(rqst):
     
     Requires nothing from client, being static.
     """
-    resp = [{"text": 'home'}, {"text": 'help'}, {"text": 'about'}]
+    buttons = [{"text": 'home'}, {"text": 'help'}, {"text": 'about'}]
     # dest on home should not be necessary, but for some reason Angular
     # isn't picking up the redirect I've tried to place on the router
     # from '/home' to '/'... so instead it says
     # "Cannot match routes. url segment: home"
-    return sanic.response.json(resp, status=200)
+    return sanic.response.json({'buttons': buttons}, status=200)
 
 @btn.get('/home-sidebar')
 @rqst_get('user')
@@ -56,25 +56,25 @@ async def expose_home_sidebar_buttons(rqst, user):
     
     Requires current session's Role ID from client.
     """
-    side_buttons = [
+    buttons = [
       {"text": 'checkout'},
     ]
     if not user.is_checkout:
-        side_buttons += [
+        buttons += [
           {"text": 'find media', "dest": 'media/search'},
           {"text": 'my media', "dest": 'dashboard'},
           {"text": 'my account', "dest": 'account'},
         ]
         if user.perms.can_generate_reports: # self-documenting!
-            side_buttons.append({"text": 'reports', "color": '#97fb97'})
+            buttons.append({"text": 'reports', "color": '#97fb97'})
         if user.perms.can_manage_media:
-            side_buttons.append({"text": 'manage media', "dest": 'media/manage', "color": '#ffcaca'})
+            buttons.append({"text": 'manage media', "dest": 'media/manage', "color": '#ffcaca'})
         if any(user.perms.seq[:5]):
             # if has any of the following permissions:
             # Manage Location Info, Manage Accounts, Manage Roles,
             # Create Administrative Roles, Manage Media
-            side_buttons.append({"text": 'manage location', "dest": 'manage', "color": '#ffcaca'})
-    return sanic.response.json(side_buttons, status=200)
+            buttons.append({"text": 'manage location', "dest": 'manage', "color": '#ffcaca'})
+    return sanic.response.json({'buttons': buttons}, status=200)
 
 @btn.get('/mgmt-header')
 @uid_get()
@@ -94,11 +94,11 @@ async def expose_management_buttons(rqst, user):
     """
     if user.is_checkout:
         sanic.exceptions.abort(400, 'Only available to non-checkout accounts')
-    head_buttons = []
+    buttons = []
     if user.perms.can_manage_location:
-        head_buttons.append({"text": 'location info', "dest": 'location'})
+        buttons.append({"text": 'location info', "dest": 'location'})
     if user.perms.can_manage_accounts:
-        head_buttons.append({"text": 'accounts', "dest": 'accounts'})
+        buttons.append({"text": 'accounts', "dest": 'accounts'})
     if user.perms.can_manage_roles:
-        head_buttons.append({"text": 'roles and permissions', "dest": 'roles'})
-    return sanic.response.json(head_buttons, status=200)
+        buttons.append({"text": 'roles and permissions', "dest": 'roles'})
+    return sanic.response.json({'buttons': buttons}, status=200)

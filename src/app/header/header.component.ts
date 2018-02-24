@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 
+import { ButtonService } from '../button.service';
+
 import { NavButton } from '../classes';
-import { HeadButtonService } from '../head-button.service';
-import { MemberAuthService } from '../member-auth.service';
 import { Globals } from '../globals';
 
 @Component({
@@ -14,8 +14,7 @@ export class HeaderComponent implements OnInit {
   buttons: NavButton[];
   
   constructor(
-    private headButtonService: HeadButtonService,
-    private memberAuthService: MemberAuthService,
+    private buttonService: ButtonService,
     public globals: Globals
   ) {}
 
@@ -24,8 +23,8 @@ export class HeaderComponent implements OnInit {
   }
   
   getButtons(): void {
-    this.headButtonService.getButtons()
-      .subscribe(buttons => this.buttons = buttons);
+    this.buttonService.getMainHeaderButtons()
+      .subscribe(resp => this.buttons = resp.buttons);
   }
   
 }

@@ -16,7 +16,6 @@ import { AppComponent } from './app.component';
 import { CheckoutComponent } from './checkout/checkout.component';
 import { CheckoutSessionComponent } from './checkout-session/checkout-session.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { DashHeaderComponent } from './dash-header/dash-header.component';
 import { GenericHeaderComponent } from './generic-header/generic-header.component';
 import { HeaderComponent } from './header/header.component';
 import { HelpComponent } from './help/help.component';
@@ -25,7 +24,6 @@ import { HelpViewComponent } from './help-view/help-view.component';
 import { HomePageComponent } from './home-page/home-page.component';
 import { LocationMgmtComponent } from './location-mgmt/location-mgmt.component';
 import { LocksComponent } from './attrs/locks.component';
-import { LoggingComponent } from './logging/logging.component';
 import { LoginComponent } from './login/login.component';
 import { MaxesComponent } from './attrs/maxes.component';
 import { MediaEditComponent } from './media-edit/media-edit.component';
@@ -35,8 +33,6 @@ import { MediaSearchBarComponent } from './media-search/media-search-bar.compone
 import { MediaSuggestionComponent } from './media-search/media-suggestion.component';
 import { MemberAcctInfoComponent } from './member-acct-info/member-acct-info.component';
 import { MgmtAccountsComponent } from './mgmt-accounts/mgmt-accounts.component';
-import { MgmtHeaderButtonService } from './mgmt-header-button.service';
-import { MgmtHeaderComponent } from './mgmt-header/mgmt-header.component';
 import { MgmtLocationComponent } from './mgmt-location/mgmt-location.component';
 import { MgmtMediaComponent } from './mgmt-media/mgmt-media.component';
 import { MgmtRolesPermsComponent } from './mgmt-roles-perms/mgmt-roles-perms.component';
@@ -55,19 +51,16 @@ import { TooltipComponent, TooltipContainerDirective } from './tooltip/tooltip.c
 
 import { TooltipDirective } from './tooltip/tooltip.directive';
 
+import { ButtonService } from './button.service';
 import { CheckoutService } from './checkout.service';
-import { CurrentMediaSessionService } from './current-media-session.service';
-import { HeadButtonService } from './head-button.service';
 import { HelpService } from './help.service';
 import { LocationService } from './location.service';
-import { LoggingService } from './logging.service';
 import { MediaService } from './media.service';
 import { MemberAuthService } from './member-auth.service';
 import { MemberService } from './member.service';
 import { ReportsService } from './reports.service';
 import { RoleService } from './role.service';
 import { SetupService } from './setup.service';
-import { SideButtonService } from './side-button.service';
 
 @NgModule({
   declarations: [
@@ -78,7 +71,6 @@ import { SideButtonService } from './side-button.service';
     LoginComponent,
     CheckoutSessionComponent,
     SidebarComponent,
-    LoggingComponent,
     DashboardComponent,
     MediaSearchComponent,
     MemberAcctInfoComponent,
@@ -89,7 +81,6 @@ import { SideButtonService } from './side-button.service';
     AboutComponent,
     SignupComponent,
     ReroutingComponent,
-    MgmtHeaderComponent,
     MgmtLocationComponent,
     MgmtAccountsComponent,
     MgmtRolesPermsComponent,
@@ -101,7 +92,6 @@ import { SideButtonService } from './side-button.service';
     MediaEditComponent,
     PersonalMediaComponent,
     PersonalHoldsComponent,
-    DashHeaderComponent,
     HelpViewComponent,
     HelpTooltipComponent,
     TooltipComponent,
@@ -126,16 +116,12 @@ import { SideButtonService } from './side-button.service';
   ],
   providers: [
     MediaService,
-    CurrentMediaSessionService,
+    ButtonService,
     RoleService,
-    SideButtonService,
-    HeadButtonService,
-    LoggingService,
     CheckoutService,
     MemberAuthService,
     AuthGuard,
     HeaderComponent,
-    MgmtHeaderButtonService,
     MemberService,
     SetupService,
     ReportsService,
