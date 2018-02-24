@@ -19,8 +19,8 @@ class User(AsyncInit):
         from . import Location, Role, MediaItem, MediaType, User
     
     async def __init__(self, uid, app, *, location=None, role=None):
-        self.app = app
-        self.pool = self.app.pg_pool
+        self._app = app
+        self.pool = self._app.pg_pool
         self.acquire = self.pool.acquire
         try:
             self.user_id = self.uid = int(uid)
@@ -38,8 +38,8 @@ class User(AsyncInit):
             holds = await conn.fetchval(query, self.uid)
             query = '''SELECT count(*) FROM items WHERE issued_to = $1::bigint'''
             self.num_checkouts = await conn.fetchval(query, self.uid)
-        self.location = await Location(lid, self.app) if location is None else location
-        self.role = await Role(rid, self.app, location=self.location) if role is None else role
+        self.location = await Location(lid, self._app) if location is None else location
+        self.role = await Role(rid, self._app, location=self.location) if role is None else role
         self.lid, self.rid = lid, rid
         self.holds = holds
         self.username = username

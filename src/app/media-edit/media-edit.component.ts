@@ -63,7 +63,7 @@ export class MediaEditComponent implements OnInit {
   }
   
   submit(): void {
-    if (this.genre_) {
+    if (this.genre_) { // add a new genre
       this.globals.locGenres.push(this.genre_);
       this.item.genre = this.genre_;
     }

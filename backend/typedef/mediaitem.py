@@ -37,7 +37,7 @@ class MediaItem(AsyncInit):
             self.mid = int(mid)
         except (ValueError, TypeError):
             raise TypeError('item with this ID')
-        self.app = app
+        self._app = app
         self.pool = app.pg_pool
         self.acquire = self.pool.acquire
         query = '''
@@ -57,10 +57,10 @@ class MediaItem(AsyncInit):
             ) = await self.pool.fetchrow(query, self.mid)
         except TypeError:
             raise TypeError('item') # to be fed back to the client as "item does not exist!"
-        self.location = await Location(self.lid, self.app)
+        self.location = await Location(self.lid, self._app)
         self.available = not self._issued_uid
-        self.issued_to = None if self._issued_uid is None else await User(self._issued_uid, self.app, location=self.location)
-        self.type = await MediaType(self._type, self.lid, self.app)
+        self.issued_to = None if self._issued_uid is None else await User(self._issued_uid, self._app, location=self.location)
+        self.type = await MediaType(self._type, self.location, self._app)
     
     def to_dict(self):
         retdir = {attr: str(getattr(self, attr, None)) for attr in self.props}
@@ -74,8 +74,13 @@ class MediaItem(AsyncInit):
         UPDATE items
            SET maxes = $1::bigint
          WHERE {}
-        '''.format('mid = $2::bigint' if mid else "title ILIKE '%' || $2::text || '%' AND author ILIKE '%' || $3::text || '%'") #TODO: add mediatype comparison as well
-        await self.pool.execute(query, newmaxes.num, *([self.mid] if mid else [self.title, self.author]))
+        '''.format(
+          'mid = $2::bigint'
+          if mid
+          else
+          "title ILIKE '%' || $2::text || '%' AND author ILIKE '%' || $3::text || '%'"
+          )
+        await self.pool.execute(query, newmaxes.num, *([self.mid] if mid else [self.title, self.author, self.type]))
         self.maxes = newmaxes
     
     async def status(self, *, resp = {'issued_to': None, 'due_date': None, 'fines': None}):
@@ -178,19 +183,7 @@ class MediaItem(AsyncInit):
         await self.location.remove_item(item=self)
     
     @property
-    def perms(self):
-        if self._permnum is None:
-            return self.type.perms
-        return Perms(self._permnum)
-    
-    @property
     def maxes(self):
         if self._maxnum is None:
             return self.type.maxes
         return Maxes(self._maxnum)
-    
-    @property
-    def locks(self):
-        if self._locknum is None:
-            return self.type.locks
-        return Locks(self._locknum)
