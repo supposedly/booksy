@@ -14,7 +14,7 @@
     <option [ngValue]="null" disabled>Medium</option>
     <option ngValue="null">Any (default)</option>
     <option *ngFor="let mtype of globals.locMediaTypes" [ngValue]="mtype">
-      {{mtype}}
+      {{mtype.name}}
     </option>
   </select>
   <input type="submit" *ngIf="checkVisible()" value="Search"/>

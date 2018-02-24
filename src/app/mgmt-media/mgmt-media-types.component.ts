@@ -100,7 +100,7 @@ export class MediaTypeDetailComponent implements OnInit {
           _ => this.msg = "Successfully edited.",
           err => this.msg = err.error?err.error:"Not allowed!",
           () => this.mTypeService.all() // refresh global list of media types
-                  .subscribe(res => this.globals.locMediaTypes = res.types)
+                  .subscribe(res => this.globals.locMediaTypes = res.types.map((_, d) => d.name))
         );
     }
   }

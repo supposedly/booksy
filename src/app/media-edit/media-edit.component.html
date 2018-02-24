@@ -11,7 +11,7 @@
   <p>Type:
       <select name="media-type" [(ngModel)]="item.type">
         <option *ngFor="let mtype of globals.locMediaTypes" [ngValue]="mtype">
-          {{mtype | titlecase}}
+          {{mtype.name | titlecase}}
         </option>
     </select>
   </p>
