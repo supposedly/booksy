@@ -8,15 +8,20 @@ from . import Location, Role, MediaType, MediaItem, User
 
 mbr = sanic.Blueprint('member_api', url_prefix='/member')
 
-@mbr.get('/self')
-@rqst_get('user', 'fullname', 'password')
+@mbr.post('/self')
+@rqst_get('user', 'fullname', 'newpass', 'curpass')
 @jwtdec.protected()
-async def edit_self(rqst): pass
+async def edit_self(rqst, user, *, fullname, newpass, curpass):
+    """full name, new password, current password to verify"""
+    if not await user.verify_pw(curpass):
+        return sanic.exceptions.abort(403, "Incorrectly-entered password. Please try again.")
+    await user.edit_self(name=fullname, pw=newpass)
+    return sanic.response.raw(b'', status=204)
 
 @mbr.get('/notifications')
 @rqst_get('location', 'username')
 @jwtdec.protected()
-async def get_notifs(rqst, location, username):
+async def get_notifs(rqst, location, *, username):
     """
     Serves user's notifications -- overdue items, readied holds, etc.
     """

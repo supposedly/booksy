@@ -1,1 +1,9 @@
-<div>Own-account modification has been left unimplemented for the FBLA demo.</div>
+<h1>My account</h1>
+<p *ngIf="msg">{{msg}}</p>
+<p>Full name: <input type="text" [value]="globals.name" [(ngModel)]="fullName"/></p>
+<p>New password: <input type="password" [(ngModel)]="newpass"/></p>
+<p *ngIf="!!newpass || fullName != globals.name">Current password to confirm: <input type="password" [(ngModel)]="curpass"/></p>
+<button
+  *ngIf="curpass && (!!newpass || fullName != globals.name)"
+  (click)="submit(); curpass = newpass = null; globals.name = fullName"
+>Submit</button>

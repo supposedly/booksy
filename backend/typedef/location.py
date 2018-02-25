@@ -11,10 +11,10 @@ from ..attributes import Perms, Maxes, Locks
 #################################################
 try:
     import bcrypt
-except ModuleNotFoundError: # means I'm testing
+except ModuleNotFoundError: # means I'm testing (can't access app.config.TESTING from here) (don't have libffi/bcrypt on home PC)
     import types
     def __hashpw(pw, *_, **__):
-        return pw[::-1]
+        return pw.encode()
     def __gensalt(*_, **__):
         return 0
     bcrypt = types.SimpleNamespace(

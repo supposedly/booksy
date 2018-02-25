@@ -26,3 +26,17 @@
   border-width: 1px;
   padding: 10px;
 }
+::ng-deep .pleaseunderstand {
+  /* unused, just a yellow box though */
+  padding-left: 0;
+  width: 20em;
+  padding: 10px;
+  font-size: 16px;
+  color: #fb9a00;
+  border: solid;
+  border-width: 1px;
+  border-radius: 3px;
+  border-color: #ffc871;
+  background-color: #fff6b1;
+}
+

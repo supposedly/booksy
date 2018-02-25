@@ -19,6 +19,7 @@ export class MemberService {
   private clearHoldURL: string = 'api/member/clear-hold';
   private itemsURL: string = 'api/member/checked-out';
   private editMemberURL: string = 'api/member/edit';
+  private editSelfURL: string = 'api/member/self';
   
   constructor(
     private http: HttpClient,
@@ -27,6 +28,14 @@ export class MemberService {
   
   edit(member): Observable<any> {
     return this.http.post<any>(this.editMemberURL, {member: member});
+  }
+  
+  editSelf(fullName, newpass, curpass) {
+    return this.http.post<any>(this.editSelfURL, {
+      fullname: fullName == this.globals.name ? null : fullName,
+      newpass: newpass ? newpass : null,
+      curpass: curpass
+    });
   }
   
   getNotifs(username?: string): Observable<any> {

@@ -12,6 +12,25 @@ from ..core import AsyncInit
 from ..attributes import Perms, Maxes, Locks
 
 
+#################################################
+try:
+    import bcrypt
+except ModuleNotFoundError: # means I'm testing (can't access app.config.TESTING from here) (don't have libffi/bcrypt on home PC)
+    import types
+    def __hashpw(pw, *_, **__):
+        return pw.encode()
+    def __gensalt(*_, **__):
+        return 0
+    def __checkpw(*_, **__):
+        return True # blegh
+    bcrypt = types.SimpleNamespace(
+      hashpw = __hashpw,
+      gensalt = __gensalt,
+      checkpw = __checkpw
+    )
+#################################################
+
+
 class User(AsyncInit):
     @staticmethod
     def do_imports():
@@ -27,12 +46,13 @@ class User(AsyncInit):
         except TypeError:
             raise ValueError('No user exists with this username!')
         async with self.acquire() as conn:
-            query = '''SELECT username, fullname, lid, rid, manages, email, phone, type, recent, perms, maxes, locks FROM members WHERE uid = $1::bigint;'''
+            query = '''SELECT username, fullname, lid, rid, manages, email, phone, type, recent, perms, maxes, locks, pwhash FROM members WHERE uid = $1::bigint;'''
             (
               username, name, lid,
               rid, manages, email,
               phone, self._type, recent,
-              permbin, maxbin, lockbin
+              permbin, maxbin, lockbin,
+              self._pwhash
             ) = await conn.fetchrow(query, self.uid)
             query = '''SELECT count(*) FROM holds WHERE uid = $1::bigint'''
             holds = await conn.fetchval(query, self.uid)
@@ -108,6 +128,9 @@ class User(AsyncInit):
     
     def edit_perms_from_seq(self, *new):
         self.perms.edit_from_seq(*new)
+    
+    async def verify_pw(self, pw):
+        return await self._app.aexec(self._app.ppe, bcrypt.checkpw, pw.encode(), self._pwhash)
     
     async def delete(self):
         """
@@ -198,6 +221,20 @@ class User(AsyncInit):
          WHERE uid = $1::bigint
         '''
         await self.pool.execute(query, self.uid, username, rid, fullname)
+    
+    async def edit_self(self, name, pw):
+        """
+        Differs from just edit(), ofc; this method allows user to
+        change their own password.
+        """
+        query = '''
+        UPDATE members
+           SET fullname = COALESCE($2::text, fullname),
+               pwhash = COALESCE($3::bytea, pwhash)
+         WHERE uid = $1::bigint
+        '''
+        pwhash = await self._app.aexec(self._app.ppe, bcrypt.hashpw, pw.encode(), bcrypt.gensalt(12))
+        await self.pool.execute(query, self.uid, name, pwhash)
     
     async def items(self):
         query = '''
