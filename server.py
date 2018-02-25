@@ -54,7 +54,8 @@ async def authenticate(rqst, *args, **kwargs):
         query = """SELECT pwhash FROM members WHERE lid = $1::bigint AND username = $2::text"""
         pwhash = await conn.fetchval(query, lid, username)
     bvalid = await app.aexec(app.ppe, bcrypt.checkpw, password, pwhash)
-    if not any((username, password, pwhash, bvalid)):
+    print(query, bvalid)
+    if not all((username, password, pwhash, bvalid)):
             # (we shouldn't specify which of pw/username is invalid,
             # lest some hypothetical attacker use the info to
             # enumerate possible usernames/passwords)
