@@ -32,6 +32,7 @@ app.safe_segments = ('?', '.html', '.js', '.ts', '/auth', 'auth/', 'api/', 'stoc
 # avoid clogging up this main file.
 # They can be found in ./backend/blueprints
 app.blueprint(bp)
+app.config.TEST_SERVER = False #for my testing
 
 async def authenticate(rqst, *args, **kwargs):
     """
@@ -73,6 +74,7 @@ async def store_rtoken(user_id, refresh_token, *args, **kwargs):
     """/auth/refresh"""
     async with app.rd_pool.get() as conn:
         await conn.execute('set', user_id, refresh_token)
+        await conn.execute('set', refresh_token, user_id) # for retrieving user from rtoken
 
 async def retrieve_rtoken(user_id, *args, **kwargs):
     """/auth/refresh"""

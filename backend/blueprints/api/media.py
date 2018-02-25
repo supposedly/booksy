@@ -108,8 +108,8 @@ async def return_item(rqst, location, username, *, item):
 @media.get('/check/verbose')
 @rqst_get('item')
 async def get_media_status(rqst, *, item):
-    # unused
     return sanic.response.json(item.status, status=200)
+    # unused
 
 @media.get('/info')
 @rqst_get('item')

@@ -8,6 +8,11 @@ from . import Location, Role, MediaType, MediaItem, User
 
 mbr = sanic.Blueprint('member_api', url_prefix='/member')
 
+@mbr.get('/self')
+@rqst_get('user', 'fullname', 'password')
+@jwtdec.protected()
+async def edit_self(rqst): pass
+
 @mbr.get('/notifications')
 @rqst_get('location', 'username')
 @jwtdec.protected()
@@ -64,6 +69,7 @@ async def clear_hold(rqst, user, *, item):
     await user.clear_hold(item)
     return sanic.response.raw(b'', status=204)
 
+
 @mbr.post('/edit')
 @rqst_get('user', 'member') # ('requester', 'user to edit')
 @jwtdec.protected()
@@ -71,7 +77,7 @@ async def edit_member(rqst, user, *, member):
     """
     Endpoint for editing user information. Works for both 
     """
-    if not (user.uid == int(member) or user.perms.can_manage_accounts):
+    if not user.perms.can_manage_accounts:
         sanic.exceptions.abort(403, "You aren't allowed to modify member info.")
     changing = await User(member['user_id'], rqst.app)
     if user.perms.raw <= changing.perms.raw:
