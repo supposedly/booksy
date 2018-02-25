@@ -3,22 +3,24 @@ import { Injectable } from '@angular/core';
 @Injectable()
 export class Globals {
   // info regarding currently-logged-in user
-  uID: string;
-  lID: string;
-  rID: string;
-  locname: string;
+  uID: string; // user ID
+  lID: string; // location ID
+  rID: string; // role ID
+  locname: string; // location name
   username: string;
-  name: string;
-  email: string;
-  phone: string;
-  managesLocation: boolean;
-  canReturnItems: boolean;
-  isCheckoutAccount: boolean;
-  isLoggedIn: boolean = false;
+  name: string; // user's full name
+  email: string; // user's email (unimplemented)
+  phone: string; // user's phone number (unimplemented)
+  managesLocation: boolean; // whether user is administrator (like whether they own the location)
+  canReturnItems: boolean; // whether user is allowed to check items in
+  isCheckoutAccount: boolean; // whether the user is actually the library-wide checkout account
+  isLoggedIn: boolean = false; // whether the user is signed in (used in initial login)
   
   // user's role's permissions object
-  perms: any;
-  rawPermNum: number;
+  perms: any; // corresponds to Perms.namemap as defined in PackedBigIntField (from core.py)
+  rawPermNum: number; // corresponds to Perms.raw
+                      // (literally the raw number derived from interpreting the perms sequence as a binary string;
+                      // this raw number is used in determining hierarchy)
   
   // Whether to hide the homepage sidebar.
   // It's here instead of in sidebar.component.ts because the
@@ -47,6 +49,6 @@ export class Globals {
   // header color, customizable per location
   locColor: number = 0xf7f7f7;
   
-  // help article info (not the text content though)
+  // help article info (not the text content though, just title and ID)
   helpArticles;
 }

@@ -16,6 +16,7 @@ export class MediaInfoComponent implements OnInit {
   item: MediaItem;
   mID: string;
   msg: string;
+  showFines: boolean = false;
   
   constructor(
     public globals: Globals,
@@ -32,8 +33,9 @@ export class MediaInfoComponent implements OnInit {
   getItem(): void {
     this.mediaService.getInfo(this.mID)
       .subscribe(
-        item => {
-          this.item = item.info;
+        resp => {
+          this.showFines = !!(this.globals.perms.names.canManageMedia && +resp.info.fines);
+          this.item = resp.info;
           if (this.item.fines == 'None') { // because Python fails to properly serialize None to null for some reason
             this.item.fines = null;
           }
@@ -42,7 +44,7 @@ export class MediaInfoComponent implements OnInit {
   
   placeOnHold(): void {
     this.mediaService.placeHold(this.mID)
-      .subscribe(resp => {}, err => this.msg = err.error?err.error:'Error.');
+      .subscribe(resp => this.msg = "Hold placed.", err => this.msg = err.error?err.error:'Error.');
   }
   
   markFinesPaid(): void {

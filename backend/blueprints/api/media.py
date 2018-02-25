@@ -32,24 +32,6 @@ async def pay_item_off(rqst, user, item):
     await item.pay_off()
     return sanic.response.raw(b'', 204)
 
-@media.get('/check')
-@rqst_get('item')
-async def get_bool_available(rqst, item):
-    """
-    This may be unnecessary... I should be able to just
-    handle the 'check' by aborting from /check/out, no?
-    
-    (I guess it's more convenient for me with this inter-
-    mediary step, bc it allows me to explicitly show an
-    error message if necessary before any further user requests
-    occur)
-    """
-    issued_to = item.issued_to.username if item.issued_to and item.issued_to.username else item._issued_uid
-    try:
-        return sanic.response.json({'available': item.available, 'issuedTo': issued_to, 'issuedUid': item._issued_uid}, status=200)
-    except AttributeError:
-        sanic.exceptions.abort(422, "User does not exist.")
-
 @media.post('/edit')
 @rqst_get('user', 'item', 'title', 'author', 'genre', 'type_', 'price', 'length', 'published', 'isbn')
 @jwtdec.protected()
@@ -66,11 +48,25 @@ async def del_item(rqst, item, user):
         sanic.exceptions.abort(403, "You aren't allowed to delete media.")
     await item.delete()
 
-@media.get('/check/verbose')
+@media.get('/check')
 @rqst_get('item')
-async def get_media_status(rqst, item):
-    # unused
-    return sanic.response.json(item.status, status=200)
+async def get_bool_available(rqst, item):
+    """
+    This may be unnecessary... I should be able to just
+    handle the 'check' by aborting from /check/out, no?
+    
+    (I guess it's more convenient for me with this inter-
+    mediary step, bc it allows me to explicitly show an
+    error message if necessary before any further user requests
+    occur)
+    """
+    issued_to = None
+    if item.issued_to:
+        issued_to = item.issued_to.username
+    try:
+        return sanic.response.json({'available': item.available, 'issued_to': {'name': issued_to, 'uid': item._issued_uid}}, status=200)
+    except AttributeError:
+        sanic.exceptions.abort(422, "User does not exist.")
 
 @media.post('/check/out')
 @rqst_get('item', 'username', 'location')
@@ -94,7 +90,7 @@ async def issue_item(rqst, item, username, location):
 async def return_item(rqst, item, username, location):
     """
     Because adminstrative users can check OTHER people's items in,
-    I cannot do this solely off of the uID
+    I cannot do this solely by grabbing the uID.
     Instead I have to ask for the username+location of the member
     whose item is being checked in
     """
@@ -108,6 +104,12 @@ async def return_item(rqst, item, username, location):
         sanic.exceptions.abort(405, "This item's fines must be paid off before it is returned.")
     await item.check_in()
     return sanic.response.raw(b'', status=204)
+
+@media.get('/check/verbose')
+@rqst_get('item')
+async def get_media_status(rqst, item):
+    # unused
+    return sanic.response.json(item.status, status=200)
 
 @media.get('/info')
 @rqst_get('item')

@@ -28,11 +28,14 @@ class MediaItem(AsyncInit):
         global Location, Role, MediaItem, MediaType, User
         from . import Location, Role, MediaItem, MediaType, User
     
-    props = ['mid', 'genre', 'type',
-             'isbn', 'lid', 'fines',
-             'title', 'author', 'published', 
-             'image', 'price', 'length',
-             'available', 'due_date']
+    props = [
+      'mid', 'genre', 'type',
+      'isbn', 'lid', 'fines',
+      'title', 'author', 'published', 
+      'image', 'price', 'length',
+      'available', 'due_date'
+      ]
+    
     async def __init__(self, mid, app):
         try:
             self.mid = int(mid)

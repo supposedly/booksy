@@ -14,8 +14,8 @@
   <br/>
   <p>${{item.price}}</p>
   <p>{{item.length}} pages</p>
-  <ng-container *ngIf="+item.fines && globals.perms.names.canManageMedia">
+  <div *ngIf="showFines">
     <p style="color: red">Fines: {{item.fines}}</p>
     <button class="new" (click)="markFinesPaid()">Mark as paid</button>
-  </ng-container>
+  </div>
 </div>

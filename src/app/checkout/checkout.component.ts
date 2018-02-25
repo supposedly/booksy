@@ -53,7 +53,7 @@ export class CheckoutComponent {
               err => this.msg = err.error?err.error:'Error checking out'
             );
           } else if (this.globals.perms.names.canReturnItems) {
-            // This conditional had previously included  `|| (status.issuedTo == this.username && !this.isCheckoutAccount)`,
+            // This conditional had previously included  `|| (status.name.issued_to == this.username && !this.isCheckoutAccount)`,
             // i.e. "If the user canReturnItems OR [the item is their own AND they are not on the checkout account],
             // then let them return the item."
             // But I've realized that this opens it up to a fair bit of abuse; what's to stop a user from logging in
@@ -67,11 +67,13 @@ export class CheckoutComponent {
                 },
                 err => this.msg = err.error?err.error:'Error checking in'
               );
+          } else if (status.issued_to && status.issued_to.uid == this.globals.uID) {
+            this.msg = "Error: You don't have permission to check in your own items! Hand it in to a library operator instead."
           } else {
-            this.msg = 'Item is checked out to ' + status.issuedTo.toString() + '.';
+            this.msg = 'Error: Item is checked out to ' + status.issued_to.name.toString() + '.';
           }
         },
-        err => {console.log(err); this.msg = err.error?err.error:'Error checking out'}
+        err => this.msg = err.error?err.error:'Error checking out'
       );
   }
 }
