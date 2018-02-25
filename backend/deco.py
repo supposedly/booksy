@@ -4,6 +4,18 @@ import sanic
 
 from .typedef import Location, Role, MediaType, MediaItem, User
 
+async def user_from_rqst(rqst):
+    if app.config.TEST_SERVER:
+        uid = rqst.app.RTD[rqst.app.auth._get_refresh_token(rqst)]
+    else:
+        async with rqst.app.rd_pool.acquire() as conn:
+            uid = await conn.execute('get', rqst.app.auth._get_refresh_token(rqst))
+    return await User(uid, rqst.app)
+
+
+async def noop(*_, **__):
+    """An asynchronous do-nothing"""
+
 
 def uid_get(*attrs, user=False):
     def decorator(func):
@@ -16,7 +28,7 @@ def uid_get(*attrs, user=False):
             """
             try:
                 uid = (rqst.raw_args if rqst.method == 'GET' else rqst.json)['uid']
-                user_obj = await User(uid, rqst.app)
+                user_obj = await user_from_rqst(rqst)
             except KeyError:
                 sanic.exceptions.abort(422, 'No user ID given')
             vals = {'user': user_obj} if user or not attrs else {}
@@ -26,6 +38,10 @@ def uid_get(*attrs, user=False):
     return decorator
 
 def rqst_get(*attrs):
+    pass_user = False
+    if 'user' in attrs:
+        attrs = tuple(i for i in attrs if i != 'user')
+        pass_user = True
     def decorator(func):
         @wraps(func)
         async def wrapper(rqst, *args, **kwargs):
@@ -34,7 +50,7 @@ def rqst_get(*attrs):
             Grabs requested info from a request and, if matching
             an object name, converts it; else just returns data
             """
-            maps = {'item': (MediaItem, 'mid'), 'location': (Location, 'lid'), 'role': (Role, 'rid'), 'user': (User, 'uid')}
+            maps = {'item': (MediaItem, 'mid'), 'location': (Location, 'lid'), 'role': (Role, 'rid')}
             container = rqst.raw_args if rqst.method == 'GET' else rqst.json
             try:
                 vals = {i: await maps[i][0](container[maps[i][1]], rqst.app) if i in maps else None if i == 'null' else container[i] for i in attrs}
@@ -42,6 +58,8 @@ def rqst_get(*attrs):
                 sanic.exceptions.abort(422, 'Missing required attributes.')
             except TypeError as obj:
                 sanic.exceptions.abort(404, f'{str(obj)[0].upper()+str(obj)[1:]} does not exist.')
+            if pass_user:
+                vals['user'] = await user_from_rqst(rqst)
             return await func(rqst, *args, **vals, **kwargs)
         return wrapper
     return decorator
