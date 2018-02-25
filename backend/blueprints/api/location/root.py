@@ -15,24 +15,24 @@ async def give_location_repr(rqst, location):
 
 @root.get('/<attr:(name|image|color)>')
 @uid_get('location')
-async def return_location_attr(rqst, user, attr):
+async def return_location_attr(rqst, user, *, attr):
     return sanic.response.json({attr: getattr(location, attr)}, status=200)
 
 @root.get('/is-registered')
 async def is_location_registered(rqst):
-    if not rqst.ip:
-        return sanic.response.json({'registered': False, 'reason': 'No IP address found'})
+    if not rqst.ip: # doesn't go past proxies, unlike rqst.remote_addr -- this is good
+        return sanic.response.json({'registered': False, 'reason': 'No IP address supplied with request'})
     location = await Location.from_ip(rqst)
     if location is not None:
         return sanic.response.json({'registered': True, 'lid': location.id}, status=200)
     else:
-        return sanic.response.json({'registered': False, 'reason': 'Not found in DB'})
+        return sanic.response.json({'registered': False, 'reason': 'Not found in DB'}, status=404)
 
 @root.put('/reports')
 @rqst_get('get')
 @uid_get('location', 'perms')
 @jwtdec.protected()
-async def serve_a_report(rqst, location, perms, get):
+async def serve_a_report(rqst, location, perms, *, get: 'type of report to get'):
     if not perms.can_generate_reports:
         sanic.exceptions.abort(403, "You aren't allowed to generate reports.")
     return sanic.response.json(await location.report(**get))
@@ -40,4 +40,4 @@ async def serve_a_report(rqst, location, perms, get):
 @root.get('/backups/<to_back_up:members|location|roles|holds|items>')
 @uid_get('location', 'perms', user=True)
 async def back_up_info(rqst):
-    pass
+    return NotImplemented

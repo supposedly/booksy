@@ -38,8 +38,8 @@ class User(AsyncInit):
             holds = await conn.fetchval(query, self.uid)
             query = '''SELECT count(*) FROM items WHERE issued_to = $1::bigint'''
             self.num_checkouts = await conn.fetchval(query, self.uid)
-        self.location = await Location(lid, self._app) if location is None else location
-        self.role = await Role(rid, self._app, location=self.location) if role is None else role
+        self.location = location if isinstance(location, Location) else await Location(lid, self._app)
+        self.role = role if isinstance(role, Role) else await Role(rid, self._app, location=self.location)
         self.lid, self.rid = lid, rid
         self.holds = holds
         self.username = username
@@ -109,7 +109,7 @@ class User(AsyncInit):
     def edit_perms_from_seq(self, *new):
         self.perms.edit_from_seq(*new)
     
-    async def delete(self, uid):
+    async def delete(self):
         """
         Get rid of & clean up after a member on deletion.
         """
@@ -127,12 +127,17 @@ class User(AsyncInit):
          WHERE issued_to = $1::bigint
         '''
         async with self.acquire() as conn:
-            [await conn.execute(query, uid) for query in queries]
+            [await conn.execute(query, self.uid) for query in queries]
     
     async def notifs(self):
         async with self.acquire() as conn:
             # could probably do this in one line
-            holds = await conn.fetchval('''SELECT count(*) FROM holds WHERE uid = $1::bigint AND issued_to IS NULL''', self.uid)
+            holds = await conn.fetchval('''
+            SELECT count(*) FROM holds, items
+             WHERE holds.uid = $1::bigint
+               AND items.mid = holds.mid
+               AND items.issued_to IS NULL
+            ''', self.uid)
             fines = await conn.fetchval('''SELECT sum(fines) AS fines FROM items WHERE issued_to = $1::bigint''', self.uid)
             overdue = await conn.fetchval('''SELECT count(*) AS overdue FROM items WHERE due_date < current_date;''')
         

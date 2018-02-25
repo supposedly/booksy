@@ -29,14 +29,14 @@ mbrs = sanic.Blueprint('location_members_api', url_prefix='/members')
 @rqst_get('cont')
 @uid_get('location')
 @jwtdec.protected()
-async def serve_location_members(rqst, location, cont):
+async def serve_location_members(rqst, location, *, cont: 'where to continue search from'):
     return sanic.response.json(await location.members(cont=int(cont)))
 
 @mbrs.get('/info')
 @uid_get('perms')
 @rqst_get('check')
 @jwtdec.protected()
-async def serve_specific_member(rqst, check, perms):
+async def serve_specific_member(rqst, perms, *, check: 'member to check'):
     if not perms.can_manage_accounts:
         sanic.exceptions.abort(403, "You aren't allowed to view member info.")
     user = await User(check, rqst.app)
@@ -46,7 +46,7 @@ async def serve_specific_member(rqst, check, perms):
 @uid_get('location', 'perms')
 @rqst_get('member') # member to create
 @jwtdec.protected()
-async def add_member_to_location(rqst, member, location, perms):
+async def add_member_to_location(rqst, location, perms, *, member: 'to create'):
     """
     Addition of a given member.
     Creates an account for them with the chosen default password and
@@ -82,10 +82,10 @@ async def add_members_from_csv(rqst, location, perms):
     return sanic.response.json('', status=202) # (accepted for further processing)
 
 @mbrs.post('/remove')
-@uid_get('location', 'perms')
+@uid_get('location', 'role', 'perms')
 @rqst_get('member')
 @jwtdec.protected()
-async def remove_member_from_location(rqst, location, perms, member: 'to remove'):
+async def remove_member_from_location(rqst, location, role, perms, *, member: 'to remove'):
     """
     Removal of a given member.
     Undecided as to whether this should delete the table row entirely.
@@ -96,5 +96,5 @@ async def remove_member_from_location(rqst, location, perms, member: 'to remove'
     """
     if not perms.can_manage_accounts:
         sanic.exceptions.abort(401, "You aren't allowed to remove members.")
-    await location.remove_member(uid=member)
+    await (await User(member, rqst.app, location=location, role=role)).delete()
     return sanic.response.raw('', 204)
