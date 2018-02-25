@@ -11,7 +11,7 @@ media = sanic.Blueprint('media_api', url_prefix='/media')
 @media.post('/hold')
 @rqst_get('user', 'item')
 @jwtdec.protected()
-async def put_item_on_hold(rqst, user, item):
+async def put_item_on_hold(rqst, user, *, item):
     if user.cannot_check_out:
         sanic.exceptions.abort(403, "You aren't allowed to place holds.")
     if user.holds > user.maxes.holds:
@@ -26,7 +26,7 @@ async def put_item_on_hold(rqst, user, item):
 @media.post('/clear-fines')
 @rqst_get('user', 'item') # user making the request (NOT the user with the fines), and then the item to be paid off
 @jwtdec.protected()
-async def pay_item_off(rqst, user, item):
+async def pay_item_off(rqst, user, *, item):
     if not user.perms.can_manage_media:
         sanic.exceptions.abort(403, "You aren't allowed to mark fines paid.")
     await item.pay_off()
@@ -35,7 +35,7 @@ async def pay_item_off(rqst, user, item):
 @media.post('/edit')
 @rqst_get('user', 'item', 'title', 'author', 'genre', 'type_', 'price', 'length', 'published', 'isbn')
 @jwtdec.protected()
-async def edit_item(rqst, user, item, title, author, genre, type_, price, length, published, isbn):
+async def edit_item(rqst, user, *, item, title, author, genre, type_, price, length, published, isbn):
     if not user.perms.can_manage_media:
         sanic.exceptions.abort(403, "You aren't allowed to edit media.")
     await item.edit(title, author, genre, type_, price, length, published, isbn)
@@ -43,14 +43,14 @@ async def edit_item(rqst, user, item, title, author, genre, type_, price, length
 
 @media.post('/delete')
 @rqst_get('item', 'user')
-async def del_item(rqst, item, user):
+async def del_item(rqst, user, *, item):
     if not user.perms.can_manage_media:
         sanic.exceptions.abort(403, "You aren't allowed to delete media.")
     await item.delete()
 
 @media.get('/check')
 @rqst_get('item')
-async def get_bool_available(rqst, item):
+async def get_bool_available(rqst, *, item):
     """
     This may be unnecessary... I should be able to just
     handle the 'check' by aborting from /check/out, no?
@@ -71,7 +71,7 @@ async def get_bool_available(rqst, item):
 @media.post('/check/out')
 @rqst_get('item', 'username', 'location')
 @jwtdec.protected()
-async def issue_item(rqst, item, username, location):
+async def issue_item(rqst, location, username, *, item):
     try:
         user = await User.from_identifiers(username, location, app=rqst.app)
     except ValueError as err:
@@ -87,7 +87,7 @@ async def issue_item(rqst, item, username, location):
 @media.post('/check/in')
 @rqst_get('item', 'username', 'location')
 @jwtdec.protected()
-async def return_item(rqst, item, username, location):
+async def return_item(rqst, location, username, *, item):
     """
     Because adminstrative users can check OTHER people's items in,
     I cannot do this solely by grabbing the uID.
@@ -107,12 +107,12 @@ async def return_item(rqst, item, username, location):
 
 @media.get('/check/verbose')
 @rqst_get('item')
-async def get_media_status(rqst, item):
+async def get_media_status(rqst, *, item):
     # unused
     return sanic.response.json(item.status, status=200)
 
 @media.get('/info')
 @rqst_get('item')
 @jwtdec.protected()
-async def get_media_info(rqst, item):
+async def get_media_info(rqst, *, item):
     return sanic.response.json({'info': item.to_dict()}, status=200)

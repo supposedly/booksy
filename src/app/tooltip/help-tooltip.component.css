@@ -2,7 +2,7 @@ div {
   display: inline;
   position: relative;
 }
-.owo::before {
+.owo:before {
   content: '?';
   display: inline-block;
   color: #fff;
@@ -20,7 +20,7 @@ div {
   background-color: #ccc;
   cursor: pointer;
   z-index: 1;
-  }
+}
 .link {
   display: inline-block;
   position: absolute;

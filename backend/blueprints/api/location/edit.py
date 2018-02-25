@@ -11,7 +11,7 @@ edit = sanic.Blueprint('location_edit_api', url_prefix='/edit')
 @edit.post('/<action:(name|image|color)>')
 @uid_get('location')
 @jwtdec.protected()
-async def edit_location_info(rqst, location, action):
+async def edit_location_info(rqst, location, *, action):
     """
     Catch-all endpoint for updating a location's info
     """

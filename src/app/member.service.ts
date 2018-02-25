@@ -18,11 +18,16 @@ export class MemberService {
   private holdsURL: string = 'api/member/held';
   private clearHoldURL: string = 'api/member/clear-hold';
   private itemsURL: string = 'api/member/checked-out';
+  private editMemberURL: string = 'api/member/edit';
   
   constructor(
     private http: HttpClient,
     private globals: Globals
   ) {}
+  
+  edit(member): Observable<any> {
+    return this.http.post<any>(this.editMemberURL, {uid: this.globals.uID, member: member});
+  }
   
   getNotifs(username?: string): Observable<any> {
     return this.http.get<any>(this.notifURL, {params: {username: username?username:this.globals.username, lid: this.globals.lID}}).shareReplay();

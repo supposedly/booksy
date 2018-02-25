@@ -20,13 +20,13 @@ async def serve_help_titles(rqst):
 
 @help.get('/content')
 @rqst_get('ID')
-async def serve_help_article(rqst, ID):
+async def serve_help_article(rqst, *, ID):
     """These should never be cached"""
     title, content = await rqst.app.pg_pool.fetchrow('''SELECT title, content FROM help WHERE id = $1::bigint''', int(ID))
     return sanic.response.json({'help': {'title': title, 'content': content}}, status=200)
 
 @help.get('/brief')
 @rqst_get('ID')
-async def give_brief(rqst, ID):
+async def give_brief(rqst, *, ID):
     resp = await rqst.app.pg_pool.fetchrow('''SELECT title, brief FROM help WHERE id = $1::bigint''', int(ID))
     return sanic.response.json({'help': {'title': resp['title'], 'brief': resp['brief']}})

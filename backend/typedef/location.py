@@ -396,16 +396,21 @@ class Location(AsyncInit):
         query = '''SELECT name, maxes FROM mtypes WHERE lid = $1::bigint'''
         return [{'name': i['name'], 'maxes': Maxes(i['maxes'])} for i in await self.pool.fetch(query, self.lid)]
     
-    async def add_media_type(self, name, maxes): # maxes are actually Maxes.names-equivalent
+    async def add_media_type(self, name, maxes: 'Maxes.namemap'):
         query = '''
         INSERT INTO mtypes (name, maxes, lid)
         SELECT $1::text, $2::bigint, $3::bigint
         '''
-        await self.pool.execute(query, name, Maxes.from_kwargs(**maxes).raw, self.lid)
-        print('asfdasdfdasfdasfasddfsfdadfaf')
+        await self.pool.execute(query, name.lower(), Maxes.from_kwargs(**maxes).raw, self.lid)
         return await MediaType(name, self, self._app)
     
     async def remove_media_type(self, name):
+        """
+        Gets rid of a media type, also making sure to clean up where
+        any media items might have it. (Else MediaItem just throws
+        "this type doesn't exist yet" whenever you try to access
+        an item's info)
+        """
         query = '''
         DELETE FROM mtypes
          WHERE name = $1::text
@@ -421,16 +426,45 @@ class Location(AsyncInit):
         await self.pool.execute(query, name, self.lid)
     
     async def edit_media_type(self, mtype, *, maxes=None, name=None):
+        """
+        Edit's a media type's maxes and name.
+        """
         mtype = await MediaType(mtype, self, self._app)
         await mtype.edit(maxes=maxes and Maxes.from_kwargs(**maxes).raw, name=name)
     
     async def genres(self):
+        """
+        Grabs all a location's genres.
+        There's no actual table storing genres, of course --
+        -- they're literally just names and one item isn't enough data
+        to necessitate a whole table ofc --
+        -- so I grab whatever's in the genres column of the items table.
+        """
         query = '''
         SELECT DISTINCT lower(genre) AS genre FROM items WHERE lid = $1::bigint ORDER BY lower(genre)
         '''
         return [i['genre'] for i in await self.pool.fetch(query, self.lid)]
     
+    async def rename_genre(self, cur, to):
+        """Changes the name of a genre, from [cur]rent value [to] a new value"""
+        await self.pool.execute(
+          '''UPDATE items SET genre = lower($2::text) WHERE genre = lower($1::text)''', cur, to
+          )
+    
+    async def remove_genre(self, genre):
+        await self.pool.execute(
+          '''UPDATE items SET genre = NULL WHERE genre = lower($1::text)''', genre
+          )
+    
     async def add_media(self, title, author, published, type_, genre, isbn, price, length):
+        """
+        Adds a new media item to location.
+        Genre will be added regardless of whether it's new, because
+        again there's no table or anything storing genres.
+        Price will be converted to a proper representation of its
+        value through the Decimal class before being passed to
+        PostgreSQL.
+        """
         ident = img = ''
         try:
             async with self._app.sem, self._app.session.get(self.gb_image_query(title, author)) as resp:
@@ -445,7 +479,7 @@ class Location(AsyncInit):
                 ident, *_ = [i['identifier'] for i in ident if 'isbn' in i['type'].lower()]
             if img:
                 img = img.get('smallThumbnail', img.get('thumbnail', '')).replace('http://', 'https://')
-        args = type_, genre, ident or isbn, self.lid, title, author, int(published), round(Decimal(price), 2), int(length)
+        args = type_.name, genre, ident or isbn, self.lid, title, author, int(published), round(Decimal(price), 2), int(length)
         async with self.acquire() as conn:
             query = '''
             INSERT INTO items (
@@ -456,7 +490,7 @@ class Location(AsyncInit):
                           acquired, maxes,
                           image
                           )
-                 SELECT $2::text, $3::text,
+                 SELECT $2::text, lower($3::text),
                         $4::text, $5::bigint,
                         $6::text, $7::text, $8::int,
                         $9::numeric, $10::int,
@@ -468,6 +502,14 @@ class Location(AsyncInit):
         return await MediaItem(mid, self._app)
     
     async def remove_item(self, item):
+        """
+        86es a media item.
+        No need for cleanup (like, of fine data or whatever)
+        because that's all stored in the item's table row regardless,
+        so it'll be gone on deleting the row.
+        This of course means that any fines on the item will be cleared
+        without having to be paid off.
+        """
         item = item if isinstance(item, MediaItem) else await MediaItem(item, self._app)
         query = '''
         DELETE FROM items

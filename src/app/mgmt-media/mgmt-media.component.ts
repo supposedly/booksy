@@ -54,9 +54,62 @@ export class MgmtMediaListComponent {}
 
 @Component({
   selector: 'app-mgmt-media-genres',
-  template: '',
-  styles: ['']
+  template: `
+    <p>To create a new genre, simply write it into the "new genre" box when adding a new item.</p>
+    <p *ngIf="msg">{{msg}}</p>
+    <ul>
+      <li *ngFor="let genre of globals.locGenres; let i = index">
+        <span class="container">
+          <span class="name">{{genre}}</span>
+          <span class="del" (click)="rm(i)">Ⓧ</span>
+          &nbsp;
+          <span class="editbutton" (click)="isBeingEdited[i]=true"></span>
+        </span>
+        <span *ngIf="isBeingEdited[i]">
+          <input
+            type="text"
+            [value]="globals.locGenres[i]"
+            [(ngModel)]="intermediateNames[i]"
+          >
+          <span class="save" (click)="edit(i)">✔</span>
+        </span>
+      </li>
+    </ul>
+  `,
+  styleUrls: ['./mgmt-media-genres.component.css'],
 })
 export class MgmtMediaGenresComponent {
-  //just show genres, probably no maxes -- just allow add & delete.
+  msg: string = '';
+  isBeingEdited: boolean[];
+  intermediateNames: string[];
+  
+  constructor(
+    public globals: Globals,
+    private locationService: LocationService
+  ) {
+    this.isBeingEdited = Array.from({length: globals.locGenres.length}, _ => false);
+    this.intermediateNames = Array.from({length: globals.locGenres.length}, _ => null);
+    // or Array(globals.locGenres.length).fill(false or null)
+  }
+  
+  edit(i) {
+    this.locationService.editGenre(this.globals.locGenres[i], this.intermediateNames[i])
+      .subscribe(
+        resp => {
+          this.globals.locGenres[i] = this.intermediateNames[i];
+          this.isBeingEdited[i] = false;
+          this.intermediateNames[i] = '';
+        },
+        err => this.msg = err.error?err.error:'Error.'
+      )
+  }
+    
+  rm(i) {
+    this.locationService.removeGenre(this.globals.locGenres[i])
+      .subscribe(
+        resp => this.globals.locGenres.splice(i, 1),
+        err => this.msg = err.error?err.error:'Error.'
+      )
+  }
+  
 }
