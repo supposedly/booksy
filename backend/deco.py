@@ -5,16 +5,12 @@ import sanic
 from .typedef import Location, Role, MediaType, MediaItem, User
 
 async def user_from_rqst(rqst):
-    if rqst.app.config.TEST_SERVER:
+    if rqst.app.config.TESTING: # Means I'm testing (don't have redis on home PC)
         uid = rqst.app.RTD[rqst.app.auth._get_refresh_token(rqst)]
     else:
-        async with rqst.app.rd_pool.acquire() as conn:
+        async with rqst.app.rd_pool.get() as conn:
             uid = await conn.execute('get', rqst.app.auth._get_refresh_token(rqst))
     return await User(uid, rqst.app)
-
-
-async def noop(*_, **__):
-    """An asynchronous do-nothing"""
 
 
 def uid_get(*attrs, user=False):
@@ -35,6 +31,7 @@ def uid_get(*attrs, user=False):
             return await func(rqst, *args, **vals, **kwargs)
         return wrapper
     return decorator
+
 
 def rqst_get(*attrs):
     pass_user = False

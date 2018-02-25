@@ -32,7 +32,7 @@ app.safe_segments = ('?', '.html', '.js', '.ts', '/auth', 'auth/', 'api/', 'stoc
 # avoid clogging up this main file.
 # They can be found in ./backend/blueprints
 app.blueprint(bp)
-app.config.TEST_SERVER = False #for my testing
+app.config.TESTING = False #for my testing
 
 async def authenticate(rqst, *args, **kwargs):
     """
