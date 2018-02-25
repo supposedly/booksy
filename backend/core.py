@@ -47,7 +47,7 @@ class AsyncInit:
 
 
 class PackedField(metaclass=abc.ABCMeta):
-    __slots__ = 'raw', 'seq', 'namemap', '_names'
+    __slots__ = 'raw', 'seq', 'namemap', '_names',
     
     @classmethod
     @abstractmethod
@@ -60,8 +60,8 @@ class PackedField(metaclass=abc.ABCMeta):
     def from_kwargs(cls):
         """
         Allows field to be constructed by defining specific attrs.
-        These attrs will be determined by the field's subclass,
-        not the field itself.
+        These attrs will be determined by the field's inheritors,
+        via the _name property, not by the field class itself.
         """
         raise NotImplementedError
     
@@ -73,7 +73,12 @@ class PackedField(metaclass=abc.ABCMeta):
     
     @abstractmethod
     def edit(self):
-        """Edits a certain attr or certain attrs of self."""
+        """Edits a certain attr or certain attrs of self via kwargs."""
+        raise NotImplementedError
+    
+    @abstractmethod
+    def edit_from_seq(self):
+        """Edits attrs too, but takes a sequence rather than kwargs."""
         raise NotImplementedError
 
 
@@ -151,7 +156,8 @@ class PackedByteFieldMixin(PackedField):
         # Note that the order here (dict_values->int->str)
         # is indeed necessary, but only because the values
         # are initially bools, not ints ... so the obvious
-        # 'simpler' method is unfortunately invalid
+        # 'simpler' method of joining from the name map is
+        # unfortunately invalid
         self.bin = ''.join(map(str, self.seq))
         # convert bin to decimal for a number
         self.raw = int(self.bin, 2)
@@ -169,10 +175,15 @@ class PackedByteFieldMixin(PackedField):
 
 class PackedBigIntMixin(PackedField):
     """
-    This
+    # SPECIAL VALUES:
+    #   255: Infinity
+    #   254: NULL (Look one level up to a less-specific max)
+    #   253: Default filler
+    #   251-252: Undefined
+    #   0-250: Regular values
     
     raw: The raw number, e.g. 200449
-    seq: A sequence representing `raw', e.g. (1, 15, 3, 0, 0, 0, 0, 0)
+    seq: A sequence representing `raw', e.g. (1, 15, 3, 253, 253, 253, 253, 253)
     names: A dictionary with name:value key pairs; values are booleans.
     
     Each value in `names' is also added to the instance's attributes.
@@ -187,15 +198,19 @@ class PackedBigIntMixin(PackedField):
         If instantiating manually, one of the classmethods would
         likely be used instead.
         
-        >>> Maxes(-16119292)
-        <Maxes-type PackedBigIntMixin raw=-16119292 seq=(4, 10, 10, 255
-        , 255, 255, 255, 255) names={'checkout_duration': 4, 'renewals'
-        : 10, 'holds': 10}>
+        >>> Maxes(-144680345691944444)
+        <Maxes-type PackedBigIntMixin-type PackedField raw=-14468034569
+        2141052 seq=(4, 10, 10, 253, 253, 253, 253, 253) namemap={'chec
+        kout_duration': 4, 'renewals': 10, 'holds': 10}>
         >>>
         >>>
-        >>> Locks(-62972)
-        <Locks-type PackedBigIntMixin raw=-62972 seq=(4, 10, 255, 255, 
-        255, 255, 255, 255) names={'checkouts': 4, 'fines': 10}>
+        >>> Locks(-144680345676215804)
+        <Locks-type PackedBigIntMixin-type PackedField raw=-14468034567
+        6215804 seq=(4, 10, 253, 253, 253, 253, 253, 253) namemap={'che
+        ckouts': 4, 'fines': 10}>
+        
+        This also doesn't autofill empty fields, because a number won't
+        have any 'empty' spots in it.
         """
         self.raw = num
         self.seq = struct.unpack('8B', struct.pack('<q', self.raw))
@@ -204,37 +219,39 @@ class PackedBigIntMixin(PackedField):
             setattr(self, k, v)
     
     def __repr__(self):
-        return f'<{"-type ".join(i.__name__ for i in type(self).__mro__[:-1])} raw={self.raw!r} seq={self.seq!r} names={self.namemap!r}>'
+        return f'<{"-type ".join(i.__name__ for i in type(self).__mro__[:-1])} raw={self.raw!r} seq={self.seq!r} namemap={self.namemap!r}>'
     
     @classmethod
-    def from_kwargs(cls, filler=255, **kwargs):
+    def from_kwargs(cls, filler=253, **kwargs):
         """
-        >>> Maxes.from_kwargs(checkout_duration=4,renewals=10,holds=10)
-        <Maxes-type PackedBigIntMixin raw=-16119292 seq=(4, 10, 10, 255
-        , 255, 255, 255, 255) names={'checkout_duration': 4, 'renewals'
-        : 10, 'holds': 10}>
+        >>> Maxes.from_kwargs(checkout_duration=4, renewals=10, holds=10)
+        <Maxes-type PackedBigIntMixin-type PackedField raw=-14468034569
+        2141052 seq=(4, 10, 10, 253, 253, 253, 253, 253) namemap={'chec
+        kout_duration': 4, 'renewals': 10, 'holds': 10}>
         >>>
         >>>
         >>> Locks.from_kwargs(checkouts=4, fines=10)
-        <Locks-type PackedBigIntMixin raw=-62972 seq=(4, 10, 255, 255, 
-        255, 255, 255, 255) names={'checkouts': 4, 'fines': 10}>
+        <Locks-type PackedBigIntMixin-type PackedField raw=-14468034567
+        6215804 seq=(4, 10, 253, 253, 253, 253, 253, 253) namemap={'che
+        ckouts': 4, 'fines': 10}>
         """
         return cls(*struct.unpack('q', struct.pack('8B', *(kwargs.get(i, filler) for i in cls._names))))
     
     @classmethod
-    def from_seq(cls, seq, *, filler=255):
+    def from_seq(cls, seq, *, filler=253):
         """
         >>> Maxes.from_seq([4, 10, 10])
-        <Maxes-type PackedBigIntMixin raw=-16119292 seq=(4, 10, 10, 255
-        , 255, 255, 255, 255) names={'checkout_duration': 4, 'renewals'
-        : 10, 'holds': 10}>
+        <Maxes-type PackedBigIntMixin-type PackedField raw=-14468034569
+        2141052 seq=(4, 10, 10, 253, 253, 253, 253, 253) namemap={'chec
+        kout_duration': 4, 'renewals': 10, 'holds': 10}>
         >>>
         >>>
         >>> Locks.from_seq([4, 10])
-        <Locks-type PackedBigIntMixin raw=-62972 seq=(4, 10, 255, 255, 
-        255, 255, 255, 255) names={'checkouts': 4, 'fines': 10}>
+        <Locks-type PackedBigIntMixin-type PackedField raw=-14468034567
+        6215804 seq=(4, 10, 253, 253, 253, 253, 253, 253) namemap={'che
+        ckouts': 4, 'fines': 10}>
         """
-        fill = [filler] * (8 - len(seq))
+        fill = [filler] * (8 - len(seq)) # expand sequence to 8 bytes
         return cls(*struct.unpack('q', struct.pack('8B', *seq, *fill)))
     
     @property
@@ -243,5 +260,8 @@ class PackedBigIntMixin(PackedField):
     
     def edit(self, **kwargs):
         self.namemap = {name: kwargs.get(name, self.namemap[name]) for name in filter(bool, self._names)}
-        self.raw = struct.unpack('q', struct.pack('8B', *(self.namemap.get(i, self.seq[k]) for k, i in enumerate(self._names))))[0]
+        [self.raw] = struct.unpack('q', struct.pack('8B', *(self.namemap.get(i, self.seq[k]) for k, i in enumerate(self._names))))
         self.seq = struct.unpack('8B', struct.pack('<q', int(self.raw)))
+    
+    def edit_from_seq(self, new):
+        raise NotImplementedError

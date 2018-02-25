@@ -24,7 +24,7 @@ class MediaType(AsyncInit):
         if not check:
             raise ValueError('This type does not exist yet')
         maxnum = await self.pool.fetchval('''SELECT maxes FROM mtypes WHERE name = $1::text AND lid = $2::bigint''', self.name, self.location.lid)
-        self.maxes = None if maxnum is None else Maxes(maxnum) # or `maxnum and Maxes(maxnum)`
+        self.maxes = Maxes(maxnum) if maxnum else None
     
     def __str__(self):
         return self.name

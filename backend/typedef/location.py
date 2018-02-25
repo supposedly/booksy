@@ -8,6 +8,22 @@ from ..core import AsyncInit
 from ..attributes import Perms, Maxes, Locks
 
 
+#################################################
+try:
+    import bcrypt
+except ModuleNotFoundError: # means I'm testing
+    import types
+    def __hashpw(pw, *_, **__):
+        return pw[::-1]
+    def __gensalt(*_, **__):
+        return 0
+    bcrypt = types.SimpleNamespace(
+      hashpw = __hashpw,
+      gensalt = __gensalt
+    )
+#################################################
+
+
 class Location(AsyncInit):
     """
     Defines a library. TODO: Instance methods.
@@ -113,7 +129,7 @@ class Location(AsyncInit):
             Fix+reorder all necessary attributes to match DB in the user CSV dataframe.
             """
             # to ensure the generated salt is random, redo it for every row
-            df.password.apply(functools.partial(bcrypt.hashpw, salt=lambda: bcrypt.gensalt(12)))
+            df.password = df.password.apply(functools.partial(bcrypt.hashpw, salt=lambda: bcrypt.gensalt(12)))
             # assign the given role ID to all members
             df['rid'] = int(rid)
             # Rearrange to remain compliant with asyncpg's copy_to_table
@@ -123,10 +139,6 @@ class Location(AsyncInit):
             # while attributes can be modified 'in-place', the entire object
             # cannot
             return df[['rid', 'fullname', 'username', 'password']]
-        # I'm using the 'app.ppe' ProcessPoolExecutor instead of the 'None'
-        # default ThreadPoolExecutor because these are CPU-bound operations
-        # and not I/O-bound (which means you get better performance with a
-        # ProcessPoolExecutor)
         
         # load the file as a Pandas dataframe
         df = await self._app.aexec(None, pandas.read_csv, file)
@@ -142,7 +154,8 @@ class Location(AsyncInit):
                   source=bIO,
                   columns=['rid', 'fullname', 'username', 'pwhash'],
                   format='csv',
-                  header=True)
+                  header=True
+                  )
         # w amre la alla that it works
     
     async def report(self, **do):
@@ -389,12 +402,20 @@ class Location(AsyncInit):
         SELECT $1::text, $2::bigint, $3::bigint
         '''
         await self.pool.execute(query, name, Maxes.from_kwargs(**maxes).raw, self.lid)
+        print('asfdasdfdasfdasfasddfsfdadfaf')
         return await MediaType(name, self, self._app)
     
     async def remove_media_type(self, name):
         query = '''
         DELETE FROM mtypes
          WHERE name = $1::text
+           AND lid = $2::bigint
+        '''
+        await self.pool.execute(query, name, self.lid)
+        query = '''
+        UPDATE items
+           SET type = NULL
+         WHERE type = $1::text
            AND lid = $2::bigint
         '''
         await self.pool.execute(query, name, self.lid)

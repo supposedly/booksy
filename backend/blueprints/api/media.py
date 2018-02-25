@@ -63,7 +63,7 @@ async def edit_item(rqst, user, item, title, author, genre, type_, price, length
 @rqst_get('item', 'user')
 async def del_item(rqst, item, user):
     if not user.perms.can_manage_media:
-        sanic.exceptions.abort(403, "You aren't allowd to delete media.")
+        sanic.exceptions.abort(403, "You aren't allowed to delete media.")
     await item.delete()
 
 @media.get('/check/verbose')
@@ -78,10 +78,10 @@ async def get_media_status(rqst, item):
 async def issue_item(rqst, item, username, location):
     try:
         user = await User.from_identifiers(username, location, app=rqst.app)
-    except ValueError as e:
-        sanic.exceptions.abort(404, e)
-    if user.cannot_check_out:
-        sanic.exceptions.abort(403, "You aren't allowed to check out.")
+    except ValueError as err:
+        sanic.exceptions.abort(404, err)
+    if user.cannot_check_out or not item.maxes.checkout_duration:
+        sanic.exceptions.abort(403, "You aren't allowed to check this item out.")
     if not item.available and user.uid != item._issued_uid:
         # will never be triggered really unless I forget to query /check first
         sanic.exceptions.abort(409, f'Item is checked out to {issued_to}.')
@@ -92,6 +92,12 @@ async def issue_item(rqst, item, username, location):
 @rqst_get('item', 'username', 'location')
 @jwtdec.protected()
 async def return_item(rqst, item, username, location):
+    """
+    Because adminstrative users can check OTHER people's items in,
+    I cannot do this solely off of the uID
+    Instead I have to ask for the username+location of the member
+    whose item is being checked in
+    """
     try:
         user = await User.from_identifiers(username, location, app=rqst.app)
     except ValueError as e:
@@ -99,7 +105,7 @@ async def return_item(rqst, item, username, location):
     if user.is_checkout or not user.perms.can_return_items:
         sanic.exceptions.abort(403, "You aren't allowed to return items.")
     if item.fines:
-        sanic.exceptions.abort(403, "This item's fines must be paid off before it is returned.")
+        sanic.exceptions.abort(405, "This item's fines must be paid off before it is returned.")
     await item.check_in()
     return sanic.response.raw(b'', status=204)
 

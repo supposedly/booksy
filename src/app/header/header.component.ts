@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { ButtonService } from '../button.service';
+import { MemberAuthService } from '../member-auth.service';
 
 import { NavButton } from '../classes';
 import { Globals } from '../globals';
@@ -14,8 +15,9 @@ export class HeaderComponent implements OnInit {
   buttons: NavButton[];
   
   constructor(
-    private buttonService: ButtonService,
-    public globals: Globals
+    public globals: Globals,
+    public memberAuthService: MemberAuthService,
+    private buttonService: ButtonService
   ) {}
 
   ngOnInit() {

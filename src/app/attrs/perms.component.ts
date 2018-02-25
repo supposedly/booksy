@@ -1,16 +1,19 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnChanges, Input } from '@angular/core';
 
 import { Globals } from '../globals';
 
 @Component({
   selector: 'app-perms',
-  templateUrl: './perms.component.html'
+  templateUrl: './perms.component.html',
+  styles: ['.b { font-weight: 400; } h3 { display: inline-block; }']
 })
-export class PermsComponent implements OnInit {
+export class PermsComponent implements OnChanges {
   arr: any = [];
+  override: boolean = false; // if in an auxiliary screen allow overriding of role-defined perms
   
   @Input('arr') inputArr: any;
   @Input('just-view') editable: boolean = true;
+  @Input('auxiliary') forMain: boolean = true;
   
   defaultArr = {
     names: { // put every attr here and globals.perms.names[i] will take care of hiding appropriate ones
@@ -26,11 +29,13 @@ export class PermsComponent implements OnInit {
   
   constructor(public globals: Globals) {}
   
-  ngOnInit() {
-    this.arr = this.inputArr?this.inputArr:this.defaultArr
+  ngOnChanges() {
+    this.arr = this.inputArr?this.inputArr:this.defaultArr;
   }
   
   keys(obj) {
+    // to make Object.keys usable by the template without it saying Object is undefined
     if (obj) { return Object.keys(obj); }
   }
+  
 }

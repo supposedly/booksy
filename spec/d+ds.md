@@ -94,8 +94,8 @@ __[CONCEPTS]__
          ║ mid (PRIMARY KEY      ║ type       ║ isbn               ║ lid          ║ title ║ author ║ published ║ issued_to    ║ due_date     ║ fines      ║ acquired        ║ genre      ║ maxes            ║
          ╠═══════════════════════╬════════════╬════════════════════╬══════════════╬═══════╬════════╬═══════════╬══════════════╬══════════════╬════════════╬═════════════════╬════════════╬══════════════════╣
          ║ BIGSERIAL             ║ TEXT       ║ TEXT               ║ BIGINT       ║ TEXT  ║ TEXT   ║ DATE      ║ BIGINT       ║ DATE         ║ MONEY      ║ TIMESTAMP       ║ TEXT       ║ BIGINT           ║
-         ║ (internal ID of item) ║ ('book' or ║ (maybe bigint)     ║ (internal id ║       ║        ║           ║ (user ID, or ║ (determined  ║ (overdue   ║ (when this copy ║ (app sorts ║ (per-item maxes, ║ <= value of NULL == defer to role maxes
-         ║                       ║ whatever)  ║ (null if not book) ║ of location) ║       ║        ║           ║ NULL if not  ║ according to ║ fines on   ║ was added to    ║ by type &  ║ overrides role   ║ <= NULL is default ofc
+         ║ (internal ID of item) ║ ('book' or ║ (maybe bigint)     ║ (internal id ║       ║        ║           ║ (user ID, or ║ (determined  ║ (overdue   ║ (when this copy ║ (app sorts ║ (per-item maxes, ║ <= value of 254 == defer to role maxes
+         ║                       ║ whatever)  ║ (null if not book) ║ of location) ║       ║        ║           ║ NULL if not  ║ according to ║ fines on   ║ was added to    ║ by type &  ║ overrides role   ║ <= 254 is default ofc
          ║                       ║            ║                    ║              ║       ║        ║           ║ checked out) ║ user's role) ║ this item) ║ the location)   ║ genre)     ║ maxes)           ║
          ╚═══════════════════════╩════════════╩════════════════════╩══════════════╩═══════╩════════╩═══════════╩══════════════╩══════════════╩════════════╩═════════════════╩════════════╩══════════════════╝
    > holds:
@@ -145,7 +145,8 @@ __[CONCEPTS]__
       Default values: [111111] for Admin, [0110111] for Organizer, [000000] for Subscriber.
    >>The "maxes" packed big-integer field is as follows.
      NOTE that a value of 255, binary [11111111], in any one byte field is interpreted
-     as *infinity* -- i.e. no limit.
+     as *infinity* -- i.e. no limit -- and a value of 254 is 'null', telling the backend
+     to look one level up for the proper values.
      NOTE also that the values are 'flipped' due to little-endianness.
      NOTE lastly that all maxes can be additionally customized per-item
       1st byte: CHECKOUT DURATION (WEEKS)
@@ -166,7 +167,8 @@ __[CONCEPTS]__
      remain active until the user reverses the circumstances that effected it. (This may
      mean returning a book, paying off a fine, re-verifying their account, ...)
      NOTE again that a value of 255, binary [11111111], in any one byte field is interpreted
-     as *infinity* -- i.e. no limit.
+     as *infinity* -- i.e. no limit -- and a value of 254 is 'null', telling the backend
+     to look one level up for the proper values.
      NOTE yet further that the values are little-endian and so are 'flipped'.
       1st byte: CHECKOUT THRESHOLD
          Maximum amount of items this role may check out at a time

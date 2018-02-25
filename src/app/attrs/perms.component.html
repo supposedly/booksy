@@ -1,4 +1,8 @@
 <h3>Permissions</h3>
+<div *ngIf="!forMain">
+  <input type="checkbox" [(ngModel)]="override"/><span class="b">Disable (no override)</span>
+  <!-- TODO: Add 'perm_overrides' column to users table so that this can be on a per-perm basis -->
+</div>
 <div *ngIf="editable; else just_view">
   <label *ngFor="let name of keys(arr.names); let i = index">
     <span *ngIf="globals.attrs.perms[i]">
@@ -7,6 +11,7 @@
         type="checkbox"
         [value]="arr.names[name]"
         [(ngModel)]="arr.names[name]"
+        [attr.disabled]="override&&!forMain?'true':null"
         />
       {{globals.attrs.perms[i]}}
       <br/>
