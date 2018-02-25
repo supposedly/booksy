@@ -8,11 +8,9 @@
   [attr.disabled]="+globals.rawPermNum <= +rawPermNum ? 'true' : null"
   />
 <whatsthis ident="2"></whatsthis>
-<div *ngIf="permArr && maxArr && lockArr">
-  <form name="role-information" (ngSubmit)="submit()" *ngIf="rID">
-      <app-perms [attr.just-view]="checkView()" [arr]="permArr"></app-perms>
-      <app-maxes [attr.just-view]="checkView()" [arr]="maxArr"></app-maxes>
-      <app-locks [attr.just-view]="checkView()" [arr]="lockArr"></app-locks>
-      <input *ngIf="globals.rawPermNum == 127 || checkView()" type="submit" value="Submit"/>
-  </form>
-</div>
+<form name="role-information" (ngSubmit)="submit()" *ngIf="rID">
+    <app-perms [attr.just-view]="checkView()" [arr]="permArr"></app-perms>
+    <app-maxes [attr.just-view]="checkView()" [arr]="maxArr"></app-maxes>
+    <app-locks [attr.just-view]="checkView()" [arr]="lockArr"></app-locks>
+    <input *ngIf="globals.rawPermNum == 127 || checkView()" type="submit" value="Submit"/>
+</form>

@@ -42,7 +42,6 @@ export class MaxesComponent implements OnChanges {
         }
       }
     }
-    console.log(this.inputArr, this.overrideArr, this.defaultArr);
     this.arr = this.inputArr?this.inputArr:this.defaultArr;
   }
   

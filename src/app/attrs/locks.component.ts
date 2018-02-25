@@ -10,9 +10,9 @@ import { Globals } from '../globals';
 export class LocksComponent implements OnChanges {
   arr: any = [];
   
-  @Input('arr') inputArr: any;
-  @Input('just-view') editable: boolean = true;
-  @Input('auxiliary') forMain: boolean = true;
+  @Input('arr') inputArr: any; // the array to modify
+  @Input('just-view') editable: boolean = true; // if user doesn't have permissions to modify the values, just show them
+  @Input('auxiliary') forMain: boolean = true; // if this is outside the main roles/perms detail screen
   
   constructor(public globals: Globals) {}
   
@@ -31,11 +31,12 @@ export class LocksComponent implements OnChanges {
   }
   
   ngOnChanges() {
-    if (!Array.isArray(this.inputArr)) { // it's initialized to [] but when it has data it'll be {}
+    this.arr = [];
+    if (this.inputArr && !Array.isArray(this.inputArr)) { // it's initialized to [array(0)] but when it has data it'll be {object}
       for (let i in this.inputArr.names) { // could probably one-line this with a map or something
         if (this.inputArr.names[i] > 250) {
           this.overrideArr.names[i] = this.inputArr.names[i];
-          this.inputArr[i] = 0;
+          this.inputArr.names[i] = 0;
         }
       }
     }
