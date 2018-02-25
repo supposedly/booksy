@@ -132,7 +132,7 @@ class User(AsyncInit):
     async def notifs(self):
         async with self.acquire() as conn:
             # could probably do this in one line
-            holds = await conn.fetchval('''SELECT count(*) FROM holds WHERE uid = $1::bigint''', self.uid)
+            holds = await conn.fetchval('''SELECT count(*) FROM holds WHERE uid = $1::bigint AND issued_to IS NULL''', self.uid)
             fines = await conn.fetchval('''SELECT sum(fines) AS fines FROM items WHERE issued_to = $1::bigint''', self.uid)
             overdue = await conn.fetchval('''SELECT count(*) AS overdue FROM items WHERE due_date < current_date;''')
         

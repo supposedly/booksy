@@ -71,7 +71,7 @@ async def add_member_to_location(rqst, member, location, perms):
 async def add_members_from_csv(rqst, location, perms):
     """
     Batch addition of members.
-    Likely will not be implemented.
+    Really hope I can implement this but probably not.
     """
     if not perms.can_manage_members:
         sanic.exceptions.abort(401, "You aren't allowed to add members.")
@@ -85,7 +85,7 @@ async def add_members_from_csv(rqst, location, perms):
 @uid_get('location', 'perms')
 @rqst_get('member')
 @jwtdec.protected()
-async def remove_member_from_location(rqst, to_remove, location, perms):
+async def remove_member_from_location(rqst, location, perms, member: 'to remove'):
     """
     Removal of a given member.
     Undecided as to whether this should delete the table row entirely.
@@ -96,5 +96,5 @@ async def remove_member_from_location(rqst, to_remove, location, perms):
     """
     if not perms.can_manage_accounts:
         sanic.exceptions.abort(401, "You aren't allowed to remove members.")
-    await location.remove_member(uid=to_remove)
+    await location.remove_member(uid=member)
     return sanic.response.raw('', 204)

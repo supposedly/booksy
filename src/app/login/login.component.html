@@ -10,27 +10,33 @@
       [ngModelOptions]="{updateOn: 'submit'}"
       [class.invalid]="lid.value && !numRe.test(lid.value)"
       autocomplete=section-lid
-      placeholder="Location ID">
+      placeholder="Location ID"
+      />
     <input #uid
       name="uid"
       (keyup)="msg=null"
       [(ngModel)]="uID"
       [ngModelOptions]="{updateOn: 'submit'}"
       autocomplete=username
-      placeholder="User ID">
+      placeholder="User ID"
+      />
     <input #pw
       name="pw" type="password"
       (keyup)="msg=null"
       [(ngModel)]="password"
       [ngModelOptions]="{updateOn: 'submit'}"
       autocomplete=current-password
-      placeholder="Password">
-    <button [disabled]="!(pw.value && uid.value && (isLocationRegistered?lid.value:true))"
+      placeholder="Password"
+      />
+    <button
+      [disabled]="!(pw.value && uid.value && (isLocationRegistered?lid.value:true))"
       type="submit"
       [class.loading]="loading===true"
       class="button"
-      (click)="loading=true">Submit</button>
+      (click)="loading=true"
+      >Submit</button>
   </form>
   <br>
   <button routerLink="/signup/organization" class="signup">Sign up as an organization and/or administrator</button>
-  <button routerLink="/signup/user" class="signup">Sign up as a user</button>
+  <!-- XXX: UNUSED -->
+  <!-- <button routerLink="/signup/user" class="signup">Sign up as a user</button> -->

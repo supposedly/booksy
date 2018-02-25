@@ -41,7 +41,7 @@ export class MgmtMediaComponent {
 @Component({
   selector: 'app-mgmt-media-list',
   template: `
-    <button routerLink="../edit/new">Add item</button>
+    <button routerLink="../../edit/new">Add item</button>
     <media-search-bar default="all" [level]="3" with-delete></media-search-bar>
   `,
   styles: [''],
