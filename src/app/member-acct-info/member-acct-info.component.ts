@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 
 import { LocationService } from '../location.service';
+import { MemberService } from '../member.service';
 import { RoleService } from '../role.service';
 
 import { Globals } from '../globals';
@@ -24,6 +25,7 @@ export class MemberAcctInfoComponent implements OnInit {
     public globals: Globals,
     private route: ActivatedRoute,
     private roleService: RoleService,
+    private memberService: MemberService,
     private locationService: LocationService
   ) {}
 
@@ -55,7 +57,7 @@ export class MemberAcctInfoComponent implements OnInit {
       );
   }
   
-  makeInfo() {
+  makeInfo() { // mocks a member object to prepare creating a new one
     this.member = {
       perms: {
         raw: 0
@@ -76,7 +78,7 @@ export class MemberAcctInfoComponent implements OnInit {
       this.locationService.createMember(this.member)
         .subscribe(resp => this.location.back(), err => this.msg = err.error?err.error:'Error.');
     } else {
-      this.locationService.editMember(this.member)
+      this.memberService.edit(this.member)
         .subscribe(resp => this.msg = 'Successfully edited.', err => this.msg = err.error?err.error:'Error.');
     }
   }

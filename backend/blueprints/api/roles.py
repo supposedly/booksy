@@ -25,31 +25,33 @@ async def provide_me_attrs(rqst, user):
 @roles.get('/me/<attr:(perms|maxes|locks)>')
 @uid_get()
 @jwtdec.protected()
-async def provide_specific_me_attr(rqst, user, attr):
+async def provide_specific_me_attr(rqst, user, *, attr):
     """
     Provides a specific attribute (of perms/maxes/locks) for requesting role.
     """
     if attr not in ('perms', 'maxes', 'locks'):
         # won't ever be called, for obvious reason
-        # (i.e. bc of the regex in the roles.get deco)
+        # (that is, bc of the regex in the roles.get deco)
         sanic.exceptions.abort(422)
     return sanic.response.json(getattr(user, attr), status=200)
 
 @roles.post('/edit')
 @rqst_get('role', 'user', 'name', 'seqs')
 @jwtdec.protected()
-async def edit_role(rqst, role, user, name, seqs):
+async def edit_role(rqst, role, user, *, name, seqs):
     new = Role.attrs_from(kws=seqs) # element [0] == perms
     # Users can only modify roles *below* them in hierarchy
     if user.perms.raw <= new[0].raw or not user.perms.can_manage_roles:
         sanic.exceptions.abort(403, "You aren't allowed to modify this role.")
+    if name.lower() in ('admin', 'organizer', 'subscriber'):
+        sanic.exceptions.abort(401, 'That name is reserved.')
     await role.set_attrs(*new, name=name)
     return sanic.response.raw(b'', status=204)
 
 @roles.put('/delete')
 @rqst_get('user', 'role')
 @jwtdec.protected()
-async def delete_role(rqst, user, role):
+async def delete_role(rqst, user, *, role):
     if await role.num_members():
         sanic.exceptions.abort(403, "You can't delete a role with members assigned to it.")
     if role.is_default:
@@ -62,7 +64,7 @@ async def delete_role(rqst, user, role):
 @roles.get('/detail')
 @rqst_get('role', 'user')
 @jwtdec.protected()
-async def provide_specific_role(rqst, role, user):
+async def provide_specific_role(rqst, role, *, user):
     """
     Provides attributes for a requested role.
     """

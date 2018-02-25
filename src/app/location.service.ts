@@ -23,10 +23,13 @@ export class LocationService {
   private createMemberURL: string = this.loc + '/members/add';
   private deleteMemberURL: string = this.loc + '/members/remove';
   
-  private createItemURL: string = this.loc + '/media/add';
-  private delItemURL: string = this.loc + '/media/remove';
+  locMedia: string = this.loc + '/media'
   
-  private editMemberURL: string = 'api/member/edit';
+  private createItemURL: string = this.locMedia + '/add';
+  private delItemURL: string = this.locMedia + '/remove';
+  
+  private editGenreURL: string = this.locMedia + '/genres/edit';
+  private delGenreURL: string = this.locMedia + '/genres/remove';
   
   constructor(
     private globals: Globals,
@@ -58,14 +61,6 @@ export class LocationService {
     });
   }
   
-  deleteMember(uID): Observable<any> { // FIXME: One of these is redundant
-    return this.http.post<any>(this.deleteMemberURL, {uid: this.globals.uID, remove: uID});
-  }
-  
-  editMember(member): Observable<any> {
-    return this.http.post<any>(this.editMemberURL, {uid: this.globals.uID, member: member});
-  }
-
   createMember(member): Observable<any> {
     return this.http.post<any>(this.createMemberURL, {uid: this.globals.uID, member: member}, httpOptions);
   }
@@ -75,12 +70,21 @@ export class LocationService {
   }
   
   addItem(item): Observable<any> {
-    item.uid = this.globals.uID; // so I can grab everything in the backend at once
+    item.uid = this.globals.uID; // so I can grab everything from backend at once
+    item.media_type = item.type; // meh, just for name conflict in python (not the most elegant way of handling)
     return this.http.post<any>(this.createItemURL, item, httpOptions);
   }
   
-  removeMember(uID): Observable<any> { // FIXME: One of these is redundant
+  removeMember(uID): Observable<any> {
     return this.http.post<any>(this.deleteMemberURL, {uid: this.globals.uID, member: uID}, httpOptions);
+  }
+  
+  editGenre(genre, newname): Observable<any> {
+    return this.http.post<any>(this.editGenreURL, {uid: this.globals.uID, genre: genre, to: newname}, httpOptions);
+  }
+  
+  removeGenre(genre): Observable<any> {
+    return this.http.post<any>(this.delGenreURL, {uid: this.globals.uID, genre: genre});
   }
   
 }

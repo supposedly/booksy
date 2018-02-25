@@ -11,14 +11,14 @@ root = sanic.Blueprint('location_media_api', url_prefix='')
 @uid_get('location')
 @rqst_get('cont')
 @jwtdec.protected()
-async def search_location_media(rqst, cont, location):
+async def search_location_media(rqst, location, *, cont):
     return sanic.response.json({'items': await location.items(cont=int(cont))}, status=200)
 
 @root.get('/search')
 @rqst_get('title', 'genre', 'media_type', 'author', 'cont')
 @uid_get('location')
 @jwtdec.protected()
-async def search_location_media(rqst, location, title, genre, media_type, author, cont):
+async def search_location_media(rqst, location, *, title, genre, media_type, author, cont):
     return sanic.response.json(
       await location.search(
         title = None if title == 'null' else title,
@@ -30,13 +30,13 @@ async def search_location_media(rqst, location, title, genre, media_type, author
       status=200)
 
 @root.post('/add')
-@rqst_get('user', 'title', 'author', 'published', 'type', 'genre', 'isbn', 'price', 'length')
+@rqst_get('user', 'title', 'author', 'published', 'media_type', 'genre', 'isbn', 'price', 'length')
 @jwtdec.protected()
-async def add_media_item_to_db(rqst, user, title, author, published, type_: {'name': str, 'maxes': list}, genre, isbn, price, length):
+async def add_media_item_to_db(rqst, user, *, title, author, published, media_type: {'name': str, 'maxes': list}, genre, isbn, price, length):
     if not user.perms.can_manage_media:
         sanic.exceptions.abort(403, "You aren't allowed to add media.")
     try:
-        type_ = await MediaType(type_['name'], user.location, rqst.app)
+        type_ = await MediaType(media_type['name'], user.location, rqst.app)
     except ValueError:
         type_ = await user.location.add_media_type(**type_)
     item = await user.location.add_media(title, author, published, type_, genre, isbn, price, length)
@@ -45,7 +45,7 @@ async def add_media_item_to_db(rqst, user, title, author, published, type_: {'na
 @root.post('/remove')
 @rqst_get('item', 'user')
 @jwtdec.protected()
-async def remove_media_item_from_db(rqst, item, user):
+async def remove_media_item_from_db(rqst, user, *, item):
     if not user.perms.can_manage_media:
         sanic.exceptions.abort(403, "You aren't allowed to remove media.")
     await item.remove()

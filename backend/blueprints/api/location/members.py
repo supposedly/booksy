@@ -68,7 +68,7 @@ async def add_member_to_location(rqst, location, perms, *, member: 'to create'):
 @mbrs.post('/add/batch')
 @uid_get('location', 'perms')
 @jwtdec.protected()
-async def add_members_from_csv(rqst, location, perms):
+async def add_members_from_csv(rqst, location, *, perms):
     """
     Batch addition of members.
     Really hope I can implement this but probably not.

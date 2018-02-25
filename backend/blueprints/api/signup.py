@@ -39,6 +39,6 @@ async def create_location(rqst):
 
 @signup.post('/member')
 async def member_signup(rqst):
-    sanic.exceptions.abort(501, "Left unimplemented for FBLA demo.")
-    return None
     # hmm
+    sanic.exceptions.abort(410, "Not implemented.")
+    return NotImplemented
