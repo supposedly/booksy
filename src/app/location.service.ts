@@ -37,21 +37,20 @@ export class LocationService {
   ) {}
   
   getMemberInfo(uID): Observable<any> {
-    return this.http.get(this.memberInfoURL, {params: {uid: this.globals.uID, check: uID}});
+    return this.http.get(this.memberInfoURL, {params: {check: uID}});
   }
   
   getAllMembers(cont): Observable<any> {
-    return this.http.get(this.allMembersURL, {params: {uid: this.globals.uID, cont: cont}});
+    return this.http.get(this.allMembersURL, {params: {cont: cont}});
   }
   
   getAllMedia(cont): Observable<any> {
-    return this.http.get<any>(this.locItemsURL, {params: {uid: this.globals.uID, cont: cont}});
+    return this.http.get<any>(this.locItemsURL, {params: {cont: cont}});
   }
   
   searchMedia(cont=0, title=null, author=null, genre=null, type_=null): Observable<any> {
     return this.http.get<any>(this.searchURL, {
       params: {
-        uid: this.globals.uID,
         cont: cont.toString(),
         title: title?title:null,     // doesn't produce the expected result if I don't do the ternary, hmm.
         author: author?author:null,  // It may also be that I had another error that I fixed at the same time
@@ -62,11 +61,11 @@ export class LocationService {
   }
   
   createMember(member): Observable<any> {
-    return this.http.post<any>(this.createMemberURL, {uid: this.globals.uID, member: member}, httpOptions);
+    return this.http.post<any>(this.createMemberURL, {member: member}, httpOptions);
   }
   
   deleteItem(mID): Observable<any> {
-    return this.http.post<any>(this.delItemURL, {uid: this.globals.uID, mid: mID}, httpOptions);
+    return this.http.post<any>(this.delItemURL, {mid: mID}, httpOptions);
   }
   
   addItem(item): Observable<any> {
@@ -76,15 +75,15 @@ export class LocationService {
   }
   
   removeMember(uID): Observable<any> {
-    return this.http.post<any>(this.deleteMemberURL, {uid: this.globals.uID, member: uID}, httpOptions);
+    return this.http.post<any>(this.deleteMemberURL, {member: uID}, httpOptions);
   }
   
   editGenre(genre, newname): Observable<any> {
-    return this.http.post<any>(this.editGenreURL, {uid: this.globals.uID, genre: genre, to: newname}, httpOptions);
+    return this.http.post<any>(this.editGenreURL, {genre: genre, to: newname}, httpOptions);
   }
   
   removeGenre(genre): Observable<any> {
-    return this.http.post<any>(this.delGenreURL, {uid: this.globals.uID, genre: genre});
+    return this.http.post<any>(this.delGenreURL, {genre: genre});
   }
   
 }

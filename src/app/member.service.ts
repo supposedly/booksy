@@ -26,7 +26,7 @@ export class MemberService {
   ) {}
   
   edit(member): Observable<any> {
-    return this.http.post<any>(this.editMemberURL, {uid: this.globals.uID, member: member});
+    return this.http.post<any>(this.editMemberURL, {member: member});
   }
   
   getNotifs(username?: string): Observable<any> {
@@ -34,20 +34,20 @@ export class MemberService {
   }
   
   getSuggestions(): Observable<any> {
-    return this.http.get<any>(this.suggestionURL, {params: {uid: this.globals.uID}});
+    return this.http.get<any>(this.suggestionURL);
   }
   
   getItems(uID): Observable<any> {
     // checked-out items
-    return this.http.get<any>(this.itemsURL, {params: {uid: this.globals.uID, member: uID || this.globals.uID}});
+    return this.http.get<any>(this.itemsURL, {params: {member: uID || this.globals.uID}});
   }
   
   getHolds(uID): Observable<any> {
-    return this.http.get<any>(this.holdsURL, {params: {uid: this.globals.uID, member: uID || this.globals.uID}});
+    return this.http.get<any>(this.holdsURL, {params: {member: uID || this.globals.uID}});
   }
   
   clearHold(mID): Observable<any> {
-    return this.http.post<any>(this.clearHoldURL, {uid: this.globals.uID, mid: mID}, httpOptions);
+    return this.http.post<any>(this.clearHoldURL, {mid: mID}, httpOptions);
   }
   
 }

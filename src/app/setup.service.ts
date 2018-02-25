@@ -20,7 +20,7 @@ export class SetupService {
   ) {}
   
   getAttrs(uID) {
-    this.http.get<any>(this.attrsURL, {params: {uid: uID}})
+    this.http.get<any>(this.attrsURL)
       .subscribe(resp => {
         this.globals.attrs = resp.names;
         this.globals.locMediaTypes = resp.types;
@@ -30,7 +30,7 @@ export class SetupService {
   }
   
   getPerms(uID) {
-    return this.http.get<any>(this.permCheckURL, {params: {uid: uID}})
+    return this.http.get<any>(this.permCheckURL)
       .subscribe(resp => {
         this.globals.perms = resp.perms;
         this.globals.rawPermNum = resp.raw;

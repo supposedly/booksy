@@ -5,7 +5,7 @@ import sanic
 from .typedef import Location, Role, MediaType, MediaItem, User
 
 async def user_from_rqst(rqst):
-    if app.config.TEST_SERVER:
+    if rqst.app.config.TEST_SERVER:
         uid = rqst.app.RTD[rqst.app.auth._get_refresh_token(rqst)]
     else:
         async with rqst.app.rd_pool.acquire() as conn:
@@ -27,7 +27,6 @@ def uid_get(*attrs, user=False):
             requested info out of it.
             """
             try:
-                uid = (rqst.raw_args if rqst.method == 'GET' else rqst.json)['uid']
                 user_obj = await user_from_rqst(rqst)
             except KeyError:
                 sanic.exceptions.abort(422, 'No user ID given')

@@ -26,7 +26,6 @@ export class ButtonService {
   }
   
   getSidebarButtons(uID: string): Observable<any> {
-    // supplies user ID so sidebar buttons can be chosen according to user's permissions
     if (!this.sideButtons) {
       this.sideButtons = this.http.get<any>(this.sideButtonURL, {params: {uid: uID}})
       .shareReplay();
@@ -35,7 +34,6 @@ export class ButtonService {
   }
   
   getMgmtHeaderButtons(uID: string): Observable<any> {
-    // ditto above
     if (!this.mgmtHeaderButtons) {
       this.mgmtHeaderButtons = this.http.get<any>(this.mgmtHeaderButtonsURL, {params: {uid: uID}})
         .shareReplay();
