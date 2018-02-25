@@ -20,7 +20,6 @@ export class ReportsService {
   getReport(chks=false, ovds=false, fins=false, hlds=false, itms=false) {
     return this.http.put( // This is really just a GET request, but I need to be able to send it as json
       this.reportsURL, {
-        uid: this.globals.uID,
         get: {
           checkouts: chks,
           overdues: ovds,

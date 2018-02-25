@@ -23,22 +23,22 @@ export class MediaTypeService {
   ) {}
   
   all(): Observable<any> {
-    return this.http.get<any>(this.loc, {params: {uid: this.globals.uID}});
+    return this.http.get<any>(this.loc);
   }
   
   info(name): Observable<any> {
-    return this.http.get<any>(this.infoURL, {params: {uid: this.globals.uID, name: name}});
+    return this.http.get<any>(this.infoURL, {params: {name: name}});
   }
   
   edit(name, maxes, newName): Observable<any> {
-    return this.http.post<any>(this.typeEditURL, {uid: this.globals.uID, edit: name, maxes: maxes, name: newName});
+    return this.http.post<any>(this.typeEditURL, {edit: name, maxes: maxes, name: newName});
   }
   
   add(name, maxes): Observable<any> {
-    return this.http.post<any>(this.typeAddURL, {uid: this.globals.uID, add: {name: name, maxes: maxes}});
+    return this.http.post<any>(this.typeAddURL, {add: {name: name, maxes: maxes}});
   }
   
   delete(name): Observable<any> {
-    return this.http.post<any>(this.typeRmURL, {uid: this.globals.uID, remove: name});
+    return this.http.post<any>(this.typeRmURL, {remove: name});
   }
 }

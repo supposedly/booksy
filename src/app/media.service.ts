@@ -45,7 +45,7 @@ export class MediaService {
   }
   
   placeHold(mID: string): Observable<any> {
-    return this.http.post<any>(this.holdURL, {uid: this.globals.uID, mid: mID}, httpOptions);
+    return this.http.post<any>(this.holdURL, {mid: mID}, httpOptions);
   }
   
   editItem(item): Observable<any> {
@@ -54,11 +54,11 @@ export class MediaService {
   }
   
   deleteItem(mID): Observable<any> {
-    return this.http.post<any>(this.deleteItemURL, {uid: this.globals.uID, mid: mID}, httpOptions);
+    return this.http.post<any>(this.deleteItemURL, {mid: mID}, httpOptions);
   }
   
   markFinesPaid(mID): Observable<any> {
-    return this.http.post<any>(this.payFinesURL, {uid: this.globals.uID, mid: mID}, httpOptions);
+    return this.http.post<any>(this.payFinesURL, {mid: mID}, httpOptions);
   }
   
 }
