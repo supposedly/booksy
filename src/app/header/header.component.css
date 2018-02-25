@@ -7,7 +7,7 @@ nav {
   box-shadow: 0 -3px 10px black;
   border-radius: 2px;
   width: 100%;
-  z-index: 2;
+  z-index: 3;
   top: 0;
   left: 0;
   position: fixed;

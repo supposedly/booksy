@@ -11,17 +11,15 @@ from . import Location, Role, MediaType, MediaItem, User
 #################################################
 try:
     import bcrypt
-except ModuleNotFoundError:
+except ModuleNotFoundError: # means I'm testing
     import types
-    # means I'm testing
-    
-    def __hshpw(pw, *_):
+    def __hashpw(pw, *_):
         return pw
-    def __gnslt(*_):
+    def __gensalt(*_):
         return 0
     bcrypt = types.SimpleNamespace(
-      hashpw = __hshpw,
-      gensalt = __gnslt
+      hashpw = __hashpw,
+      gensalt = __gensalt
     )
 #################################################
 

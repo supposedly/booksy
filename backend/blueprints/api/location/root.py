@@ -32,10 +32,10 @@ async def is_location_registered(rqst):
 @rqst_get('get')
 @uid_get('location', 'perms')
 @jwtdec.protected()
-async def serve_a_report(rqst, location, perms, do):
+async def serve_a_report(rqst, location, perms, get):
     if not perms.can_generate_reports:
         sanic.exceptions.abort(403, "You aren't allowed to generate reports.")
-    return sanic.response.json(await location.report(**do))
+    return sanic.response.json(await location.report(**get))
 
 @root.get('/backups/<to_back_up:members|location|roles|holds|items>')
 @uid_get('location', 'perms', user=True)

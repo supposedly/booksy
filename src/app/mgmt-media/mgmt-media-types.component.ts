@@ -53,7 +53,7 @@ export class MgmtMediaTypesComponent {
   <h2>{{name}}</h2>
   <input type="text" [value]="name" [(ngModel)]="name"/>
   <form name="media-type-information" (ngSubmit)="submit()">
-     <app-maxes [arr]="maxArr"></app-maxes>
+     <app-maxes [arr]="maxArr" auxiliary></app-maxes>
      <input type="submit" value="Submit"/>
   </form>
   `,
@@ -90,17 +90,20 @@ export class MediaTypeDetailComponent implements OnInit {
   }
   
   submit() {
+    var maxArr = {} // initialize to properly copy attrs to:
+    for (let i in this.maxes.arr.names) { maxArr[i] = this.maxes.overrideArr.names[i]?this.maxes.overrideArr.names[i]:this.maxes.arr.names[i] }
+    
     if (this.initialName == 'new') {
-      this.mTypeService.add(this.name, this.maxes.arr.names)
+      this.mTypeService.add(this.name, maxArr)
         .subscribe(_ => {this.initialName = this.name; this.msg = "Successfully created."}, err => this.msg = err.error?err.error:"Not allowed!")
-      this.globals.locMediaTypes.push(this.name); // add to global list of media types as well
+      this.globals.locMediaTypes.push({name: this.name, maxes: maxArr}); // add to global list of media types as well
     } else {
-      this.mTypeService.edit(this.initialName, this.maxes.arr.names, this.name)
+      this.mTypeService.edit(this.initialName, maxArr, this.name)
         .subscribe(
           _ => this.msg = "Successfully edited.",
           err => this.msg = err.error?err.error:"Not allowed!",
           () => this.mTypeService.all() // refresh global list of media types
-                  .subscribe(res => this.globals.locMediaTypes = res.types.map((_, d) => d.name))
+                  .subscribe(res => this.globals.locMediaTypes = res.types.map((dict, _) => dict))
         );
     }
   }

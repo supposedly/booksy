@@ -1,4 +1,5 @@
 import datetime as dt
+import types
 from decimal import Decimal
 
 from ..core import AsyncInit
@@ -132,7 +133,22 @@ class MediaItem(AsyncInit):
         set item's issued_to to the user's ID,
         and clear the user's holds on the item
         """
-        infinite = user.maxes.checkout_duration >= 255
+        # Give priority to mediatype/mediaitem maxes over user/role maxes --
+        # unless a max on the mediatype/mediaitem is 254, the 'null' code,
+        # in which case refer to to user/role maxes
+        if self.maxes is None:
+            maxes = user.maxes
+        else:
+            maxes = types.SimpleNamespace(
+              **{
+                  k: v
+                if v != 254 else
+                  user.maxes.namemap[k]
+                for k, v in
+                  self.maxes.namemap.items()
+                }
+              )
+        infinite = maxes.checkout_duration >= 255
         async with self.acquire() as conn:
             query = '''
             UPDATE members
@@ -140,7 +156,6 @@ class MediaItem(AsyncInit):
              WHERE uid = $1::bigint;
             '''
             await conn.execute(query, user.uid, self.genre)
-            
             query = '''
             UPDATE items
                SET issued_to = $1::bigint, -- uid given as param
@@ -148,11 +163,11 @@ class MediaItem(AsyncInit):
                    fines = 0
              WHERE mid = $2::bigint;
             '''.format("'Infinity'::date" if infinite else 'current_date + $3::int')
-            # as many weeks as specified UNLESS the user has no restrictions on checkout time
-            # in which case infinity (which postgres allows in date fields, handily enough)
+            # ^as many weeks as specified UNLESS there is no restriction on checkout duration
+            # in which case Infinity (a value postgres allows in date fields, handily enough)
             params = [query, user.uid, self.mid]
             if not infinite:
-                params.append(7*user.maxes.checkout_duration)
+                params.append(7*maxes.checkout_duration)
             await conn.execute(*params)
             query = '''
             DELETE FROM holds
@@ -161,7 +176,7 @@ class MediaItem(AsyncInit):
             '''
             await conn.execute(query, self.mid, user.uid)
         self.issued_to = user
-        self.due_date = 'never.' if infinite else dt.datetime.utcnow() + dt.timedelta(weeks=user.maxes.checkout_duration)
+        self.due_date = 'never.' if infinite else dt.datetime.utcnow() + dt.timedelta(weeks=maxes.checkout_duration)
         self.fines = 0
         self.available = False
     
@@ -184,6 +199,6 @@ class MediaItem(AsyncInit):
     
     @property
     def maxes(self):
-        if self._maxnum is None:
+        if not self._maxnum:
             return self.type.maxes
-        return Maxes(self._maxnum)
+        return {k: v if v != 254 else self.type.maxes[k] for k, v in Maxes(self._maxnum).namemap.items()}

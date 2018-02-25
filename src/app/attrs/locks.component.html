@@ -1,21 +1,35 @@
 <h3>Locks</h3>
 <div *ngIf="editable; else just_view">
-  <aside>Note that a value of 255 in any numeric field represents <em>infinity</em>.</aside>
+  <aside>None of these values may exceed 250.</aside>
   <label *ngFor="let name of keys(arr.names); let i = index">
+    <div>
+      <input
+        type="checkbox"
+        [checked]="overrideArr[i]==255"
+        (change)="overrideArr[i]=$event.target.checked?255:null"
+      > <span class="b">Infinity (no limit)</span>
+      <div *ngIf="!forMain">
+        <input
+          type="checkbox"
+          [checked]="overrideArr[i]==254"
+          (change)="overrideArr[i]=$event.target.checked?254:null"
+        > <span class="b">None (do not override)</span>
+      </div>
+    </div>
     <input
       [name]="name"
       type="number"
-      min="0" max="255"
+      min="0" max="250"
       [value]="arr.names[name]"
       [(ngModel)]="arr.names[name]"
+      [attr.disabled]="overrideArr[i] && !forMain"
       />
     {{globals.attrs.locks[i]}}
-    <br/>
   </label>
 </div>
 <ng-template #just_view>
   <div>
-    <aside>Note that a value of 255 in any numeric field represents <em>infinity</em>.</aside>
+    <aside>None of these values may exceed 250.</aside>
     <label *ngFor="let name of keys(arr.names); let i = index">
       <input
         [name]="name"
