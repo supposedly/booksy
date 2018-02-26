@@ -2,6 +2,7 @@ from sanic import Blueprint
 
 from .. import Location, Role, MediaType, MediaItem, User
 from .. import uid_get, rqst_get
+from .. import email_verify
 
 from .media import media
 from .edit import edit
