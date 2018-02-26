@@ -4,15 +4,17 @@ verify_ssl = true
 
 [packages]
 aiohttp = "*"
+aiosmtplib = "*"
 bcrypt = "*"
 cython = "*"
 pandas = "*"
+pycrypto = "*"
 uvloop = "*"
 
-aioredis = {git = "git://github.com/aio-libs/aioredis.git", editable = 'true'}
+aioredis = {git = 'git://github.com/aio-libs/aioredis.git', editable = 'true'}
 asyncpg = {git = 'git://github.com/MagicStack/asyncpg.git', editable = 'true'}
-sanic = {git = "git://github.com/channelcat/sanic.git", editable = 'true'}
-sanic-jwt = {git = "https://gitlab.com/hdtrhn/sanic-jwt-fork.git", editable = 'true'}
+sanic = {git = 'git://github.com/channelcat/sanic.git', editable = 'true'}
+sanic-jwt = {git = 'https://gitlab.com/hdtrhn/sanic-jwt-fork.git', editable = 'true'}
 
 [requires]
 python_version = "3.6.4"

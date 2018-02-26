@@ -101,7 +101,7 @@ async def return_item(rqst, location, username, *, item):
     if user.is_checkout or not user.perms.can_return_items:
         sanic.exceptions.abort(403, "You aren't allowed to return items.")
     if item.fines:
-        sanic.exceptions.abort(405, "This item's fines must be paid off before it is returned.")
+        sanic.exceptions.abort(409, "This item's fines must be paid off before it is returned.")
     await item.check_in()
     return sanic.response.raw(b'', status=204)
 

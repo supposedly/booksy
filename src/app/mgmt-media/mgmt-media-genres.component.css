@@ -8,8 +8,7 @@ li .container {
   width: fit-content;
   margin-right: 10px;
   padding: 10px;
-  background-color: #f1f1f1;
-  border: 1px solid;
+  background-color: #e0e0e0;
   border-radius: 5px;
 }
 li .container .name {
