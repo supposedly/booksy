@@ -176,18 +176,6 @@ async def force_angular(rqst):
         except IndexError:
             return sanic.response.redirect('/index.html')
 
-@app.route('/login')
-async def login_refresh_fix(rqst):
-    """
-    Occasionally when you refresh on the login page it'll show an ugly
-    error: URL /login not found. This fixes that.
-    """
-    return sanic.response.redirect('/index.html/?redirect=login')
-
-@app.route('/verify')
-async def verify_location_signup(rqst, token):
-    """Expects a URL param: ?token=<token>"""
-
 @app.middleware('response')
 async def force_no_cache(rqst, resp):
     """
@@ -197,6 +185,28 @@ async def force_no_cache(rqst, resp):
     IP logged in as previously)
     """
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+
+@app.route('/login')
+async def login_refresh_fix(rqst):
+    """
+    Occasionally when you refresh on the login page it'll show an ugly
+    error: URL /login not found. This fixes that.
+    """
+    return sanic.response.redirect('/index.html/?redirect=login')
+
+@app.route('/verify')
+@deco.rqst_get('token')
+async def verify_location_signup(rqst, token):
+    locname, chk_usr, admin_usr = await Location.instate(rqst, token)
+    return sanic.response.html(f'''
+Thank you! Your new library, {locname}, has been registered.
+
+Your admin account's username is {admin_usr}, and you can log into it to start adding members and media and whatnot.
+Your library's self-checkout account's username is {chk_usr}. Your patrons (once they're registered too!) can check out from it as a convenience method, without needing to log in to their full accounts.
+
+
+Have fun!
+    ''', status=200)
 
 if __name__ == '__main__':
     # more than 1 worker and you get too many DB connections :((

@@ -31,9 +31,11 @@ class Location(AsyncInit):
     """
     props = [
       'lid',
-      'name', 'ip',
-      'color', 'image',
-      'fine_amt', 'fine_interval'
+      'name',
+      'ip',
+      'color', '_color',
+      'fine_amt',
+      'fine_interval'
       ]
     
     @staticmethod
@@ -56,15 +58,12 @@ class Location(AsyncInit):
         self.ip = ip
         self.fine_amt = fine_amt
         self.fine_interval = fine_interval
-        self.color = color
+        self._color = color or 0xf7f7f7
+        self.color = '#' + hex(color)[2:] if color else '#f7f7f7'
         self.image = image
     
-    def __str__(self):
-        """Unused but eh"""
-        return str(self.lid)
-    
     def to_dict(self):
-        return {i: getattr(self, i, None) for i in self.props} + {'owner_id', (self.owner).id}
+        return {i: getattr(self, i, None) for i in self.props}
     
     @staticmethod
     def gb_image_query(title='', author='', isbn=''):
@@ -120,12 +119,12 @@ class Location(AsyncInit):
         INSERT INTO signups (
           date, key, email,
           name, color,
-          username, pwhash, -- for checkout acct
+          username, pwhash,      -- for checkout acct
           adminname,
-          adminuser, adminpwhash -- for admin (ofc)
+          adminuser, adminpwhash -- for admin acct (ofc)
         )
         SELECT current_date, $1::text, $2::text,
-               $3::text, $4::smallint,
+               $3::text, $4::int,
                $5::text, $6::bytea,
                $7::text,
                $8::text, $9::bytea
@@ -141,21 +140,29 @@ class Location(AsyncInit):
         return token
     
     @classmethod
-    async def instate(cls, rqst, admin_pw, chk_pw, **kwargs):
+    async def instate(cls, rqst, token):
         """In this order:"""
         props = [
-          'name', 'ip', 'color', #, 'image',
-          'username', 'pwhash', # these are for the checkout account
-          'admin_username', 'admin_pwhash', # these are for admin account
-          'admin_name', 'admin_email', 'admin_phone' # these aren't used
+          'name', 'ip', 'color',#'image',
+          'username', 'pwhash',              # these are for the checkout account
+          'adminuser', 'adminpwhash',        # these are for admin account
+          'adminname', 'email', 'adminphone' # these aren't used, especially adminphone
           ]
-        kwargs['admin_pwhash'] = await self._app.aexec(self._app.ppe, bcrypt.hashpw, admin_pw.encode(), bcrypt.gensalt(12))
-        kwargs['pwhash'] = await self._app.aexec(self._app.ppe, bcrypt.hashpw, chk_pw.encode(), bcrypt.gensalt(12))
-        args = [kwargs.get(attr, rqst.ip if attr=='ip' else None) for attr in props]
+        fetch = await rqst.app.pg_pool.fetchrow('''
+          SELECT email, name, color,
+                 username, pwhash,
+                 adminname,
+                 adminuser, adminpwhash
+            FROM signups
+           WHERE key = $1::text
+        ''', token)
+        fetch = dict(fetch)
+        args = [fetch.get(attr, rqst.ip if attr=='ip' else None) for attr in props]
         with open('./backend/sql/register_location.sql') as register_location:
             for query in register_location.read().split(';'):
-                lid = await rqst.app.pg_pool.fetchval(query, *args) # returns lID
-        return cls(lid, rqst.app)
+                await rqst.app.pg_pool.execute(query, *args) # returns lID at end if run with fetchval
+        return fetch['name'], fetch['username'], fetch['adminuser']
+      # return cls(lid, rqst.app)
     
     @classmethod
     async def from_ip(cls, rqst):
@@ -423,25 +430,34 @@ class Location(AsyncInit):
         res = await self.pool.fetch(query, self.lid)
         return [{j: i[j] for j in ('mid', 'type', 'title', 'author', 'genre', 'image')} for i in res]
     
-    async def edit(self, to_edit, new):
-        props = [
-          'media_types',
-          'name', 'ip',
-          'color', 'image',
-          'fine_amt', 'fine_interval'
-          ]
-        col_names = props[1:] + ['media_types']
-        query = f'''
+    async def edit(self, locname, color, checkoutpw, fine_amt, fine_interval):
+        """Checkout password can be empty"""
+        fine_amt = Decimal(str(fine_amt))
+        fine_interval = int(fine_interval)
+        query = '''
           UPDATE locations
-             SET name = COALESCE($1::text, name),
-                 ip = COALESCE($2::text, ip),
-                 fine_amt = COALESCE($3::numeric, fine_amt),
-                 fine_interval = COALESCE($4::numeric, fine_interval),
-                 image = COALESCE($5::bytea, image),
-                 color = COALESCE($6::smallint, color)
-           WHERE lid = $2::bigint
+             SET name = COALESCE($2::text, name),
+                 color = COALESCE($3::int, color),
+                 fine_amt = COALESCE($4::numeric, fine_amt),
+                 fine_interval = COALESCE($5::integer, fine_interval)
+           WHERE lid = $1::bigint
         '''
-        await self.pool.execute(query, new, self.lid)
+        await self.pool.execute(query, self.lid, locname, color, fine_amt, fine_interval)
+        checkout_pwhash = checkoutpw
+        if checkoutpw is not None:
+            checkout_pwhash = await self._app.aexec(None, bcrypt.hashpw, checkoutpw, bcrypt.gensalt(12))
+        query = '''
+        SELECT pwhash FROM members
+         WHERE lid = $1::bigint
+           AND type = 1
+        '''
+        query = '''
+        UPDATE members
+           SET pwhash = COALESCE($2::bytea, pwhash)
+         WHERE lid = $1::bigint
+           AND type = 1
+        '''
+        await self.pool.execute(query, self.lid, checkout_pwhash)
     
     async def image(self):
         raise NotImplementedError

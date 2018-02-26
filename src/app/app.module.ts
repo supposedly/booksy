@@ -23,6 +23,7 @@ import { HelpComponent } from './help/help.component';
 import { HelpTooltipComponent } from './tooltip/help-tooltip.component';
 import { HelpViewComponent } from './help-view/help-view.component';
 import { HomePageComponent } from './home-page/home-page.component';
+import { LocationEditComponent } from './location-edit/location-edit.component';
 import { LocationMgmtComponent } from './location-mgmt/location-mgmt.component';
 import { LocksComponent } from './attrs/locks.component';
 import { LoginComponent } from './login/login.component';
@@ -34,7 +35,6 @@ import { MediaSearchBarComponent } from './media-search/media-search-bar.compone
 import { MediaSuggestionComponent } from './media-search/media-suggestion.component';
 import { MemberAcctInfoComponent } from './member-acct-info/member-acct-info.component';
 import { MgmtAccountsComponent } from './mgmt-accounts/mgmt-accounts.component';
-import { MgmtLocationComponent } from './mgmt-location/mgmt-location.component';
 import { MgmtRolesPermsComponent } from './mgmt-roles-perms/mgmt-roles-perms.component';
 import { NotificationsComponent } from './notifications/notifications.component';
 import { ReportsComponent } from './reports/reports.component';
@@ -88,7 +88,7 @@ import { SetupService } from './setup.service';
     AboutComponent,
     SignupComponent,
     ReroutingComponent,
-    MgmtLocationComponent,
+    LocationEditComponent,
     MgmtAccountsComponent,
     MgmtRolesPermsComponent,
     NotificationsComponent,

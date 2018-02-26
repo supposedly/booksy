@@ -9,13 +9,13 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { HomePageComponent } from './home-page/home-page.component';
 import { HelpComponent } from './help/help.component';
 import { HelpViewComponent } from './help-view/help-view.component';
+import { LocationEditComponent } from './location-edit/location-edit.component';
 import { LocationMgmtComponent } from './location-mgmt/location-mgmt.component';
 import { LoginComponent } from './login/login.component';
 import { MediaEditComponent } from'./media-edit/media-edit.component';
 import { MediaInfoComponent } from './media-info/media-info.component';
 import { MediaSearchComponent } from './media-search/media-search.component';
 import { MemberAcctInfoComponent } from './member-acct-info/member-acct-info.component';
-import { MgmtLocationComponent } from './mgmt-location/mgmt-location.component';
 import { MgmtAccountsComponent } from './mgmt-accounts/mgmt-accounts.component';
 import { MgmtRolesPermsComponent } from './mgmt-roles-perms/mgmt-roles-perms.component';
 import { PersonalHoldsComponent } from './personal-holds/personal-holds.component';
@@ -69,7 +69,7 @@ const routes: Routes = [
     {path: 'reports', component: ReportsComponent},
     {path: 'manage', component: LocationMgmtComponent, children: [
       {path: '', redirectTo: 'location', pathMatch: 'full'},
-      {path: 'location', component: MgmtLocationComponent},
+      {path: 'location', component: LocationEditComponent},
       {path: 'accounts', component: MgmtAccountsComponent},
       {path: 'roles', component: MgmtRolesPermsComponent}
     ]},
