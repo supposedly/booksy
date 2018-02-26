@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
+import { ColorPickerModule } from 'ngx-color-picker';
 import { MarkdownModule } from 'ngx-md';
 
 import { Globals } from './globals';
@@ -119,6 +120,7 @@ import { SetupService } from './setup.service';
   ],
   imports: [
     MarkdownModule.forRoot(),
+    ColorPickerModule,
     BrowserModule,
     FormsModule,
     AppRoutingModule,

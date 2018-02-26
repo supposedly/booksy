@@ -1,10 +1,11 @@
 """/api/location"""
 import random
-import uuid
 
 import sanic
 import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
+from aiosmtplib.errors import SMTPRecipientsRefused
+from asyncpg.exceptions import UniqueViolationError
 
 from . import Location, Role, MediaType, MediaItem, User
 from . import uid_get, rqst_get
@@ -13,12 +14,16 @@ from . import email_verify as verif
 root = sanic.Blueprint('location_api', url_prefix='')
 
 @root.post('/signup')
-@rqst_get('locname', 'color', 'checkoutpw' 'adminname', 'adminpw', 'email')
+@rqst_get('locname', 'color', 'checkoutpw', 'adminname', 'adminpw', 'email')
 async def register_location(rqst, *, locname, color, checkoutpw, adminname, adminpw, email):
-    token = await Location.prelim_signup(email, locname, color, checkoutpw, adminname, adminpw)
+    color = int(color.lstrip('#'), 16)
     try:
-        await verif.send_email(email, adminname, locname, token, loop=loop)
-    except aiosmtplib.errors.SMTPRecipientsRefused:
+        token = await Location.prelim_signup(rqst, email, locname, color, checkoutpw, adminname, adminpw)
+    except UniqueViolationError:
+        sanic.exceptions.abort(409, "There's already a location being signed up with this email!")
+    try:
+        await verif.send_email(email, adminname, locname, token, loop=rqst.app.loop)
+    except SMTPRecipientsRefused:
         sanic.exceptions.abort(422, "That isn't a valid email.")
     return sanic.response.raw(b'', status=204)
 

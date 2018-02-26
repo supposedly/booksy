@@ -1,0 +1,19 @@
+<h1>Register a new library</h1>
+<p *ngIf="msg">{{msg}}</p>
+<h3>Your library's name:</h3>
+<input type="text" [(ngModel)]="locname"/>
+<h3>Your preferred color scheme:</h3>
+<p>The header up top will be colored based on this. Default #f7f7f7.</p>
+<input [(colorPicker)]="color" [style.background]="color" [value]="color" [cpFallbackColor]="'#f7f7f7'"/>
+<h3>Your name:</h3>
+<p>This is the name of the admin account. In the actual app your name will be displayed as '[your library's name] Admin', but your full name may be used for notifications and such.</p>
+<input type="text" [(ngModel)]="adminname"/>
+<h3>Your email:</h3>
+<p>A verification email will be sent to this address after signup.</p>
+<input type="text" [(ngModel)]="email"/>
+<h3>Your library's checkout account password:</h3>
+<p>This will be the password of the account that all your library's patrons can check out books from.</p>
+<input type="password" [(ngModel)]="checkoutpw"/>
+<h3>Your admin account password:</h3>
+<input type="password" [(ngModel)]="adminpw"/>
+<button *ngIf="checkAll()" (click)="submit()">Submit</button>

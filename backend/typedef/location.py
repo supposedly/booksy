@@ -90,6 +90,56 @@ class Location(AsyncInit):
             query += f'intitle:"{title.replace(" ", "+")}"+inauthor:"{author.replace(" ", "+")}"'
         return query + end
     
+    @staticmethod
+    async def prelim_signup(rqst, email, locname, color, checkoutpw, adminname, adminpw):
+        base_usrname = ''.join(i.lower() for i in locname.title() if i.isupper())
+        checkout_usrname = base_usrname + '-checkout'
+        admin_usrname = base_usrname + '-admin'
+        token = uuid.uuid4().hex
+        
+        while await rqst.app.pg_pool.fetchval('''
+          SELECT count(*)
+            FROM members
+           WHERE type = 1
+             AND username = $1::text
+          ''',
+          checkout_usrname):
+            checkout_usrname += str(random.getrandbits(3))
+        while await rqst.app.pg_pool.fetchval('''
+          SELECT count(*)
+            FROM members
+           WHERE manages = true
+            AND username = $1::text
+          ''',
+          admin_usrname):
+            admin_usrname += str(random.getrandbits(3))
+        
+        checkout_pwhash = await rqst.app.aexec(None, bcrypt.hashpw, checkoutpw, bcrypt.gensalt(12))
+        admin_pwhash = await rqst.app.aexec(None, bcrypt.hashpw, adminpw, bcrypt.gensalt(12))
+        query = '''
+        INSERT INTO signups (
+          date, key, email,
+          name, color,
+          username, pwhash, -- for checkout acct
+          adminname,
+          adminuser, adminpwhash -- for admin (ofc)
+        )
+        SELECT current_date, $1::text, $2::text,
+               $3::text, $4::smallint,
+               $5::text, $6::bytea,
+               $7::text,
+               $8::text, $9::bytea
+        '''
+        await rqst.app.pg_pool.execute(
+          query,
+          token, email,
+          locname, color,
+          checkout_usrname, checkout_pwhash,
+          adminname,
+          admin_usrname, admin_pwhash
+        )
+        return token
+    
     @classmethod
     async def instate(cls, rqst, admin_pw, chk_pw, **kwargs):
         """In this order:"""
@@ -119,55 +169,6 @@ class Location(AsyncInit):
         if result:
             return cls(result, rqst.app)
         return None
-    
-    async def prelim_signup(self, email, locname, color, checkoutpw, adminname, adminpw):
-        base_usrname = ''.join(i.lower() for i in locname.title() if i.isupper())
-        checkout_usrname = base_usrname + '-checkout'
-        admin_usrname = base_usrname + '-admin'
-        token = uuid.uuid4().hex
-        
-        while await self._app.pg_pool.fetchval('''
-          SELECT count(*)
-            FROM members
-           WHERE type = 1
-             AND username = $1::text
-          ''',
-          checkout_usrname):
-            checkout_usrname += str(random.getrandbits(3))
-        while await self._app.pg_pool.fetchval('''
-          SELECT count(*)
-            FROM members
-           WHERE manages = true
-            AND username = $1::text
-          ''',
-          admin_usrname):
-            admin_usrname += str(random.getrandbits(3))
-        
-        checkout_pwhash = await self._app.aexec(None, bcrypt.hashpw, checkoutpw, bcrypt.gensalt(12))
-        admin_pwhash = await self._app.aexec(None, bcrypt.hashpw, adminpw, bcrypt.gensalt(12))
-        query = '''
-        INSERT INTO signups (
-          date, key, email,
-          name, color,
-          username, pwhash, -- for checkout acct
-          adminname,
-          adminusr, adminpwhash, -- for admin (ofc)
-        )
-        SELECT current_date, $1::text, $2::text,
-               $3::text, $4::smallint,
-               $5::text, $6::bytea,
-               $7::text,
-               $8::text, $8::bytea
-        '''
-        await self.pool.execute(
-          query,
-          token, email,
-          locname, color,
-          checkout_usrname, checkout_pwhash,
-          adminname,
-          admin_usrname, admin_pwhash
-        )
-        return token
     
     async def members_from_csv(self, file, rid):
         """
