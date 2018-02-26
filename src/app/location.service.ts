@@ -15,6 +15,8 @@ import { Globals } from './globals';
 export class LocationService {
   loc: string = 'api/location';
   
+  private signupURL: string = this.loc + '/signup';
+  
   private locItemsURL: string = this.loc + '/media';
   private searchURL: string = this.loc + '/media/search';
   
@@ -35,6 +37,17 @@ export class LocationService {
     private globals: Globals,
     private http: HttpClient
   ) {}
+  
+  register(email, locname, color, adminname, adminpw, checkoutpw) {
+    return this.http.post<any>(this.signupURL, {
+      email: email,
+      locname: locname,
+      color: color,
+      adminname: adminname,
+      adminpw: adminpw,
+      checkoutpw: checkoutpw
+    });
+  }
   
   getMemberInfo(uID): Observable<any> {
     return this.http.get(this.memberInfoURL, {params: {check: uID}});
