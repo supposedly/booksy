@@ -1,6 +1,6 @@
 <h1>My account</h1>
 <p *ngIf="msg">{{msg}}</p>
-<p>Full name: <input type="text" [value]="globals.name" [(ngModel)]="fullName"/></p>
+<p>Full name: <input type="text" [value]="globals.name" [(ngModel)]="fullName" [attr.disabled]="globals.managesLocation?'y':null"/></p>
 <p>New password: <input type="password" [(ngModel)]="newpass"/></p>
 <p *ngIf="!!newpass || fullName != globals.name">Current password to confirm: <input type="password" [(ngModel)]="curpass"/></p>
 <button

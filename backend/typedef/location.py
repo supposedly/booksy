@@ -90,17 +90,19 @@ class Location(AsyncInit):
         return query + end
     
     @classmethod
-    async def instate(cls, rqst, **kwargs):
+    async def instate(cls, rqst, pw, **kwargs):
         """In this order:"""
         props = [
-          'name', 'ip', 'color',# 'image',
-          'username', 'pwhash',
+          'name', 'ip', 'color',##'image',
+          'username', 'pwhash', # these are for the checkout account
           'admin_username', 'admin_pwhash',
-          'admin_name', 'admin_email', 'admin_phone'
+          'admin_name', 'admin_email', 'admin_phone' # these aren't used
           ]
+        kwargs[''] = await self._app.aexec(self._app.ppe, bcrypt.hashpw, pw.encode(), bcrypt.gensalt(12))
         args = [kwargs.get(attr, rqst.ip if attr=='ip' else None) for attr in props]
         with open('./backend/sql/register_location.sql') as register_location:
-            lid = await rqst.app.pg_pool.fetchval(register_location.read(), *args) # returns lID
+            for query in register_location.read().split(';'):
+                lid = await rqst.app.pg_pool.fetchval(query, *args) # returns lID
         return cls(lid, rqst.app)
     
     @classmethod

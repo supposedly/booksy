@@ -3,7 +3,7 @@ import asyncio
 
 import asyncpg
 
-query = """
+query = '''
 UPDATE items
    SET fines =
          CASE
@@ -12,8 +12,8 @@ UPDATE items
            ELSE 0 -- if the item isn't due yet, then set its fines to $0.00
          END
   FROM locations
- WHERE mid = currval(pg_get_serial_sequence('items', 'mid'));
-"""
+ WHERE items.lid = locations.lid;
+'''
 
 # I COULD do this synchronously and with less boilerplate using
 # regular ol' psycopg2, but asyncpg is faster by a lot so eh

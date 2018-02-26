@@ -18,7 +18,7 @@ try:
 except ModuleNotFoundError: # means I'm testing (can't access app.config.TESTING from here) (don't have libffi/bcrypt on home PC)
     import types
     def __hashpw(pw, *_, **__):
-        return pw.encode()
+        return pw.encode() if isinstance(pw, str) else pw
     def __gensalt(*_, **__):
         return 0
     def __checkpw(*_, **__):
@@ -153,17 +153,28 @@ class User(AsyncInit):
             [await conn.execute(query, self.uid) for query in queries]
     
     async def notifs(self):
+        
         async with self.acquire() as conn:
-            # could probably do this in one line
             holds = await conn.fetchval('''
             SELECT count(*) FROM holds, items
              WHERE holds.uid = $1::bigint
                AND items.mid = holds.mid
                AND items.issued_to IS NULL
             ''', self.uid)
-            fines = await conn.fetchval('''SELECT sum(fines) AS fines FROM items WHERE issued_to = $1::bigint''', self.uid)
-            overdue = await conn.fetchval('''SELECT count(*) AS overdue FROM items WHERE due_date < current_date;''')
-        
+            
+            fines = await conn.fetchval('''
+              SELECT sum(fines) AS fines
+                FROM items
+               WHERE issued_to = $1::bigint
+             ''', self.uid)
+             
+            overdue = await conn.fetchval('''
+              SELECT count(*) AS overdue
+                FROM items
+               WHERE due_date < current_date
+                 AND issued_to = $1::bigint
+               ''', self.uid)
+           
         response = []
         def add(type_, message):
             response.append({"type": type_, "text": message})

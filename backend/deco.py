@@ -14,6 +14,9 @@ async def user_from_rqst(rqst):
 
 
 def uid_get(*attrs, user=False):
+    if 'user' in attrs:
+        attrs = tuple(i for i in attrs if i != 'user')
+        user = True
     def decorator(func):
         @wraps(func)
         async def wrapper(rqst, *args, **kwargs):
@@ -33,11 +36,10 @@ def uid_get(*attrs, user=False):
     return decorator
 
 
-def rqst_get(*attrs):
-    pass_user = False
+def rqst_get(*attrs, user=False):
     if 'user' in attrs:
         attrs = tuple(i for i in attrs if i != 'user')
-        pass_user = True
+        user = True
     def decorator(func):
         @wraps(func)
         async def wrapper(rqst, *args, **kwargs):
@@ -54,7 +56,7 @@ def rqst_get(*attrs):
                 sanic.exceptions.abort(422, 'Missing required attributes.')
             except TypeError as obj:
                 sanic.exceptions.abort(404, f'{str(obj)[0].upper()+str(obj)[1:]} does not exist.')
-            if pass_user:
+            if user:
                 vals['user'] = await user_from_rqst(rqst)
             return await func(rqst, *args, **vals, **kwargs)
         return wrapper

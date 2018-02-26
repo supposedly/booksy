@@ -78,4 +78,4 @@ INSERT INTO members (
 
 -- END ACCOUNTS SETUP --
 
-SELECT currval(pg_get_serial_sequence('locations', 'lid'))
+SELECT currval(pg_get_serial_sequence('locations', 'lid'));

@@ -11,7 +11,7 @@ export class Globals {
   name: string; // user's full name
   email: string; // user's email (unimplemented)
   phone: string; // user's phone number (unimplemented)
-  managesLocation: boolean; // whether user is administrator (like whether they own the location)
+  managesLocation: boolean; // whether user is administrator (whether they own the location)
   canReturnItems: boolean; // whether user is allowed to check items in
   isCheckoutAccount: boolean; // whether the user is actually the library-wide checkout account
   isLoggedIn: boolean = false; // whether the user is signed in (used in initial login)
