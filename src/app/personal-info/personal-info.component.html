@@ -1,10 +1,12 @@
 <h1>My account</h1>
 <p *ngIf="msg">{{msg}}</p>
-<p>Full name: <input type="text" [value]="globals.name" [(ngModel)]="fullName" [attr.disabled]="globals.managesLocation?'y':null"/></p>
-<p>New password: <input type="password" [(ngModel)]="newpass"/></p>
-<p *ngIf="newpass">Confirm new password: <input type="password" [(ngModel)]="conf" [class.bad]="conf && newpass!=conf"/></p>
-<p *ngIf="newpass || fullName != globals.name">Current password for verification: <input type="password" [(ngModel)]="curpass"/></p>
+<form>
+<p>Full name: <input name="fullName" type="text" [value]="globals.name" [(ngModel)]="fullName" [attr.disabled]="globals.managesLocation?'y':null"/></p>
+<p>New password: <input name="password" type="password" [(ngModel)]="newpass"/></p>
+<p *ngIf="newpass">Confirm new password: <input name="conf" type="password" [(ngModel)]="conf" [class.bad]="conf && newpass!=conf"/></p>
+<p *ngIf="newpass || fullName != globals.name">Current password for verification: <input name="curpass" type="password" [(ngModel)]="curpass"/></p>
 <button
   *ngIf="curpass && ((newpass && newpass==conf) || fullName != globals.name)"
   (click)="submit(); curpass=conf=newpass=''; globals.name=fullName"
 >Submit</button>
+</form>

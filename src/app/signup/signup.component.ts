@@ -8,7 +8,7 @@ import { LocationService } from '../location.service';
   styleUrls: ['./signup.component.css']
 })
 export class SignupComponent {
-  public color: string = '#f7f7f7';
+  color: string = '#f7f7f7';
   msg: string;
   locname: string;
   checkoutpw: string;

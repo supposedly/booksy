@@ -1,0 +1,22 @@
+<h1>Edit your library's info</h1>
+<p *ngIf="msg">{{msg}}</p>
+<form>
+<h3>Library name:</h3>
+<input name="locname" type="text" [(ngModel)]="locname"/>
+<h3>Preferred color scheme:</h3>
+<p>The header up top is colored based on this. Default #f7f7f7.</p>
+<input name="color" [(colorPicker)]="color" [style.background]="color" [value]="color" [cpFallbackColor]="initialColor"/>
+<h3>Self-checkout account password:</h3>
+<p>This will be the password of the account that all your library's patrons can check out books from.</p>
+<input name="nomodify" type="checkbox" [(ngModel)]="nomodify"/>Leave unmodified <strong>(if unchecked, and the textbox is empty, the account's password will be removed)</strong>
+<br/>
+<input name="checkoutpw" type="password" [(ngModel)]="checkoutpw" [attr.disabled]="nomodify?'y':null"/>
+<h3>Fine interval:</h3>
+<p>How often, in days, overdue fines are compounded.</p>
+<input name="fine_interval" type="number" min="0" [(ngModel)]="fine_interval"/>
+<h3>Fine amount in dollars:</h3>
+<p>How many dollars an overdue fine will increase per above interval.</p>
+$<input name="fine_amt" type="number" min="0" step="0.01" [(ngModel)]="fine_amt"/>
+<br/>
+<button (click)="submit()">Submit</button>
+</form>

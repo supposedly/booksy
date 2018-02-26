@@ -13,9 +13,10 @@ import { Globals } from './globals';
 
 @Injectable()
 export class LocationService {
-  loc: string = 'api/location';
+  private loc: string = 'api/location';
   
-  private signupURL: string = this.loc + '/signup';
+  private locSignupURL: string = this.loc + '/signup';
+  private locEditURL: string = this.loc + '/edit';
   
   private locItemsURL: string = this.loc + '/media';
   private searchURL: string = this.loc + '/media/search';
@@ -39,7 +40,7 @@ export class LocationService {
   ) {}
   
   register(email, locname, color, adminname, adminpw, checkoutpw) {
-    return this.http.post<any>(this.signupURL, {
+    return this.http.post<any>(this.locSignupURL, {
       email: email,
       locname: locname,
       color: color,
@@ -47,6 +48,20 @@ export class LocationService {
       adminpw: adminpw,
       checkoutpw: checkoutpw
     });
+  }
+  
+  edit(locname, color, fine_amt, fine_interval, checkoutpw) {
+    return this.http.post<any>(this.locEditURL, {
+      locname: locname,
+      color: color,
+      fine_amt: fine_amt,
+      fine_interval: fine_interval,
+      checkoutpw: checkoutpw
+    });
+  }
+  
+  getLocInfo() {
+    return this.http.get<any>(this.loc);
   }
   
   getMemberInfo(uID): Observable<any> {
