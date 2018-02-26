@@ -23,7 +23,6 @@ from sanic import Sanic
 from backend import setup, deco
 from backend.typedef import Location, Role, MediaItem, MediaType, User
 from backend.blueprints import bp
-from email_verify import send_email
 
 # make it go faster <3
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())

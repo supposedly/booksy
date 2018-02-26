@@ -1,12 +1,26 @@
 """/api/location"""
+import random
+import uuid
+
 import sanic
 import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
 
-from . import uid_get, rqst_get
 from . import Location, Role, MediaType, MediaItem, User
+from . import uid_get, rqst_get
+from . import email_verify as verif
 
 root = sanic.Blueprint('location_api', url_prefix='')
+
+@root.post('/signup')
+@rqst_get('locname', 'color', 'checkoutpw' 'adminname', 'adminpw', 'email')
+async def register_location(rqst, *, locname, color, checkoutpw, adminname, adminpw, email):
+    token = await Location.prelim_signup(email, locname, color, checkoutpw, adminname, adminpw)
+    try:
+        await verif.send_email(email, adminname, locname, token, loop=loop)
+    except aiosmtplib.errors.SMTPRecipientsRefused:
+        sanic.exceptions.abort(422, "That isn't a valid email.")
+    return sanic.response.raw(b'', status=204)
 
 @root.get('/')
 @uid_get('location')
@@ -20,7 +34,7 @@ async def return_location_attr(rqst, user, *, attr):
 
 @root.get('/is-registered')
 async def is_location_registered(rqst):
-    # doesn't go past proxies, unlike rqst.remote_addr -- this is
+    # .ip doesn't go past proxies, unlike rqst.remote_addr -- this is
     # good bc it allows orgs that route all traffic through a central IP
     if not rqst.ip:
         return sanic.response.json({'registered': False, 'reason': 'No IP address supplied with request'})

@@ -7,12 +7,18 @@ import { ActivatedRoute } from '@angular/router';
   styleUrls: ['./signup.component.css']
 })
 export class SignupComponent implements OnInit {
-  asOrg: boolean;
+  msg: string;
+  locname: string;
+  color: number;
+  checkoutpw: string;
+  adminname: string;
+  adminpw: string;
+  email: string;
   
   constructor() { }
 
   ngOnInit() {
-    //this.route.snapshot.paramMap.get or something, find out whether organization or user
+    
   }
 
 }
