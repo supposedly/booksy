@@ -24,18 +24,17 @@ from backend import setup, deco
 from backend.typedef import Location, Role, MediaItem, MediaType, User
 from backend.blueprints import bp
 
-# make it go faster <3
+# make it go faster!
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-# Create a Sanic application for this file.
+# Create a Sanic application for this file
 app = Sanic('Booksy')
-# For checking API access later. (See function force_angular())
-app.safe_segments = ('?', '.html', '.js', '.ts', '/auth', 'auth/', 'api/', 'stock/')
+# These are for checking API access later. (See function force_angular())
+app.safe_segments = ('/verify', '?', '.html', '.js', '.ts', '/auth', 'auth/', 'api/', 'stock/')
 # "Blueprints", i.e. separate files containing endpoint info to
 # avoid clogging up this main file.
 # They can be found in ./backend/blueprints
 app.blueprint(bp)
-app.config.TESTING = False # tells my blueprints to act like the real deal
-SIGNUP_KEY = os.getenv('LOCATION_VERIFICATION_KEY') # For location signup token generation
+app.config.TESTING = False # tells my backend to act like the real deal
 
 async def authenticate(rqst, *args, **kwargs):
     """
@@ -54,7 +53,7 @@ async def authenticate(rqst, *args, **kwargs):
         raise jwt.exceptions.AuthenticationFailed('Missing username or password.')
     # look up the username/pw pair in the database
     async with app.acquire() as conn:
-        query = """SELECT pwhash FROM members WHERE lid = $1::bigint AND username = $2::text"""
+        query = '''SELECT pwhash FROM members WHERE lid = $1::bigint AND username = $2::text'''
         pwhash = await conn.fetchval(query, lid, username)
     bvalid = await app.aexec(app.ppe, bcrypt.checkpw, password, pwhash)
     if not all((username, password, pwhash, bvalid)):
@@ -75,7 +74,7 @@ async def store_rtoken(user_id, refresh_token, *args, **kwargs):
     """/auth/refresh"""
     async with app.rd_pool.get() as conn:
         await conn.execute('set', user_id, refresh_token)
-        await conn.execute('set', refresh_token, user_id) # for retrieving user from rtoken
+        await conn.execute('set', refresh_token, user_id) # for retrieving user from refresh token
 
 async def retrieve_rtoken(user_id, *args, **kwargs):
     """/auth/refresh"""
@@ -85,7 +84,7 @@ async def retrieve_rtoken(user_id, *args, **kwargs):
 async def revoke_rtoken(user_id, *args, **kwargs):
     """/auth/logout"""
     async with app.rd_pool.get() as conn:
-        await conn.execute('del', await conn.execute('get', user_id))
+        await conn.execute('del', await conn.execute('get', user_id)) # delete refresh token first
         await conn.execute('del', user_id)
 
 
@@ -197,15 +196,27 @@ async def login_refresh_fix(rqst):
 @app.route('/verify')
 @deco.rqst_get('token')
 async def verify_location_signup(rqst, token):
-    locname, chk_usr, admin_usr = await Location.instate(rqst, token)
+    locname, lid, chk_usr, admin_usr = await Location.instate(rqst, token)
     return sanic.response.html(f'''
-Thank you! Your new library, {locname}, has been registered.
-
-Your admin account's username is {admin_usr}, and you can log into it to start adding members and media and whatnot.
-Your library's self-checkout account's username is {chk_usr}. Your patrons (once they're registered too!) can check out from it as a convenience method, without needing to log in to their full accounts.
-
-
+<p style="font-family:monospace;font-size:20px"><strong>
+╔════════════════════════════════════════════════════════╗<br/>
+║&nbsp;PLEASE&nbsp;SCREENSHOT&nbsp;OR&nbsp;OTHERWISE&nbsp;SAVE&nbsp;THIS&nbsp;PAGE!!!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;║<br/>
+║&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;║<br/>
+║&nbsp;The&nbsp;information&nbsp;given&nbsp;here,&nbsp;particularly&nbsp;the&nbsp;location&nbsp;&nbsp;║<br/>
+║&nbsp;ID&nbsp;and&nbsp;self-checkout&nbsp;account's&nbsp;username,&nbsp;are&nbsp;vital&nbsp;to&nbsp;&nbsp;║<br/>
+║&nbsp;logging&nbsp;in,&nbsp;but&nbsp;they&nbsp;will&nbsp;not&nbsp;be&nbsp;displayed&nbsp;anywhere&nbsp;&nbsp;&nbsp;&nbsp;║<br/>
+║&nbsp;else.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;║<br/>
+╚════════════════════════════════════════════════════════╝
+</strong></p>
+<p style="font-family:sans-serif">
+Thanks! Your new library, <b>{locname}</b>, has been registered, with location ID <b>{lid}</b>.
+<br/><br/>
+Your admin account's username is <b>{admin_usr}</b>, and you can log into it along with the above location ID to start adding members and media.
+<br/>
+Your library's self-checkout account's username is <b>{chk_usr}</b>. Your patrons (once they're registered too!) can check out from it as a convenience method, without needing to log in to their full accounts.
+<br/><br/>
 Have fun!
+</p>
     ''', status=200)
 
 if __name__ == '__main__':

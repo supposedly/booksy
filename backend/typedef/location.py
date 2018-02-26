@@ -159,9 +159,14 @@ class Location(AsyncInit):
         fetch = dict(fetch)
         args = [fetch.get(attr, rqst.ip if attr=='ip' else None) for attr in props]
         with open('./backend/sql/register_location.sql') as register_location:
-            for query in register_location.read().split(';'):
-                await rqst.app.pg_pool.execute(query, *args) # returns lID at end if run with fetchval
-        return fetch['name'], fetch['username'], fetch['adminuser']
+            async with rqst.app.pg_pool.acquire() as conn: # going to be hogging a connection for the whole loop...
+                for query in register_location.read().split(';')[:-1]:
+                    stmt = await conn.prepare(query)
+                    numparams = len(stmt.get_parameters())
+                    # await rqst.app.pg_pool.execute(query, *args[:len(stmt.get_parameters())])
+                    lid = await stmt.fetchval(*args[:numparams]) # returns lID at end because run with fetchval
+                    args = args[numparams:]
+        return fetch['name'], lid, fetch['username'], fetch['adminuser']
       # return cls(lid, rqst.app)
     
     @classmethod
