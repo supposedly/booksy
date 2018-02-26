@@ -10,10 +10,9 @@ import aiohttp
 import aioredis
 import asyncpg
 import bcrypt
-import binascii
-import Crypto
 import sanic
 import urllib
+import uuid
 import uvloop
 import sanic_jwt as jwt
 from Crypto.Cipher import AES
@@ -89,24 +88,6 @@ async def revoke_rtoken(user_id, *args, **kwargs):
     async with app.rd_pool.get() as conn:
         await conn.execute('del', await conn.execute('get', user_id))
         await conn.execute('del', user_id)
-
-
-def _int_from(iv):
-    """Take an os.urandom-like string and return int from its hexval"""
-    return int(binascii.hexlify(iv), 16)
-
-def encrypt(txt):
-    """Encrypt a verification token to put in URL"""
-    iv = os.urandom(16)
-    ct = Counter.new(128, initial_value=_int_from(iv))
-    ciph = AES.new(SIGNUP_KEY, AES.MODE_CTR, counter=ct)
-    return base64.urlsafe_b64encode(iv+ciph.encrypt(txt))
-
-def decrypt(enc):
-    """Decrypt a verification token from URL"""
-    ct = Counter.new(128, initial_value=_int_from(enc[:16]))
-    ciph = AES.new(SIGNUP_KEY, AES.MODE_CTR, counter=ct)
-    return ciph.decrypt(base64.urlsafe_b64decode(enc[16:]))
 
 
 # Initialize with JSON Web Token (JWT) authentication for logins.

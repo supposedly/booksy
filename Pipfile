@@ -8,7 +8,6 @@ aiosmtplib = "*"
 bcrypt = "*"
 cython = "*"
 pandas = "*"
-pycrypto = "*"
 uvloop = "*"
 
 aioredis = {git = 'git://github.com/aio-libs/aioredis.git', editable = 'true'}
