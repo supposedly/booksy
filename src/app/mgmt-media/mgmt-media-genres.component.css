@@ -8,12 +8,14 @@ li .container {
   width: fit-content;
   margin-right: 10px;
   padding: 10px;
-  background-color: #e0e0e0;
+  background-color: #eaeaea;
   border-radius: 5px;
+  border: 1px solid #666;
 }
 li .container .name {
   width: fit-content;
   padding: 5px;
+  cursor: default;
   margin-right: 10px;
   border-radius: 5px;
 }
@@ -26,14 +28,14 @@ li .container .name {
   content: '✏️';
   display: inline-block;
   line-height: 18px;
-  width: 18px;
+  width: 20px;
   text-align: center;
   font-size: 16px;
   font-family: sans-serif;
 }
 .editbutton {
   border-radius: 50%;
-  border: 1px solid;
+  border: 1px solid #333;
   cursor: pointer;
 }
 li span input {

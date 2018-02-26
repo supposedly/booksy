@@ -38,7 +38,7 @@ async def pay_item_off(rqst, user, *, item):
 async def edit_item(rqst, user, *, item, title, author, genre, type_, price, length, published, isbn):
     if not user.perms.can_manage_media:
         sanic.exceptions.abort(403, "You aren't allowed to edit media.")
-    await item.edit(title, author, genre, type_, price, length, published, isbn)
+    await item.edit(title, author, genre, type_ if isinstance(type_, str) else type_['name'], price, length, published, isbn)
     return sanic.response.json(item.to_dict(), status=200)
 
 @media.post('/delete')
@@ -57,7 +57,7 @@ async def get_bool_available(rqst, *, item):
     
     (I guess it's more convenient for me with this inter-
     mediary step, bc it allows me to explicitly show an
-    error message if necessary before any further user requests
+    error message if necessary before any further requests
     occur)
     """
     issued_to = None
@@ -107,7 +107,7 @@ async def return_item(rqst, location, username, *, item):
 
 @media.get('/check/verbose')
 @rqst_get('item')
-async def get_media_status(rqst, *, item):
+async def get_media_full_status(rqst, *, item):
     return sanic.response.json(item.status, status=200)
     # unused
 

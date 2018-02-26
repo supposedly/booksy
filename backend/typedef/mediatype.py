@@ -23,22 +23,24 @@ class MediaType(AsyncInit):
         check = await self.pool.fetchval('''SELECT name FROM mtypes WHERE name = $1::text AND lid = $2::bigint''', self.name, self.location.lid)
         if not check:
             raise ValueError('This type does not exist yet')
-        maxnum = await self.pool.fetchval('''SELECT maxes FROM mtypes WHERE name = $1::text AND lid = $2::bigint''', self.name, self.location.lid)
-        self.maxes = Maxes(maxnum) if maxnum else None
+        res = await self.pool.fetchrow('''SELECT unit, maxes FROM mtypes WHERE name = $1::text AND lid = $2::bigint''', self.name, self.location.lid)
+        self.maxes = Maxes(res['maxes']) if res['maxes'] else None
+        self.unit = res['unit']
     
     def __str__(self):
         return self.name
     
     def to_dict(self):
-        return {'name': self.name, 'maxes': self.maxes.props}
+        return {'name': self.name, 'unit': self.unit, 'maxes': self.maxes.props}
 
-    async def edit(self, *, maxes=None, name=None):
+    async def edit(self, *, maxes=None, name=None, unit=None):
         query = '''
         UPDATE mtypes
           SET maxes = COALESCE($3::bigint, maxes),
-              name = COALESCE($4::text, name)
+              name = COALESCE($4::text, name),
+              unit = COALESCE($5::text, unit)
         WHERE name = $1::text
           AND lid = $2::bigint
         '''
-        await self.pool.execute(query, self.name, self.location.lid, maxes, name)
+        await self.pool.execute(query, self.name, self.location.lid, maxes, name, unit)
         self.maxes, self.name = Maxes(maxes), name

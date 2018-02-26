@@ -50,7 +50,9 @@ button {
   padding: 14px 20px;
 }
 button.signup {
+  display: block;
   background-color: #2e7fba;
+  margin: 0 auto;
 }
 button.loading {
   opacity: 0.5;

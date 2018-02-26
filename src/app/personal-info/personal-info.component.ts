@@ -7,13 +7,14 @@ import { Globals } from '../globals';
 @Component({
   selector: 'app-personal-info',
   templateUrl: './personal-info.component.html',
-  styleUrls: ['./personal-info.component.css']
+  styles: ['.bad { border-color: #ff2929; color: #ff2929; background-color: #fef0ed; }']
 })
 export class PersonalInfoComponent {
   msg: string = '';
   fullName: string = '';
   curpass: string = '';
   newpass: string = '';
+  conf: string = '';
 
   constructor(
     public globals: Globals,

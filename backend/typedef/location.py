@@ -398,20 +398,27 @@ class Location(AsyncInit):
         query = '''SELECT name, maxes FROM mtypes WHERE lid = $1::bigint'''
         return [{'name': i['name'], 'maxes': Maxes(i['maxes'])} for i in await self.pool.fetch(query, self.lid)]
     
-    async def add_media_type(self, name, maxes: 'Maxes.namemap'):
+    async def add_media_type(self, name, unit, maxes: 'Maxes.namemap'):
         query = '''
-        INSERT INTO mtypes (name, maxes, lid)
-        SELECT $1::text, $2::bigint, $3::bigint
+        INSERT INTO mtypes (name, unit, maxes, lid)
+        SELECT $1::text, $2::text, $3::bigint, $4::bigint
         '''
-        await self.pool.execute(query, name.lower(), Maxes.from_kwargs(**maxes).raw, self.lid)
+        await self.pool.execute(query, unit.lower(), name.lower(), Maxes.from_kwargs(**maxes).raw, self.lid)
         return await MediaType(name, self, self._app)
+    
+    async def edit_media_type(self, mtype, *, maxes=None, name=None, unit=None):
+        """
+        Edit's a media type's maxes and name.
+        """
+        mtype = await MediaType(mtype, self, self._app)
+        await mtype.edit(maxes=maxes and Maxes.from_kwargs(**maxes).raw, name=name, unit=unit)
     
     async def remove_media_type(self, name):
         """
         Gets rid of a media type, also making sure to clean up where
-        any media items might have it. (Else MediaItem just throws
-        "this type doesn't exist yet" whenever you try to access
-        an item's info)
+        any media items might have it.
+        (Else MediaItem just throws "this type doesn't exist yet"
+        whenever you try to access one of said items' info)
         """
         query = '''
         DELETE FROM mtypes
@@ -426,13 +433,6 @@ class Location(AsyncInit):
            AND lid = $2::bigint
         '''
         await self.pool.execute(query, name, self.lid)
-    
-    async def edit_media_type(self, mtype, *, maxes=None, name=None):
-        """
-        Edit's a media type's maxes and name.
-        """
-        mtype = await MediaType(mtype, self, self._app)
-        await mtype.edit(maxes=maxes and Maxes.from_kwargs(**maxes).raw, name=name)
     
     async def genres(self):
         """

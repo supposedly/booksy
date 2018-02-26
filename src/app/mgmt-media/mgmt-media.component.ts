@@ -55,7 +55,7 @@ export class MgmtMediaListComponent {}
 @Component({
   selector: 'app-mgmt-media-genres',
   template: `
-    <p>To create a new genre, simply write it into the "new genre" box when adding a new item.</p>
+    <p>To create a new genre, simply write it into the "new genre" box when adding or editing an item.</p>
     <p *ngIf="msg">{{msg}}</p>
     <ul>
       <li *ngFor="let genre of globals.locGenres; let i = index">
@@ -68,10 +68,11 @@ export class MgmtMediaListComponent {}
         <span *ngIf="isBeingEdited[i]">
           <input
             type="text"
+            (keyup.enter)="edit(i)"
             [value]="globals.locGenres[i]"
             [(ngModel)]="intermediateNames[i]"
           >
-          <span class="save" (click)="edit(i)">✔</span>
+          <span class="save" *ngIf="intermediateNames[i]" (click)="edit(i)">✔</span>
         </span>
       </li>
     </ul>

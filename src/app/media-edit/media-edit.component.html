@@ -9,9 +9,9 @@
   <br/>
   <span *ngIf="mID!='new'">(image is not inputtable/editable)</span>
   <p>Type:
-      <select name="media-type" [(ngModel)]="item.type">
+      <select name="media-type" [(ngModel)]="item.type.name">
         <option *ngFor="let mtype of globals.locMediaTypes" [ngValue]="mtype">
-          {{mtype.name | titlecase}}
+          {{mtype.name}}
         </option>
     </select>
   </p>
@@ -27,6 +27,6 @@
   <p>ISBN: <input type="text" name="isbn" [(ngModel)]="item.isbn" placeholder="ISBN"/></p>
   <br/>
   <p>$<input type="number" step="0.01" min="0.01" name="price" [(ngModel)]="item.price" placeholder="Price"/></p>
-  <p><input type="number" min="0" name="length" [(ngModel)]="item.length" placeholder="Length"/> pages</p>
+  <p><input type="number" min="0" name="length" [(ngModel)]="item.length" placeholder="Length"/> {{item.type.unit}}</p>
   <button *ngIf="checkAllNecessary()" (click)="submit()">Submit</button>
 </div>

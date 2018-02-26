@@ -20,13 +20,15 @@ async def return_location_attr(rqst, user, *, attr):
 
 @root.get('/is-registered')
 async def is_location_registered(rqst):
-    if not rqst.ip: # doesn't go past proxies, unlike rqst.remote_addr -- this is good
+    # doesn't go past proxies, unlike rqst.remote_addr -- this is
+    # good bc it allows orgs that route all traffic through a central IP
+    if not rqst.ip:
         return sanic.response.json({'registered': False, 'reason': 'No IP address supplied with request'})
     location = await Location.from_ip(rqst)
     if location is not None:
         return sanic.response.json({'registered': True, 'lid': location.id}, status=200)
     else:
-        return sanic.response.json({'registered': False, 'reason': 'Not found in DB'}, status=404)
+        return sanic.response.json({'registered': False, 'reason': 'Not found in DB'})
 
 @root.put('/reports')
 @rqst_get('get')
