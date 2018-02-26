@@ -37,7 +37,7 @@ import {
 } from './mgmt-media/mgmt-media-types.component';
 
 const routes: Routes = [
-  {path: 'signup/:type', component: SignupComponent},
+  {path: 'signup', component: SignupComponent},
   {path: 'login', component: LoginComponent},
   {path: '', redirectTo: 'home', pathMatch: 'full', canActivate: [AuthGuard]},
   {path: 'index.html', component: ReroutingComponent},

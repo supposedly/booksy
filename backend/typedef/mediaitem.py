@@ -68,7 +68,7 @@ class MediaItem(AsyncInit):
     
     def to_dict(self):
         retdir = {attr: str(getattr(self, attr, None)) for attr in self.props}
-        retdir['type_'], retdir['available'] = self._type, not self.issued_to
+        retdir['type'], retdir['available'] = self.type.to_dict(), not self.issued_to
         return retdir
     
     async def set_maxes(self, newmaxes: Maxes, *, mid=True):

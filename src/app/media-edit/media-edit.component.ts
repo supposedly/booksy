@@ -37,7 +37,7 @@ export class MediaEditComponent implements OnInit {
   
   getItem(): void {
     this.mediaService.getInfo(this.mID)
-      .subscribe(item => this.item = item.info);
+      .subscribe(resp => this.item = resp.info);
   }
   
   makeItem(): void {
@@ -47,7 +47,7 @@ export class MediaEditComponent implements OnInit {
       author: null,
       published: null,
       image: null,
-      type: null,
+      type: {name: null},
       genre: null,
       isbn: null,
       price: null,

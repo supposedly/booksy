@@ -26,7 +26,7 @@ export class MediaService {
   /*
   class MediaItem {
     mid: string;
-    type: string;
+    type: mtype;
     isbn: string;
     lid: string;
     title: string;
@@ -50,6 +50,7 @@ export class MediaService {
   
   editItem(item): Observable<any> {
     item.uid = this.globals.uID;
+    item.type_ = item.type.name; // eh
     return this.http.post<any>(this.editItemURL, item, httpOptions);
   }
   

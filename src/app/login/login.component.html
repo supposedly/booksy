@@ -1,11 +1,13 @@
 <div class="container" style="margin-top: 2em;">
   <p>Welcome to Booksy! Log in below.</p>
+  <button routerLink="/signup" class="signup">Sign your library up</button>
   <form (ngSubmit)="send();  pw.value=null; uid.value=null; lid.value=null">
     <div class="msg-container">
       <div *ngIf="msg" class="msg" [ngClass]="err?'err':'suc'"><p>{{msg}}</p></div>
     </div>
-    <input #lid [hidden]="isLocationRegistered"
+    <input #lid
       name="lid"
+      [hidden]="isLocationRegistered"
       [(ngModel)]="lID"
       [ngModelOptions]="{updateOn: 'submit'}"
       [class.invalid]="lid.value && !numRe.test(lid.value)"
@@ -31,12 +33,9 @@
     <button
       [disabled]="!(pw.value && uid.value && (isLocationRegistered?lid.value:true))"
       type="submit"
-      [class.loading]="loading===true"
+      [class.loading]="loading"
       class="button"
       (click)="loading=true"
       >Submit</button>
   </form>
-  <br>
-  <button routerLink="/signup/organization" class="signup">Sign up as an organization and/or administrator</button>
-  <!-- XXX: UNUSED -->
-  <!-- <button routerLink="/signup/user" class="signup">Sign up as a user</button> -->
+<br/>

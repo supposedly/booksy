@@ -51,7 +51,13 @@ export class MgmtMediaTypesComponent {
   <p>{{msg}}</p>
   <button (click)="location.back()">Go back</button>
   <h2>{{name}}</h2>
+  Name:
+  <br/>
   <input type="text" [value]="name" [(ngModel)]="name"/>
+  <br/>
+  Unit of length (e.g. "pages" or "minutes"):
+  <br/>
+  <input type="text" [value]="unit" [(ngModel)]="unit"/>
   <form name="media-type-information" (ngSubmit)="submit()">
      <app-maxes [arr]="maxArr" auxiliary></app-maxes>
      <input type="submit" value="Submit"/>
@@ -63,6 +69,7 @@ export class MediaTypeDetailComponent implements OnInit {
   maxArr: any = [];
   initialName: string;
   name: string;
+  unit: string;
   msg: string = '';
   
   @ViewChild(MaxesComponent) private maxes: MaxesComponent;
@@ -86,7 +93,12 @@ export class MediaTypeDetailComponent implements OnInit {
   
   getInfo() {
     this.mTypeService.info(this.name)
-      .subscribe(resp => this.maxArr = resp.props.maxes);
+      .subscribe(
+        resp => {
+          this.maxArr = resp.type.maxes;
+          this.unit = resp.type.unit;
+        }
+      );
   }
   
   submit() {
@@ -94,11 +106,11 @@ export class MediaTypeDetailComponent implements OnInit {
     for (let i in this.maxes.arr.names) { maxArr[i] = this.maxes.overrideArr.names[i]?this.maxes.overrideArr.names[i]:this.maxes.arr.names[i] }
     
     if (this.initialName == 'new') {
-      this.mTypeService.add(this.name, maxArr)
+      this.mTypeService.add(maxArr, this.name, this.unit)
         .subscribe(_ => {this.initialName = this.name; this.msg = "Successfully created."}, err => this.msg = err.error?err.error:"Not allowed!")
       this.globals.locMediaTypes.push({name: this.name, maxes: maxArr}); // add to global list of media types as well
     } else {
-      this.mTypeService.edit(this.initialName, maxArr, this.name)
+      this.mTypeService.edit(this.initialName, maxArr, this.name, this.unit)
         .subscribe(
           _ => this.msg = "Successfully edited.",
           err => this.msg = err.error?err.error:"Not allowed!",

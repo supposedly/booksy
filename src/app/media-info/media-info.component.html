@@ -5,17 +5,17 @@
   <button class="new" *ngIf="!item.available && !globals.isCheckoutAccount" (click)="placeOnHold()">Place hold</button>
   <h1>{{item.title}}</h1>
   <p class="author">{{item.author}}</p>
-  <p>Published in {{item.published}}</p>
   <img *ngIf="item.image && item.image != 'None'" [src]="item.image"/>
-  <p>Type: {{item.type | titlecase}}</p>
-  <p>Genre: {{item.genre | titlecase }}</p>
-  <p>Barcode: {{item.mid}}</p>
-  <p>ISBN: {{item.isbn}}</p>
+  <p>Published in {{item.published}}</p>
+  <p><b>Type:</b> {{item.type.name | titlecase}}</p>
+  <p><b>Genre:</b> {{item.genre | titlecase }}</p>
+  <p><b>Barcode:</b> {{item.mid}}</p>
+  <p><b>ISBN:</b> {{item.isbn}}</p>
   <br/>
   <p>${{item.price}}</p>
-  <p>{{item.length}} pages</p>
+  <p><b>Length:</b> {{item.length}} {{item.type.unit}}</p>
   <div *ngIf="showFines">
-    <p style="color: red">Fines: {{item.fines}}</p>
-    <button class="new" (click)="markFinesPaid()">Mark as paid</button>
+    <p style="color: red"><b>Fines:</b> {{item.fines}}</p>
+    <button class="new" (click)="markFinesPaid(); showFines=false">Mark as paid</button>
   </div>
 </div>

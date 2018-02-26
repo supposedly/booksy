@@ -8,4 +8,4 @@ import { Component, Input } from '@angular/core';
 export class GenericHeaderComponent {
   @Input() buttons: any;
   @Input() inbetween: string;
-  }
+}

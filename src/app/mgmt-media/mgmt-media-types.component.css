@@ -7,10 +7,8 @@ li {
   display: inline-block;
   margin: 2px 5px;
   padding: 10px;
-  border: solid;
-  border-width: 1px;
   border-radius: 5px;
-  border-color: #666;
+  border: 1px solid #666;
   transition: background-color 0.1s;
 }
 li:focus, li:active {

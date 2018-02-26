@@ -27,6 +27,7 @@ export class MediaItem {
   author;
   price?: any;
   length?: any;
+  unit?: any; // unit of length, e.g. pages or minutes
   published;
   acquired?;
   image?;
