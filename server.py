@@ -35,6 +35,7 @@ app.safe_segments = ('/verify', '?', '.html', '.js', '.ts', '/auth', 'auth/', 'a
 # They can be found in ./backend/blueprints
 app.blueprint(bp)
 app.config.TESTING = False # tells my backend to act like the real deal
+app.rtoken_cache = {} # To mitigate DB slowness
 
 async def authenticate(rqst, *args, **kwargs):
     """
@@ -66,26 +67,31 @@ async def authenticate(rqst, *args, **kwargs):
 
 async def retrieve_user(rqst, payload, *args, **kwargs):
     """/auth/me"""
-    if payload:
-        uid = payload.get('user_id', None)
-        return await User(uid, rqst.app)
+    return await User(payload.get('user_id'), rqst.app)
 
 async def store_rtoken(user_id, refresh_token, *args, **kwargs):
     """/auth/refresh"""
     async with app.rd_pool.get() as conn:
         await conn.execute('set', user_id, refresh_token)
         await conn.execute('set', refresh_token, user_id) # for retrieving user from refresh token
+        app.rtoken_cache[refresh_token] = user_id
+        app.rtoken_cache[user_id] = refresh_token
 
 async def retrieve_rtoken(user_id, *args, **kwargs):
     """/auth/refresh"""
-    async with app.rd_pool.get() as conn:
-        await conn.execute('get', user_id)
+    try:
+        return app.rtoken_cache[user_id]
+    except KeyError:
+        async with app.rd_pool.get() as conn:
+            app.rtoken_cache[user_id] = await conn.execute('get', user_id)
+            return app.rtoken_cache[user_id]
 
 async def revoke_rtoken(user_id, *args, **kwargs):
     """/auth/logout"""
     async with app.rd_pool.get() as conn:
         await conn.execute('del', await conn.execute('get', user_id)) # delete refresh token first
         await conn.execute('del', user_id)
+        del app.rtoken_cache[app.rtoken_cache[user_id]], app.rtoken_cache[user_id]
 
 
 # Initialize with JSON Web Token (JWT) authentication for logins.
@@ -193,21 +199,102 @@ async def login_refresh_fix(rqst):
     """
     return sanic.response.redirect('/index.html/?redirect=login')
 
-@app.route('/verify')
+@app.get('/verify')
 @deco.rqst_get('token')
-async def verify_location_signup(rqst, token):
-    locname, lid, chk_usr, admin_usr = await Location.instate(rqst, token)
+async def finalize_registration(rqst, token):
     return sanic.response.html(f'''
-<p style="font-family:monospace;font-size:20px"><strong>
+<html><head><style>
+* {{ font-family: sans-serif; }}
+h1 {{ text-decoration: underline; }}
+h3 {{ font-weight: normal; margin-bottom: 5px; }}
+input {{
+  margin-bottom: 1em;
+  border-radius: 5px;
+  border: 1px solid #bbb;
+  padding: 10px;
+}}
+button {{
+  background-color: #43ba2e;
+  color: white;
+  padding: 10px 10px;
+  margin: auto;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  padding: 15px;
+  transition: opacity .2s;
+}}
+</style></head><body>
+  <h1>Registering your library</h1>
+  <p>You're almost done! Fill out the form below to finalize your registration.</p>
+  <br/>
+  <form method="post" action="../register" oninput="checkMatching()">
+    <input name="token" type="hidden" value="{token}">
+    <h3>Your admin password:</h3>
+    <input type="password" id="adminpw" name="adminpw" placeholder="Admin account password"/>
+    <input type="password" id="aconf" placeholder="Confirm admin password">
+    <h3>Your library's self-checkout account's password:</h3>
+    <input type="password" id="checkoutpw" name="checkoutpw" placeholder="Self-checkout account password"/>
+    <input type="password" id="cconf" placeholder="Confirm checkout account password">
+    <p>Make sure you keep these on hand!</p>
+    <button id="sbmt" type="submit">Register</button>
+  </form>
+</body><script>
+function checkMatching() {{
+    var adminpw = document.getElementById("adminpw");
+    var aconf = document.getElementById("aconf");
+    var checkoutpw = document.getElementById("checkoutpw");
+    var cconf = document.getElementById("cconf");
+    var sbmt = document.getElementById("sbmt");
+    
+    if (aconf.value && aconf.value !== adminpw.value) {{
+        aconf.style.backgroundColor = "#fef0ed";
+        aconf.style.color = "#ff2929";
+        aconf.style.borderColor = "#ff2929";
+        sbmt.style.display = "none";
+    }} else {{
+        aconf.style.backgroundColor = "white";
+        aconf.style.color = "black";
+        aconf.style.borderColor = "#bbb";
+        sbmt.style.display = (cconf.value && cconf.value !== checkoutpw.value)?"none":"";
+    }}
+    if (cconf.value && cconf.value !== checkoutpw.value) {{
+        cconf.style.backgroundColor = "#fef0ed";
+        cconf.style.color = "#ff2929";
+        cconf.style.borderColor = "#ff2929";
+        sbmt.style.display = "none";
+    }} else {{
+        cconf.style.backgroundColor = "white";
+        cconf.style.color = "black";
+        cconf.style.borderColor = "#bbb";
+        sbmt.style.display = (aconf.value && aconf.value !== adminpw.value)?"none":"";
+    }}
+    if (!aconf.value || !cconf.value) {{
+        sbmt.style.display = "none";
+    }}
+}}
+</script></html>''', status=200)
+
+@app.post('/register')
+@deco.rqst_get('token', 'adminpw', 'checkoutpw', form=True)
+async def register_location(rqst, token, adminpw, checkoutpw):
+    """Have to *unpack because rqst.form returns one-item lists"""
+    locname, lid, chk_usr, admin_usr = await Location.instate(rqst, *token, *adminpw, *checkoutpw)
+    return sanic.response.html('''
+<html><head></head><body>
+<p style="font-family:monospace;font-size:20px"><strong>'''
++ '''
 ╔════════════════════════════════════════════════════════╗<br/>
-║&nbsp;PLEASE&nbsp;SCREENSHOT&nbsp;OR&nbsp;OTHERWISE&nbsp;SAVE&nbsp;THIS&nbsp;PAGE!!!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;║<br/>
-║&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;║<br/>
-║&nbsp;The&nbsp;information&nbsp;given&nbsp;here,&nbsp;particularly&nbsp;the&nbsp;location&nbsp;&nbsp;║<br/>
-║&nbsp;ID&nbsp;and&nbsp;self-checkout&nbsp;account's&nbsp;username,&nbsp;are&nbsp;vital&nbsp;to&nbsp;&nbsp;║<br/>
-║&nbsp;logging&nbsp;in,&nbsp;but&nbsp;they&nbsp;will&nbsp;not&nbsp;be&nbsp;displayed&nbsp;anywhere&nbsp;&nbsp;&nbsp;&nbsp;║<br/>
-║&nbsp;else.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;║<br/>
+║ PLEASE SCREENSHOT OR OTHERWISE SAVE THIS PAGE!!!       ║<br/>
+║                                                        ║<br/>
+║ The information given here, particularly the location  ║<br/>
+║ ID and self-checkout account's username, are vital to  ║<br/>
+║ logging in — but they will not be displayed anywhere   ║<br/>
+║ else.                                                  ║<br/>
 ╚════════════════════════════════════════════════════════╝
 </strong></p>
+'''.replace(' ', '&nbsp;') # otherwise the third line gets screwed with
++ f'''
 <p style="font-family:sans-serif">
 Thanks! Your new library, <b>{locname}</b>, has been registered, with location ID <b>{lid}</b>.
 <br/><br/>
@@ -217,7 +304,8 @@ Your library's self-checkout account's username is <b>{chk_usr}</b>. Your patron
 <br/><br/>
 Have fun!
 </p>
-    ''', status=200)
+</body></html>
+''', status=200)
 
 if __name__ == '__main__':
     # more than 1 worker and you get too many DB connections :((

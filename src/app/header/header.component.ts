@@ -13,12 +13,19 @@ import { Globals } from '../globals';
 })
 export class HeaderComponent implements OnInit {
   buttons: NavButton[];
+  headerStyle: any;
   
   constructor(
     public globals: Globals,
     public memberAuthService: MemberAuthService,
     private buttonService: ButtonService
-  ) {}
+  ) {
+    this.headerStyle = {
+      '--main-color': globals.locColor,
+      '--active-color': globals.locActiveColor,
+      '--depressed-color': globals.locDepressedColor
+    }
+  }
 
   ngOnInit() {
     this.getButtons();

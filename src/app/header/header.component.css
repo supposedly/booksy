@@ -3,7 +3,7 @@
 }
 nav {
   display: inline-block;
-  background-color: #f7f7f7;
+  background-color: var(--main-color, #f7f7f7);
   box-shadow: 0 -3px 10px black;
   border-radius: 2px;
   width: 100%;
@@ -13,9 +13,9 @@ nav {
   position: fixed;
 }
 a {
-  display:inline-block;
+  display: inline-block;
   padding: 20px 20px;
-  color: #888;
+  color: var(--depressed-color, #888);
   font-weight: bold;
   font-size: 20px;
   text-decoration: none;
@@ -29,12 +29,12 @@ a {
   transition: background-color .1s, color .1s;
 }
 a:active {
-  background-color: #888;
-  color: #f7f7f7;
+  background-color: var(--depressed-color, #888);
+  color: var(--main-color, #f7f7f7);
 }
 a.selected {
-  background-color: #bfc8cc;
-  color: #f7f7f7;
+  background-color: var(--active-color, #bfc8cc);
+  color: var(--main-color, #f7f7f7);
 }
 a.logout {
   float: right;

@@ -9,7 +9,7 @@
   <br/>
   <span *ngIf="mID!='new'">(image is not inputtable/editable)</span>
   <p>Type:
-      <select name="media-type" [(ngModel)]="item.type.name">
+      <select name="media-type" [(ngModel)]="item.type">
         <option *ngFor="let mtype of globals.locMediaTypes" [ngValue]="mtype">
           {{mtype.name}}
         </option>

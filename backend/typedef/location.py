@@ -1,5 +1,7 @@
+import aiofiles
 import functools
 import io
+import random
 import uuid
 from decimal import Decimal
 
@@ -90,7 +92,7 @@ class Location(AsyncInit):
         return query + end
     
     @staticmethod
-    async def prelim_signup(rqst, email, locname, color, checkoutpw, adminname, adminpw):
+    async def prelim_signup(rqst, email, locname, color, adminname):
         base_usrname = ''.join(i.lower() for i in locname.title() if i.isupper())
         checkout_usrname = base_usrname + '-checkout'
         admin_usrname = base_usrname + '-admin'
@@ -113,61 +115,63 @@ class Location(AsyncInit):
           admin_usrname):
             admin_usrname += str(random.getrandbits(3))
         
-        checkout_pwhash = await rqst.app.aexec(None, bcrypt.hashpw, checkoutpw.encode(), bcrypt.gensalt(12))
-        admin_pwhash = await rqst.app.aexec(None, bcrypt.hashpw, adminpw.encode(), bcrypt.gensalt(12))
         query = '''
         INSERT INTO signups (
           date, key, email,
           name, color,
-          username, pwhash,      -- for checkout acct
+          username, -- for checkout acct
           adminname,
-          adminuser, adminpwhash -- for admin acct (ofc)
+          adminuser -- for admin acct (ofc)
         )
         SELECT current_date, $1::text, $2::text,
                $3::text, $4::int,
-               $5::text, $6::bytea,
-               $7::text,
-               $8::text, $9::bytea
+               $5::text,
+               $6::text,
+               $7::text
         '''
         await rqst.app.pg_pool.execute(
           query,
           token, email,
           locname, color,
-          checkout_usrname, checkout_pwhash,
+          checkout_usrname,
           adminname,
-          admin_usrname, admin_pwhash
-        )
+          admin_usrname
+          )
         return token
     
     @classmethod
-    async def instate(cls, rqst, token):
+    async def instate(cls, rqst, token, checkoutpw, adminpw):
         """In this order:"""
         props = [
-          'name', 'ip', 'color',#'image',
-          'username', 'pwhash',              # these are for the checkout account
-          'adminuser', 'adminpwhash',        # these are for admin account
-          'adminname', 'email', 'adminphone' # these aren't used, especially adminphone
+          'name', 'ip', 'color',
+          'adminuser', 'adminpwhash',         # these are for admin account
+          'adminname', 'email', 'adminphone', # these aren't used, especially adminphone
+          'username', 'pwhash'                # these are for the checkout account
           ]
-        fetch = await rqst.app.pg_pool.fetchrow('''
-          SELECT email, name, color,
-                 username, pwhash,
-                 adminname,
-                 adminuser, adminpwhash
-            FROM signups
-           WHERE key = $1::text
-        ''', token)
-        fetch = dict(fetch)
+        fetch = dict(
+          await rqst.app.pg_pool.fetchrow('''
+            SELECT email, name, color,
+                   username, pwhash,
+                   adminname,
+                   adminuser, adminpwhash
+              FROM signups
+             WHERE key = $1::text
+            ''', token))
+        fetch['ip'] = rqst.ip
+        fetch['pwhash'] = await rqst.app.aexec(None, bcrypt.hashpw, checkoutpw.encode(), bcrypt.gensalt(12))
+        fetch['adminpwhash'] = await rqst.app.aexec(None, bcrypt.hashpw, adminpw.encode(), bcrypt.gensalt(12))
+        
         args = [fetch.get(attr, rqst.ip if attr=='ip' else None) for attr in props]
-        with open('./backend/sql/register_location.sql') as register_location:
-            async with rqst.app.pg_pool.acquire() as conn: # going to be hogging a connection for the whole loop...
-                for query in register_location.read().split(';')[:-1]:
+        async with rqst.app.pg_pool.acquire() as conn:
+            async with conn.transaction(), aiofiles.open('./backend/sql/register_location.sql') as f:
+                # Transaction because we want to roll everything back if something goes wrong
+                for query in (await f.read()).split(';')[:-1]:
                     stmt = await conn.prepare(query)
                     numparams = len(stmt.get_parameters())
-                    # await rqst.app.pg_pool.execute(query, *args[:len(stmt.get_parameters())])
                     lid = await stmt.fetchval(*args[:numparams]) # returns lID at end because run with fetchval
                     args = args[numparams:]
         return fetch['name'], lid, fetch['username'], fetch['adminuser']
-      # return cls(lid, rqst.app)
+        # return cls(lid, rqst.app)
     
     @classmethod
     async def from_ip(cls, rqst):
@@ -179,7 +183,7 @@ class Location(AsyncInit):
         print('REQUEST IP ADDRESSES:', rqst.ip, rqst.remote_addr)
         result = await rqst.app.pg_pool.fetchval(query, rqst.ip)
         if result:
-            return cls(result, rqst.app)
+            return await cls(result, rqst.app)
         return None
     
     async def members_from_csv(self, file, rid):

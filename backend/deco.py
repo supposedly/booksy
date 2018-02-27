@@ -5,11 +5,12 @@ import sanic
 from .typedef import Location, Role, MediaType, MediaItem, User
 
 async def user_from_rqst(rqst):
-    if rqst.app.config.TESTING: # Means I'm testing (don't have redis on home PC)
-        uid = rqst.app.RTD[rqst.app.auth._get_refresh_token(rqst)]
-    else:
+    rtoken = rqst.app.auth._get_refresh_token(rqst)
+    try:
+        uid = rqst.app.rtoken_cache[rtoken]
+    except KeyError:
         async with rqst.app.rd_pool.get() as conn:
-            uid = await conn.execute('get', rqst.app.auth._get_refresh_token(rqst))
+            app.rtoken_cache[rtoken] = uid = await conn.execute('get', rtoken)
     return await User(uid, rqst.app)
 
 
@@ -36,7 +37,7 @@ def uid_get(*attrs, user=False):
     return decorator
 
 
-def rqst_get(*attrs, user=False):
+def rqst_get(*attrs, user=False, form=False):
     if 'user' in attrs:
         attrs = tuple(i for i in attrs if i != 'user')
         user = True
@@ -49,7 +50,7 @@ def rqst_get(*attrs, user=False):
             an object name, converts it; else just returns data
             """
             maps = {'item': (MediaItem, 'mid'), 'location': (Location, 'lid'), 'role': (Role, 'rid')}
-            container = rqst.raw_args if rqst.method == 'GET' else rqst.json
+            container = rqst.raw_args if rqst.method == 'GET' else rqst.form if form else rqst.json
             try:
                 vals = {i: await maps[i][0](container[maps[i][1]], rqst.app) if i in maps else None if i == 'null' else container[i] for i in attrs}
             except KeyError:

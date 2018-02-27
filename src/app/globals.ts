@@ -47,7 +47,9 @@ export class Globals {
   locRoles;
   
   // header color, customizable per location
-  locColor: number = 0xf7f7f7;
+  locColor: string = '#f7f7f7';
+  locActiveColor: string = '#888';
+  locDepressedColor: string = '#bfc8cc';
   
   // help article info (not the text content though, just title and ID)
   helpArticles;
