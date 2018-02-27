@@ -47,7 +47,7 @@ export class MediaEditComponent implements OnInit {
       author: null,
       published: null,
       image: null,
-      type: {name: null},
+      type: '',
       genre: null,
       isbn: null,
       price: null,
@@ -74,10 +74,10 @@ export class MediaEditComponent implements OnInit {
             this.item.image = resp.image;
             this.mID = resp.mid;
             this.item.mid = resp.mid;
-            this.msg = 'Successfully created.'
+            this.msg = 'Successfully created.';
           },
           err => {
-            this.msg = err.error?err.error:'Error.'
+            this.msg = err.error?err.error:'Error.';
           }
         );
     } else {

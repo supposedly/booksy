@@ -3,6 +3,7 @@ import asyncio
 
 import asyncpg
 
+# update fines and purge old signups
 query = '''
 UPDATE items
    SET fines =
@@ -13,6 +14,8 @@ UPDATE items
          END
   FROM locations
  WHERE items.lid = locations.lid;
+ 
+DELETE FROM signups WHERE current_date - date >= 1;
 '''
 
 # I COULD do this synchronously and with less boilerplate using
@@ -20,8 +23,10 @@ UPDATE items
 
 async def update_fines():
     conn = await asyncpg.connect(os.getenv('DATABASE_URL'))
-    await conn.execute(query)
-    await conn.close()
+    try:
+        await conn.execute(query)
+    finally:
+        await conn.close()
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(update_fines())

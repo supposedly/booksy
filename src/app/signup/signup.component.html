@@ -11,9 +11,4 @@
 <h3>Your email:</h3>
 <p>A verification email will be sent to this address shortly.</p>
 <input type="text" [(ngModel)]="email"/>
-<h3>Your library's self-checkout account password:</h3>
-<p>This will be the password of the account that all your library's patrons can check out books from.</p>
-<input type="password" [(ngModel)]="checkoutpw"/>
-<h3>Your admin account password:</h3>
-<input type="password" [(ngModel)]="adminpw"/>
 <button *ngIf="checkAll()" (click)="submit()">Submit</button>

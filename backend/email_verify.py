@@ -21,7 +21,7 @@ async def send_email(recipient, fullname, locname, token, *, loop):
     msg['To'] = recipient
     msg['Subject'] = 'Verify your library registration'
     
-    client = aiosmtplib.SMTP(hostname='smtp.gmail.com', port=587, loop=loop, use_tls=False)
+    client = aiosmtplib.SMTP(hostname='smtp.gmail.com', port=587, use_tls=False, loop=loop)
     
     try:
         await client.connect()  # Connect to gsmtp

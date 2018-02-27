@@ -25,8 +25,16 @@ export class SetupService {
         this.globals.attrs = resp.names;
         this.globals.locMediaTypes = resp.types;
         this.globals.locGenres = resp.genres;
-        this.globals.locColor = resp.locColor || 0xf7f7f7;
+        // set up header colors
+        var rawColor = resp.locColor || 0xf7f7f7;
+        this.globals.locColor = this.toRGB(rawColor);
+        this.globals.locActiveColor = this.toRGB(rawColor-0x382f2b);
+        this.globals.locDepressedColor = this.toRGB(rawColor-0x6f6f6f);
       });
+  }
+  
+  toRGB(num): string {
+    return "#" + (num>>>0).toString(16).slice(-6);
   }
   
   getPerms(uID) {

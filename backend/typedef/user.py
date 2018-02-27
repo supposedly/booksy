@@ -272,6 +272,8 @@ class User(AsyncInit):
     
     @property
     def perms(self):
+        if self.is_checkout: # Checkout accounts have no perms
+            return Perms(0)
         if self._permnum is None:
             return self.role.perms
         return Perms(self._permnum)

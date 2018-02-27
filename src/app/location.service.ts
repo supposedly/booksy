@@ -39,14 +39,12 @@ export class LocationService {
     private http: HttpClient
   ) {}
   
-  register(email, locname, color, adminname, adminpw, checkoutpw) {
+  register(email, locname, color, adminname) {
     return this.http.post<any>(this.locSignupURL, {
       email: email,
       locname: locname,
       color: color,
-      adminname: adminname,
-      adminpw: adminpw,
-      checkoutpw: checkoutpw
+      adminname: adminname
     });
   }
   

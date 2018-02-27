@@ -25,11 +25,11 @@ async def give_location_repr(rqst, location):
     return sanic.response.json({'loc': location.to_dict()}, status=200)
     
 @root.post('/signup')
-@rqst_get('locname', 'color', 'checkoutpw', 'adminname', 'adminpw', 'email')
-async def register_location(rqst, *, locname, color, checkoutpw, adminname, adminpw, email):
+@rqst_get('locname', 'color', 'adminname', 'email')
+async def register_location(rqst, *, locname, color,  adminname, email):
     color = int(color.lstrip('#'), 16)
     try:
-        token = await Location.prelim_signup(rqst, email, locname, color, checkoutpw, adminname, adminpw)
+        token = await Location.prelim_signup(rqst, email, locname, color, adminname)
     except UniqueViolationError:
         sanic.exceptions.abort(409, "There's already a library being signed up with this email!")
     try:
@@ -61,7 +61,7 @@ async def is_location_registered(rqst):
         return sanic.response.json({'registered': False, 'reason': 'No IP address supplied with request'})
     location = await Location.from_ip(rqst)
     if location is not None:
-        return sanic.response.json({'registered': True, 'lid': location.id}, status=200)
+        return sanic.response.json({'registered': True, 'lid': location.lid}, status=200)
     else:
         return sanic.response.json({'registered': False, 'reason': 'Not found in DB'})
 
