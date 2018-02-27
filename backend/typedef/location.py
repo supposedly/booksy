@@ -14,8 +14,8 @@ try:
     import bcrypt
 except ModuleNotFoundError: # means I'm testing (can't access app.config.TESTING from here) (don't have libffi/bcrypt on home PC)
     import types
-    def __hashpw(pw, *_, **__):
-        return pw.encode()
+    def __hashpw(pw: bytes, *_, **__):
+        return pw
     def __gensalt(*_, **__):
         return 0
     bcrypt = types.SimpleNamespace(
@@ -113,8 +113,8 @@ class Location(AsyncInit):
           admin_usrname):
             admin_usrname += str(random.getrandbits(3))
         
-        checkout_pwhash = await rqst.app.aexec(None, bcrypt.hashpw, checkoutpw, bcrypt.gensalt(12))
-        admin_pwhash = await rqst.app.aexec(None, bcrypt.hashpw, adminpw, bcrypt.gensalt(12))
+        checkout_pwhash = await rqst.app.aexec(None, bcrypt.hashpw, checkoutpw.encode(), bcrypt.gensalt(12))
+        admin_pwhash = await rqst.app.aexec(None, bcrypt.hashpw, adminpw.encode(), bcrypt.gensalt(12))
         query = '''
         INSERT INTO signups (
           date, key, email,
@@ -195,7 +195,7 @@ class Location(AsyncInit):
             """
             Fix+reorder all necessary attributes to match DB in the user CSV dataframe.
             """
-            # to ensure the generated salt is random, redo it for every row
+            # to ensure the generated salt is random, redo it for every row (DOESN'T DO WHAT I THOUGHT IT DID LOL)
             df.password = df.password.apply(functools.partial(bcrypt.hashpw, salt=lambda: bcrypt.gensalt(12)))
             # assign the given role ID to all members
             df['rid'] = int(rid)
@@ -319,10 +319,6 @@ class Location(AsyncInit):
                       conn.fetch(query)
                     )
                     res[column[0]].append({'ident': item.get(key, None), 'res': await search})
-            if items:
-                # unused
-                # I'm not even sure what I was trying to do, in retrospect. Why is this a set?
-                res['items'] = {await conn.fetchval('''SELECT count(*) FROM items WHERE lid = $1::bigint''', self.lid)}
         return res
     
     async def get_user(self, username: str):
@@ -340,7 +336,7 @@ class Location(AsyncInit):
                     roles[role['name']] = (role['rid'], await conn.fetch(query, self.lid, role['rid']))
                 return [{'name': role, 'rid': rid, 'data': [{j: i[j] for j in ('uid', 'username', 'fullname')} for i in user]} for role, (rid, user) in roles.items()]
             query = '''SELECT uid, username, fullname FROM members WHERE lid = $1::bigint AND type = 0''' \
-                    + ("""LIMIT {} OFFSET {}""".format(max_results, cont) if limit else '')
+                    + ('''LIMIT {} OFFSET {}'''.format(max_results, cont) if limit else '')
             return [{j: i[j] for j in ('uid', 'username', 'fullname')} for i in await conn.fetch(query, self.lid)]
     
     async def add_member(self, username, pwhash: "hash this beforehand", rid, fullname):
@@ -450,7 +446,7 @@ class Location(AsyncInit):
         await self.pool.execute(query, self.lid, locname, color, fine_amt, fine_interval)
         checkout_pwhash = checkoutpw
         if checkoutpw is not None:
-            checkout_pwhash = await self._app.aexec(None, bcrypt.hashpw, checkoutpw, bcrypt.gensalt(12))
+            checkout_pwhash = await self._app.aexec(None, bcrypt.hashpw, checkoutpw.encode(), bcrypt.gensalt(12))
         query = '''
         SELECT pwhash FROM members
          WHERE lid = $1::bigint
