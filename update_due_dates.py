@@ -4,6 +4,7 @@ import asyncio
 import asyncpg
 
 # update fines and purge old signups
+
 query = '''
 UPDATE items
    SET fines =
@@ -18,8 +19,8 @@ UPDATE items
 DELETE FROM signups WHERE current_date - date >= 1;
 '''
 
-# I COULD do this synchronously and with less boilerplate using
-# regular ol' psycopg2, but asyncpg is faster by a lot so eh
+# I COULD do this synchronously and with a bit less boilerplate using
+# regular ol' psycopg2, but ... eh
 
 async def update_fines():
     conn = await asyncpg.connect(os.getenv('DATABASE_URL'))

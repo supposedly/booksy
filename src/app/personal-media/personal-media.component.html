@@ -3,8 +3,8 @@
 <ul>
   <li *ngFor="let item of items" class="item-box">
     <div class="text"> <!-- div in a list ahah yikes -->
-      <span class="title link" routerLink="../../media/{{item.mid}}">{{item.title}}</span>
-      <span class="link" *ngIf="globals.perms.names.canManageMedia" routerLink="../../media/edit/{{item.mid}}"> (edit)</span>
+      <span class="title link" routerLink="/home/media/{{item.mid}}">{{item.title}}</span>
+      <span class="link" *ngIf="globals.perms.names.canManageMedia" routerLink="/home/media/edit/{{item.mid}}"> (edit)</span>
       <br/>
       <span class="author">{{item.author | titlecase}}</span>
       <br/>

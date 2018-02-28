@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { RoleService } from '../role.service';
 
@@ -14,9 +15,12 @@ import { Globals } from '../globals';
 export class MgmtRolesPermsComponent implements OnInit {
   roles: any = null;
   msg: string;
+  deleteDown: boolean = false;
+  wait = setTimeout;
   
   constructor(
     public globals: Globals,
+    public router: Router,
     public roleService: RoleService
   ) {}
 
@@ -32,5 +36,14 @@ export class MgmtRolesPermsComponent implements OnInit {
     this.roleService.delete(rID)
       .subscribe(_ => this.roles.splice(index, 1));
   }
-
+  
+  disableDeleteDown() {
+    // Necessary (albeit roundabout?) because otherwise clicking the
+    // delete button will also register a click on the role box below it
+    // and send you to the page of a role that was just deleted.
+    // Interestingly, this didn't start happening until the day before
+    // my due date.
+    setTimeout(() => this.deleteDown = false, .01);
+  }
+  
 }

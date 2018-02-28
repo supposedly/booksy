@@ -1,10 +1,12 @@
 <button routerLink="../../roles/new">Create role</button>
 <p *ngIf="msg">{{msg}}</p>
 <ul>
-  <li *ngFor="let role of roles; let i = index" routerLink="../../roles/{{role.rid}}">
+  <li *ngFor="let role of roles; let i = index" (click)="!deleteDown && router.navigate(['home/roles/' + role.rid])">
     {{role.name}}
     <span
       *ngIf="!(role.count || role.isdefault)"
+      (mousedown)="deleteDown=true"
+      (mouseup)="disableDeleteDown()"
       (click)="deleteRole(role.rid, i)"
     >Ⓧ</span>
   </li>
