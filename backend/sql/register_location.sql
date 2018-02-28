@@ -1,8 +1,6 @@
-INSERT INTO locations (
-              name, ip, color --, image
-            )
+INSERT INTO locations (name, ip, color)
      SELECT $1::text, $2::text,
-            $3::int; --, NULL -- for image
+            $3::int;
 
 -- ROLES SETUP --
 
@@ -81,4 +79,4 @@ INSERT INTO members (
 
 -- END CHECKOUT ACCOUNT SETUP --
 
-SELECT currval(pg_get_serial_sequence('locations', 'lid'));
+SELECT currval(pg_get_serial_sequence('locations', 'lid'))

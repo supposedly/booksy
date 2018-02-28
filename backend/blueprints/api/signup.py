@@ -39,6 +39,5 @@ async def create_location(rqst):
 
 @signup.post('/member')
 async def member_signup(rqst):
-    # hmm
     sanic.exceptions.abort(410, "Not implemented.")
     return NotImplemented

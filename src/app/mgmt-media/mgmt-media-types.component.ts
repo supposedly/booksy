@@ -107,8 +107,14 @@ export class MediaTypeDetailComponent implements OnInit {
     
     if (this.initialName == 'new') {
       this.mTypeService.add(maxArr, this.name, this.unit)
-        .subscribe(_ => {this.initialName = this.name; this.msg = "Successfully created."}, err => this.msg = err.error?err.error:"Not allowed!")
-      this.globals.locMediaTypes.push({name: this.name, maxes: maxArr}); // add to global list of media types as well
+        .subscribe(
+          _ => {
+            this.initialName = this.name;
+            this.globals.locMediaTypes.push({name: this.name, maxes: maxArr});
+            this.msg = "Successfully created."
+          },
+          err => this.msg = err.error?err.error:"Not allowed!"
+        );
     } else {
       this.mTypeService.edit(this.initialName, maxArr, this.name, this.unit)
         .subscribe(

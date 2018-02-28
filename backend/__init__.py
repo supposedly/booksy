@@ -1,1 +1,1 @@
-from . import email_verify, attributes, core, deco, setup
+from . import email_verify, attributes, core, deco

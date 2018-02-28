@@ -17,7 +17,7 @@ async def expose_header_buttons(rqst):
     Serves header buttons (via the angular webapp's HeadButtonService)
     to display at the top of every page.
     
-    Requires nothing from client, being static.
+    Requires nothing from client, as it's static.
     """
     buttons = [{"text": 'home'}, {"text": 'help'}, {"text": 'about'}]
     # dest on home should not be necessary, but for some reason Angular

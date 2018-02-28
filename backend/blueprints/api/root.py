@@ -32,7 +32,7 @@ async def serve_attrs(rqst, perms, location):
         ],
       'maxes': [
         'Maximum checkout duration allowed (in weeks)',
-        'Number of renewals allowed at a time',
+        'Number of renewals allowed per checkout',
         'Number of holds allowed at a time',
         ],
       'locks': [

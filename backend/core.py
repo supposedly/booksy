@@ -52,7 +52,7 @@ class PackedField(metaclass=abc.ABCMeta):
     @classmethod
     @abstractmethod
     def from_seq(cls):
-        """Allows field to be constructed from a numerical iterable."""
+        """Allows field to be constructed from a numeric iterable."""
         raise NotImplementedError
     
     @classmethod
@@ -60,15 +60,15 @@ class PackedField(metaclass=abc.ABCMeta):
     def from_kwargs(cls):
         """
         Allows field to be constructed by defining specific attrs.
-        These attrs will be determined by the field's inheritors,
-        via the _name property, not by the field class itself.
+        These attrs will be defined by the field's inheritors,
+        via the _names property, not by the field class itself.
         """
         raise NotImplementedError
     
     @property
     @abstractmethod
     def props(self):
-        """Returns dict containing all slotted properties."""
+        """Returns a dict containing all slotted properties."""
         raise NotImplementedError
     
     @abstractmethod
@@ -76,11 +76,6 @@ class PackedField(metaclass=abc.ABCMeta):
         """Edits a certain attr or certain attrs of self via kwargs."""
         raise NotImplementedError
     
-    @abstractmethod
-    def edit_from_seq(self):
-        """Edits attrs too, but takes a sequence rather than kwargs."""
-        raise NotImplementedError
-
 
 class PackedByteFieldMixin(PackedField):
     """
@@ -111,11 +106,15 @@ class PackedByteFieldMixin(PackedField):
         self.bin = format(self.raw, f'0{maxlen}b')
         self.seq = tuple(map(int, tuple(self.bin)))
         self.namemap = {name: bool(value) for name, value in zip(self._names, self.seq)}
-        # Allow, for example, obj.can_manage_location instead of obj.namemap['manage_location']
+        # Allow, for example, obj.can_manage_location instead of obj.props['manage_location']
         for k, v in self.namemap.items():
             setattr(self, f'can_{k}', v)
     
     def __repr__(self):
+        """
+        The genexp at the beginning is to generate a string resembling:
+        <Perms-type PackedByteFieldMixin-type PackedField ... >
+        """
         return f'<{"-type ".join(i.__name__ for i in type(self).__mro__[:-1])} raw={self.raw!r} bin={self.bin!r} seq={self.seq!r}>'
     
     @classmethod
@@ -219,6 +218,10 @@ class PackedBigIntMixin(PackedField):
             setattr(self, k, v)
     
     def __repr__(self):
+        """
+        The genexp at the beginning is to generate a string resembling:
+        <Maxes-type PackedBigIntMixin-type PackedField ... >
+        """
         return f'<{"-type ".join(i.__name__ for i in type(self).__mro__[:-1])} raw={self.raw!r} seq={self.seq!r} namemap={self.namemap!r}>'
     
     @classmethod
@@ -262,6 +265,4 @@ class PackedBigIntMixin(PackedField):
         self.namemap = {name: kwargs.get(name, self.namemap[name]) for name in filter(bool, self._names)}
         [self.raw] = struct.unpack('q', struct.pack('8B', *(self.namemap.get(i, self.seq[k]) for k, i in enumerate(self._names))))
         self.seq = struct.unpack('8B', struct.pack('<q', int(self.raw)))
-    
-    def edit_from_seq(self, new):
-        raise NotImplementedError
+
