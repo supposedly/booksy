@@ -7,7 +7,6 @@
     </div>
     <input #lid
       name="lid"
-      [hidden]="isLocationRegistered"
       [(ngModel)]="lID"
       [ngModelOptions]="{updateOn: 'submit'}"
       [class.invalid]="lid.value && !numRe.test(lid.value)"
@@ -31,7 +30,7 @@
       placeholder="Password"
       />
     <button
-      [disabled]="!(pw.value && uid.value && (isLocationRegistered?lid.value:true))"
+      [disabled]="(pw.value && uid.value && lid.value)?null:'y'"
       type="submit"
       [class.loading]="loading"
       class="button"

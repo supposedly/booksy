@@ -11,8 +11,8 @@ export class MaxesComponent implements OnChanges {
   arr: any;
   
   @Input('arr') inputArr: any; // the array to modify
-  @Input('just-view') editable: boolean = true; // if user doesn't have permissions to modify the values, just show them
-  @Input('auxiliary') forMain: boolean = true; // if this is outside the main roles/perms detail screen
+  @Input('just-view') editable: boolean = true; // just show these values instead of making them editable
+  @Input('auxiliary') forMain: boolean = true; // whether it is outside the main roles/perms detail screen
   
   constructor(public globals: Globals) {}
   
@@ -28,7 +28,7 @@ export class MaxesComponent implements OnChanges {
     names: {
       checkout_duration: null,
       renewals: null,
-      holds: null
+      holds: this.forMain?null:254 // no sense in overriding holds max because items can't place holds. 254 == don't override
     }
   }
   

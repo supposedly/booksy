@@ -10,7 +10,7 @@ async def user_from_rqst(rqst):
         uid = rqst.app.rtoken_cache[rtoken]
     except KeyError:
         async with rqst.app.rd_pool.get() as conn:
-            app.rtoken_cache[rtoken] = uid = await conn.execute('get', rtoken)
+            rqst.app.rtoken_cache[rtoken] = uid = await conn.execute('get', rtoken)
     return await User(uid, rqst.app)
 
 
