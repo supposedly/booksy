@@ -58,3 +58,7 @@ button.loading {
   opacity: 0.5;
   cursor: progress;
 }
+button:disabled {
+  cursor: default;
+  opacity: 0.3;
+}
