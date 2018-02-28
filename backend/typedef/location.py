@@ -3,12 +3,20 @@ import functools
 import io
 import random
 import uuid
+import string
 from decimal import Decimal
 
 import pandas
 
 from ..core import AsyncInit
 from ..attributes import Perms, Maxes, Locks
+
+
+# first two args map to each other; str.maketrans('ab', 'xy') turns a->x and b->y
+# third arg is chars to map to nothing (i.e. to delete)
+# so i'm just deleting (almost) all punctuation
+GBQUERY = str.maketrans('', '', """!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~""")
+NO_PUNC = str.maketrans('', '', string.punctuation)
 
 
 #################################################
@@ -25,6 +33,7 @@ except ModuleNotFoundError: # means I'm testing (can't access app.config.TESTING
       gensalt = __gensalt
     )
 #################################################
+
 
 
 class Location(AsyncInit):
@@ -72,13 +81,9 @@ class Location(AsyncInit):
         """
         Generates a query to find a book's image using the Google Books API
         """
-        # first two args map to each other; str.maketrans('ab', 'xy') turns a->x and b->y
-        # third arg is chars to map to nothing (i.e. to delete)
-        # so i'm just deleting (almost) all punctuation
-        no_punc = str.maketrans('', '', """!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~""")
-        author = author.translate(no_punc)
-        title = title.translate(no_punc)
-        isbn = isbn.translate(no_punc)
+        author = author.translate(GBQUERY)
+        title = title.translate(GBQUERY)
+        isbn = isbn.translate(GBQUERY)
         
         query = 'https://www.googleapis.com/books/v1/volumes?q='
         end = '&maxResults=1'
@@ -93,27 +98,12 @@ class Location(AsyncInit):
     
     @staticmethod
     async def prelim_signup(rqst, email, locname, color, adminname):
-        base_usrname = ''.join(i.lower() for i in locname.title() if i.isupper())
-        checkout_usrname = base_usrname + '-checkout'
-        admin_usrname = base_usrname + '-admin'
+        # Some Guy's Name High School
+        # ->
+        # sgnhs
+        base = ''.join(i for i, *_ in locname.split(None, 4)).lower()
+        chk_usr, admin_usr = f'{base}-checkout', f'{base}-admin'
         token = uuid.uuid4().hex
-        
-        while await rqst.app.pg_pool.fetchval('''
-          SELECT count(*)
-            FROM members
-           WHERE type = 1
-             AND username = $1::text
-          ''',
-          checkout_usrname):
-            checkout_usrname += str(random.getrandbits(3))
-        while await rqst.app.pg_pool.fetchval('''
-          SELECT count(*)
-            FROM members
-           WHERE manages = true
-            AND username = $1::text
-          ''',
-          admin_usrname):
-            admin_usrname += str(random.getrandbits(3))
         
         query = '''
         INSERT INTO signups (
@@ -133,15 +123,16 @@ class Location(AsyncInit):
           query,
           token, email,
           locname, color,
-          checkout_usrname,
+          chk_usr,
           adminname,
-          admin_usrname
+          admin_usr
           )
         return token
     
     @classmethod
     async def instate(cls, rqst, token, checkoutpw, adminpw):
-        """In this order:"""
+        """Takes a location from "signup-table purgatory" to the main DB"""
+        # args in this order:
         props = [
           'name', 'ip', 'color',
           'adminuser', 'adminpwhash',         # these are for admin account
@@ -165,10 +156,20 @@ class Location(AsyncInit):
         async with rqst.app.pg_pool.acquire() as conn:
             async with conn.transaction(), aiofiles.open('./backend/sql/register_location.sql') as f:
                 # Transaction because we want to roll everything back if something goes wrong
-                for query in (await f.read()).split(';')[:-1]:
+                for query in (await f.read()).split(';'):
                     stmt = await conn.prepare(query)
+                    # This'd be the same sort of weirdness as what's
+                    # in location.search(), although slightly saner.
+                    #
+                    # asyncpg again complains w/error if passed more
+                    # parameters than a given query's requesting, so
+                    # we get the exact amount of params it wants rn:
                     numparams = len(stmt.get_parameters())
+                    # Then execute it with that many parameters from
+                    # the beginning of the arguments list:
                     lid = await stmt.fetchval(*args[:numparams]) # returns lID at end because run with fetchval
+                    # ...and, finally, strip the params we just used
+                    # from it.
                     args = args[numparams:]
         return fetch['name'], lid, fetch['username'], fetch['adminuser']
         # return cls(lid, rqst.app)
@@ -231,98 +232,88 @@ class Location(AsyncInit):
     
     async def report(self, **do):
         """
-        Total current checkouts / per role, total current overdues / per role,
-        total current overdue fines / per role,
-        current holds / per role, current available vs. unavailable holds,
-        qty of each media type checked out, qty of each media type in library...
+        `do` will be in the format:
         
-        Args: checkouts, overdues, fines, holds, hold_ratio, types_out, type_totals
-        - each can be assigned either a bool or the string value 'per_role'
+        {'checkouts': 'per_user', 'overdues': False, 'fines': False, 'holds': False, 'items': False}
+        
+        or something similar, with only one of the values being non-False.
         """
-        checkouts = do.pop('checkouts', False)
-        overdues = do.pop('overdues', False)
-        fines = do.pop('fines', False)
-        holds = do.pop('holds', False)
-        items = do.pop('type_totals', False)
-        
-        all_roles = await self.roles()
-        all_users = await self.members(by_role=False)
-        res = {}
-        
-        if checkouts:
-            to_search = all_roles if checkouts == 'per_role' else all_users if checkouts == 'per_user' else [{}]
-            column = 'checkouts', checkouts
-            key = 'name' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
-            param = 'rid' if checkouts == 'per_role' else 'username' if checkouts == 'per_user' else None
+        def query_setup(name: str, var: object):
+            num = (var == 'per_user') or 2*(var == 'per_role')
+            
+            to_search = search_opts[num]
+            # all_roles if var == 'per_role' else all_users if var == 'per_user' else [{}]
+            key = (None, 'username', 'name')[num]
+            # 'name' if var == 'per_role' else 'username' if var == 'per_user' else None
+            param = (None, 'username', 'rid')[num]
+            # 'rid' if var == 'per_role' else 'username' if var == 'per_user' else None
+            return to_search, key, param
             query = '''
             SELECT DISTINCT ON (items.mid) items.title
               FROM members, items
              WHERE items.issued_to IS NOT NULL
             '''
-        if overdues:
-            to_search = all_roles if overdues == 'per_role' else all_users if overdues == 'per_user' else [{}]
-            column = 'overdues', overdues
-            key = 'name' if overdues == 'per_role' else 'username' if overdues == 'per_user' else None
-            param = 'rid' if overdues == 'per_role' else 'username' if overdues == 'per_user' else None
+        if do['checkouts']:
+            col = 'checkouts'
+            query = '''
+            SELECT DISTINCT ON (items.mid) items.title
+              FROM members, items
+             WHERE items.issued_to IS NOT NULL
+            '''
+        elif do['overdues']:
+            col = 'overdues'
             query = '''
             SELECT DISTINCT ON (items.mid) items.title
               FROM members, items
              WHERE items.issued_to IS NOT NULL
                AND items.due_date < current_date
             '''
-        
-        if fines:
-            to_search = all_roles if fines == 'per_role' else all_users if fines == 'per_user' else [{}]
-            column = 'fines', fines
-            key = 'name' if fines == 'per_role' else 'username' if fines == 'per_user' else None
-            param = 'rid' if fines == 'per_role' else 'username' if fines == 'per_user' else None
+        elif do['fines']:
+            col = 'fines'
             query = '''
-            SELECT sum(items.fines)
+            SELECT '$' || items.fines AS fines
               FROM members, items
              WHERE items.issued_to IS NOT NULL
+               AND items.fines > 0
+               AND members.uid = items.issued_to
             '''
-        
-        if holds:
-            to_search = all_roles if holds == 'per_role' else all_users if holds == 'per_user' else [{}]
-            column = 'holds', holds
-            key = 'name' if holds == 'per_role' else 'username' if holds == 'per_user' else None
-            param = 'rid' if holds == 'per_role' else 'username' if holds == 'per_user' else None
+        elif do['holds']:
+            col = 'holds'
             query = '''
-            SELECT DISTINCT ON (items.mid) items.title
-              FROM members, holds, items
-             WHERE (SELECT lid FROM members WHERE uid = holds.uid) = ${}::bigint
-            '''.format(1 if holds == 'all' else 2)
-        
+            SELECT items.title
+              FROM items, holds
+             WHERE holds.mid = items.mid
+            '''
+        res = {col: []}
+        umn = do[col]
+        query += ('''
+         AND (
+               SELECT username
+                 FROM members
+                WHERE uid = {}
+             ) = $1::text
+        ''' if umn == 'per_user' else '''
+         AND (
+               SELECT rid
+                 FROM members
+                WHERE uid = {}
+             ) = $1::bigint
+        ''' if umn == 'per_role' else '''
+         AND (
+               SELECT username
+                 FROM members
+                WHERE uid = {}
+             ) IS NOT NULL
+        ''').format('holds.uid' if col == 'holds' else 'items.issued_to')
+        search_opts = [{}], await self.members(by_role=False), await self.roles()
+        to_search, key, param = query_setup(col, umn)
         async with self.acquire() as conn:
-            if any((checkouts, overdues, fines, holds)):
-                res[column[0]] = []
-                query += ('''
-                 AND (
-                       SELECT username
-                         FROM members
-                        WHERE uid = items.issued_to
-                     ) = $1::text
-                ''' if column[1] == 'per_user' else '''
-                 AND (
-                       SELECT rid
-                         FROM members
-                        WHERE uid = items.issued_to
-                     ) = $1::bigint
-                ''' if column[1] == 'per_role' else '''
-                 AND (
-                       SELECT username
-                         FROM members
-                        WHERE uid = items.issued_to
-                     ) IS NOT NULL
-                ''')
-                for item in to_search:
-                    search = (
-                      conn.fetch(query, self.lid) if holds and holds == 'all' else
-                      conn.fetch(query, item.get(param, None), self.lid) if holds else
-                      conn.fetch(query, item.get(param, None)) if column[1] != 'all' else
-                      conn.fetch(query)
-                    )
-                    res[column[0]].append({'ident': item.get(key, None), 'res': await search})
+            for obj in to_search:
+                search = (
+                  conn.fetch(query) if umn == 'all' else
+                  conn.fetch(query, obj.get(param, None))
+                )
+                res[col].append({'ident': obj.get(key, 'All users'), 'res': await search})
         return res
     
     async def get_user(self, username: str):
@@ -343,10 +334,8 @@ class Location(AsyncInit):
                     + ('''LIMIT {} OFFSET {}'''.format(max_results, cont) if limit else '')
             return [{j: i[j] for j in ('uid', 'username', 'fullname')} for i in await conn.fetch(query, self.lid)]
     
-    async def add_member(self, username, pwhash: "hash this beforehand", rid, fullname):
-        # the following is for my own at-home testing (I can't download libffi, which
-        # bcrypt depends on); it will never EVER be triggered in a prod environment.
-        if isinstance(pwhash, str): pwhash = pwhash.encode('utf-8')
+    async def add_member(self, username, password, rid, fullname):
+        pwhash = await self._app.aexec(self._app.ppe, bcrypt.hashpw, password.encode('utf-8'), bcrypt.gensalt(12))
         query = '''
         INSERT INTO members (
                   username, pwhash,
@@ -477,7 +466,7 @@ class Location(AsyncInit):
         INSERT INTO mtypes (name, unit, maxes, lid)
         SELECT $1::text, $2::text, $3::bigint, $4::bigint
         '''
-        await self.pool.execute(query, unit.lower(), name.lower(), Maxes.from_kwargs(**maxes).raw, self.lid)
+        await self.pool.execute(query, name.lower(), unit.lower(), Maxes.from_kwargs(**maxes).raw, self.lid)
         return await MediaType(name, self, self._app)
     
     async def edit_media_type(self, mtype, *, maxes=None, name=None, unit=None):

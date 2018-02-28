@@ -1,5 +1,6 @@
 import sanic
 import sanic_jwt as jwt
+from asyncpg.exceptions import UniqueViolationError
 from sanic_jwt import decorators as jwtdec
 
 from . import uid_get, rqst_get
@@ -27,9 +28,10 @@ async def get_media_type_info(rqst, location, *, name):
 async def add_location_media_type(rqst, user, *, add: {'name': str, 'unit': str, 'maxes': dict}):
     if not user.perms.can_manage_media:
         sanic.exceptions.abort(401, "You aren't allowed to manage media types.")
-    if add.name.lower() in {i.name.lower() for i in await user.location.media_types()}:
+    try:
+        await user.location.add_media_type(**add)
+    except UniqueViolationError:
         sanic.exceptions.abort(409, 'This media type already exists!')
-    await user.location.add_media_type(**add)
     return sanic.response.raw(b'', status=204)
 
 @types.post('/remove')

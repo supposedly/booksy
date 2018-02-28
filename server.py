@@ -20,7 +20,7 @@ from Crypto.Util import Counter
 from sanic_jwt import decorators as jwtdec
 from sanic import Sanic
 
-from backend import setup, deco
+from backend import deco
 from backend.typedef import Location, Role, MediaItem, MediaType, User
 from backend.blueprints import bp
 
@@ -29,13 +29,18 @@ asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 # Create a Sanic application for this file
 app = Sanic('Booksy')
 # These are for checking API access later. (See function force_angular())
-app.safe_segments = ('/verify', '?', '.html', '.js', '.ts', '/auth', 'auth/', 'api/', 'stock/')
+app.safe_segments = ('?', '.html', '.css', '.js', '.ts', '/auth', 'auth/', 'api/', 'stock/', '/verify', '/register')
 # "Blueprints", i.e. separate files containing endpoint info to
 # avoid clogging up this main file.
 # They can be found in ./backend/blueprints
 app.blueprint(bp)
 app.config.TESTING = False # tells my backend to act like the real deal
+
 app.rtoken_cache = {} # To mitigate DB slowness
+# Note that I don't have to worry myself about LRUing the above cache
+# (to handle the users that just close their browser w/o logging out)
+# because Heroku does the thing where it restarts processes after 24h
+# -- so the 'cache' won't get a chance to accumulate in memory anyway
 
 async def authenticate(rqst, *args, **kwargs):
     """
@@ -58,10 +63,7 @@ async def authenticate(rqst, *args, **kwargs):
         pwhash = await conn.fetchval(query, lid, username)
     bvalid = await app.aexec(app.ppe, bcrypt.checkpw, password, pwhash)
     if not all((username, password, pwhash, bvalid)):
-            # (we shouldn't specify which of pw/username is invalid,
-            # lest some hypothetical attacker use the info to
-            # enumerate possible usernames/passwords)
-            return False # raises an error (which is good!)
+        return False
     return await User.from_identifiers(username=username, lid=lid, app=rqst.app)
 
 
@@ -144,8 +146,6 @@ async def set_up_dbs(app, loop):
     app.acquire = app.pg_pool.acquire
     
     [i.do_imports() for i in [Location, Role, MediaType, MediaItem, User]]
-    async with app.acquire() as conn:
-        await setup.create_pg_tables(conn)
     if os.getenv('REDIS_URL') is None: # Means I'm testing (don't have Redis on home PC)
         app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = False
     else:

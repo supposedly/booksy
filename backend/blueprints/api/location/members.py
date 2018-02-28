@@ -8,21 +8,6 @@ from sanic_jwt import decorators as jwtdec
 from . import uid_get, rqst_get
 from . import Location, Role, MediaType, MediaItem, User
 
-#################################################
-try:
-    import bcrypt
-except ModuleNotFoundError: # means I'm testing
-    import types
-    def __hashpw(pw, *_):
-        return pw
-    def __gensalt(*_):
-        return 0
-    bcrypt = types.SimpleNamespace(
-      hashpw = __hashpw,
-      gensalt = __gensalt
-    )
-#################################################
-
 mbrs = sanic.Blueprint('location_members_api', url_prefix='/members')
 
 @mbrs.get('/')
@@ -58,9 +43,8 @@ async def add_member_to_location(rqst, location, perms, *, member: 'to create'):
         sanic.exceptions.abort(422, 'Missing required attributes.')
     if not perms.can_manage_accounts:
         sanic.exceptions.abort(403, "You aren't allowed to add members.")
-    pwhash = await rqst.app.aexec(rqst.app.ppe, bcrypt.hashpw, password.encode('utf-8'), bcrypt.gensalt(12))
     try:
-        new = sanic.response.json(await location.add_member(username=username, pwhash=pwhash, rid=rid, fullname=fullname), status=200)
+        new = sanic.response.json(await location.add_member(username=username, password=password, rid=rid, fullname=fullname), status=200)
     except asyncpg.exceptions.UniqueViolationError:
         sanic.exceptions.abort(409, 'This username is already taken.')
     return new
@@ -88,11 +72,6 @@ async def add_members_from_csv(rqst, location, *, perms):
 async def remove_member_from_location(rqst, location, role, perms, *, member: 'to remove'):
     """
     Removal of a given member.
-    Undecided as to whether this should delete the table row entirely.
-    (Which would make sense, no? Since a member can't be assigned 'no'
-    location?)
-    
-    UPDATE: Decided on yes
     """
     if not perms.can_manage_accounts:
         sanic.exceptions.abort(401, "You aren't allowed to remove members.")
