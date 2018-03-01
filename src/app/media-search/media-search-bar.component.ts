@@ -92,7 +92,6 @@ export class MediaSearchBarComponent implements OnInit {
             type_: this.type_
           }
           this.items = resp;
-          console.log(resp);
           this._title = this.title;
           this._author = this.author;
           this._genre = this.genre;

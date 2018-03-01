@@ -12,6 +12,9 @@ types = sanic.Blueprint('location_media_types', url_prefix='/types')
 @uid_get('location')
 @jwtdec.protected()
 async def get_location_media_types(rqst, location):
+    """
+    Serves all media types (as serialized dicts) defined on a location.
+    """
     return sanic.response.json({'types': await location.media_types()}, status=200)
 
 @types.get('/info')
@@ -19,6 +22,9 @@ async def get_location_media_types(rqst, location):
 @rqst_get('name')
 @jwtdec.protected()
 async def get_media_type_info(rqst, location, *, name):
+    """
+    Serves attrs of a requested media type given its name.
+    """
     mtype = await MediaType(name, location, rqst.app)
     return sanic.response.json({'type': mtype.to_dict()}, status=200)
 
@@ -26,6 +32,9 @@ async def get_media_type_info(rqst, location, *, name):
 @rqst_get('user', 'add')
 @jwtdec.protected()
 async def add_location_media_type(rqst, user, *, add: {'name': str, 'unit': str, 'maxes': dict}):
+    """
+    Adds a new media type to the location, taking its name, unit of length, and max overrides.
+    """
     if not user.perms.can_manage_media:
         sanic.exceptions.abort(401, "You aren't allowed to manage media types.")
     try:
@@ -38,6 +47,9 @@ async def add_location_media_type(rqst, user, *, add: {'name': str, 'unit': str,
 @rqst_get('user', 'remove')
 @jwtdec.protected()
 async def remove_location_media_type(rqst, user, *, remove: str):
+    """
+    Gets rid of a media type, assigning 'none' to the items that had it.
+    """
     if not user.perms.can_manage_media:
         sanic.exceptions.abort(401, "You aren't allowed to manage media types.")
     await user.location.remove_media_type(remove)
@@ -47,5 +59,8 @@ async def remove_location_media_type(rqst, user, *, remove: str):
 @rqst_get('user', 'edit', 'maxes', 'name', 'unit') # name is the new name, edit is the old name (i.e. what to rename from)
 @jwtdec.protected()
 async def edit_location_media_type(rqst, user, *, edit: str, maxes, name: str, unit: str):
+    """
+    Edits all attrs of a media type.
+    """
     await user.location.edit_media_type(edit, maxes=maxes, name=name, unit=unit)
     return sanic.response.raw(b'', status=204)

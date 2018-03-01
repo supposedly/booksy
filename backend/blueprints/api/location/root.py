@@ -16,17 +16,20 @@ root = sanic.Blueprint('location_api', url_prefix='')
 @root.get('/')
 @uid_get('location')
 async def give_location_repr(rqst, location):
-    '''
-    this.color = resp.loc.color;
-        this.locname = resp.loc.name;
-        this.fine_amt = String(resp.loc.fine_amt);
-        this.fine_interval = String(resp.loc.fine_interval);
-    '''
+    """
+    Serves all of a location's important attributes.
+    """
     return sanic.response.json({'loc': location.to_dict()}, status=200)
     
 @root.post('/signup')
 @rqst_get('locname', 'color', 'adminname', 'email')
 async def register_location(rqst, *, locname, color,  adminname, email):
+    """
+    Handles the pre-preliminary information-gathering for the registration
+    of a new library. Once this endpoint is activated, this information is
+    stored in the "purgatory" of the signups table until the emailed
+    verification link is clicked.
+    """
     color = int(color.lstrip('#'), 16)
     try:
         token = await Location.prelim_signup(rqst, email, locname, color, adminname)
@@ -42,6 +45,9 @@ async def register_location(rqst, *, locname, color,  adminname, email):
 @uid_get('location', 'perms')
 @rqst_get('locname', 'color', 'checkoutpw', 'fine_amt', 'fine_interval')
 async def edit_location(rqst, location, perms, *, locname, color, checkoutpw, fine_amt, fine_interval):
+    """
+    Handles all editing of a location's info.
+    """
     color = int(color.lstrip('#'), 16)
     if not perms.can_manage_location:
         sanic.exceptions.abort(403, "You aren't allowed to edit library info.")
@@ -51,12 +57,21 @@ async def edit_location(rqst, location, perms, *, locname, color, checkoutpw, fi
 @root.get('/<attr:(name|image|color)>')
 @uid_get('location')
 async def return_location_attr(rqst, user, *, attr):
+    # unused
     return sanic.response.json({attr: getattr(location, attr)}, status=200)
 
 @root.get('/is-registered')
 async def is_location_registered(rqst):
+    """
+    This is for when I was thinking of allowing users signing in from
+    their location to do so without entering their location ID.
+    
+    I ended up not going for it, though it *would* have been cool.
+    """
     # .ip doesn't go past proxies, unlike rqst.remote_addr -- this is
     # good bc it allows orgs that route all traffic through a central IP
+    return sanic.response.json({'registered': False, 'reason': 'Not Implemented'})
+    '''
     if not rqst.ip:
         return sanic.response.json({'registered': False, 'reason': 'No IP address supplied with request'})
     location = await Location.from_ip(rqst)
@@ -64,12 +79,21 @@ async def is_location_registered(rqst):
         return sanic.response.json({'registered': True, 'lid': location.lid}, status=200)
     else:
         return sanic.response.json({'registered': False, 'reason': 'Not found in DB'})
+    '''
 
 @root.put('/reports')
 @rqst_get('get')
 @uid_get('location', 'perms')
 @jwtdec.protected()
-async def serve_a_report(rqst, location, perms, *, get: 'type of report to get'):
+async def get_report(rqst, location, perms, *, get: 'type of report to get'):
+    """
+    Serves a generated report on whatever activity is going on in the library.
+    
+    Due to the multi-library nature of the app, I cannot satisfy the "weekly"
+    requirement, so I'll take the five points' hit there -- if a user wishes
+    to obtain weekly reports, they can probably handle clicking the 'generate
+    report' button every week
+    """
     if not perms.can_generate_reports:
         sanic.exceptions.abort(403, "You aren't allowed to generate reports.")
     return sanic.response.json(await location.report(**get))
@@ -78,4 +102,9 @@ async def serve_a_report(rqst, location, perms, *, get: 'type of report to get')
 @uid_get('location', 'perms', user=True)
 @jwtdec.protected()
 async def back_up_info(rqst):
+    """
+    'Data storage includes dynamic backup' -- again, multi-location app
+    where info is stored remotely so I don't imagine it'd be as useful
+    as in a local app to allow backing up of information
+    """
     return NotImplemented

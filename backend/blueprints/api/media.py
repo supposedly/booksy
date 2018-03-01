@@ -12,6 +12,12 @@ media = sanic.Blueprint('media_api', url_prefix='/media')
 @rqst_get('user', 'item')
 @jwtdec.protected()
 async def put_item_on_hold(rqst, user, *, item):
+    """
+    Places an item on hold, assigning it to 
+    
+    Unfortunately does not operate on whole items (i.e. all items with
+    the same genre+mediatype+title+author), just a specific media ID.
+    """
     if user.cannot_check_out:
         sanic.exceptions.abort(403, "You aren't allowed to place holds.")
     if user.holds > user.maxes.holds:
@@ -19,7 +25,7 @@ async def put_item_on_hold(rqst, user, *, item):
     if not item._issued_uid:
         sanic.exceptions.abort(409, "This item is already available.")
     err = await user.hold(title=item.title, author=item.author, type_=item.type, genre=item.genre)
-    if err: # if it the user's not allowed to do this it'll return a str, otherwise None
+    if err: # if it the user's not allowed to do this err will be a truthy str, otherwise None
         sanic.exceptions.abort(403, err)
     return sanic.response.raw(b'', status=204)
 
@@ -27,6 +33,10 @@ async def put_item_on_hold(rqst, user, *, item):
 @rqst_get('user', 'item') # user making the request (NOT the user with the fines), and then the item to be paid off
 @jwtdec.protected()
 async def pay_item_off(rqst, user, *, item):
+    """
+    Reset an item's fines to 0 while it's checked out.
+    This does not stop the fines from incrementing next interval.
+    """
     if not user.perms.can_manage_media:
         sanic.exceptions.abort(403, "You aren't allowed to mark fines paid.")
     await item.pay_off()
@@ -36,6 +46,9 @@ async def pay_item_off(rqst, user, *, item):
 @rqst_get('user', 'item', 'title', 'author', 'genre', 'type_', 'price', 'length', 'published', 'isbn')
 @jwtdec.protected()
 async def edit_item(rqst, user, *, item, title, author, genre, type_, price, length, published, isbn):
+    """
+    Edit all of an item's info. type_ is the type's name or a dict with it, not a MediaType object.
+    """
     if not user.perms.can_manage_media:
         sanic.exceptions.abort(403, "You aren't allowed to edit media.")
     await item.edit(title, author, genre, type_ if isinstance(type_, str) else type_['name'], price, length, published, isbn)
@@ -44,21 +57,22 @@ async def edit_item(rqst, user, *, item, title, author, genre, type_, price, len
 @media.post('/delete')
 @rqst_get('item', 'user')
 async def del_item(rqst, user, *, item):
+    """
+    Delete an item altogether.
+    This clears any fines on it, too.
+    """
     if not user.perms.can_manage_media:
         sanic.exceptions.abort(403, "You aren't allowed to delete media.")
     await item.delete()
 
 @media.get('/check')
 @rqst_get('item')
-async def get_bool_available(rqst, *, item):
+async def get_item_available(rqst, *, item):
     """
-    This may be unnecessary... I should be able to just
-    handle the 'check' by aborting from /check/out, no?
-    
-    (I guess it's more convenient for me with this inter-
-    mediary step, bc it allows me to explicitly show an
-    error message if necessary before any further requests
-    occur)
+    Could technically handle this 'check' by aborting
+    from /check/out if the user doesn't have permissions,
+    but this way I can get the frontend to show an explicit
+    error before the checkout is actually attempted
     """
     issued_to = None
     if item.issued_to:
@@ -72,6 +86,13 @@ async def get_bool_available(rqst, *, item):
 @rqst_get('item', 'username', 'location')
 @jwtdec.protected()
 async def issue_item(rqst, location, username, *, item):
+    """
+    Checks an item out to a user.
+    
+    Because of the existence of checkout accounts (which do not have uIDs),
+    this cannot take a user ID -- it instead needs the location and username,
+    from which the user's identity will be deduced.
+    """
     try:
         user = await User.from_identifiers(username, location, app=rqst.app)
     except ValueError as err:
@@ -90,9 +111,10 @@ async def issue_item(rqst, location, username, *, item):
 async def return_item(rqst, location, username, *, item):
     """
     Because adminstrative users can check OTHER people's items in,
-    I cannot do this solely by grabbing the uID.
+    I cannot do this solely by grabbing the uID, a similar effect
+    to issue_item().
     Instead I have to ask for the username+location of the member
-    whose item is being checked in
+    whose item is being checked in.
     """
     try:
         user = await User.from_identifiers(username, location, app=rqst.app)
@@ -108,11 +130,15 @@ async def return_item(rqst, location, username, *, item):
 @media.get('/check/verbose')
 @rqst_get('item')
 async def get_media_full_status(rqst, *, item):
-    return sanic.response.json(item.status, status=200)
-    # unused
+    """
+    I thought I might implement a status page, but never found a need to.
+    """
+    return NotImplemented
+  # return sanic.response.json(item.status, status=200)
 
 @media.get('/info')
 @rqst_get('item')
 @jwtdec.protected()
 async def get_media_info(rqst, *, item):
+    """Serve all of a media item's important attributes."""
     return sanic.response.json({'info': item.to_dict()}, status=200)

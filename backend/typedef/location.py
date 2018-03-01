@@ -38,7 +38,16 @@ except ModuleNotFoundError: # means I'm testing (can't access app.config.TESTING
 
 class Location(AsyncInit):
     """
-    Defines a library. TODO: Instance methods.
+    Defines a library, or 'location'.
+    
+    owner         (User):     Admin account of location.
+    image         (BytesIO):  (UNUSED) The location's "display picture".
+    fine_amt      (Decimal):  How much a user is charged each interval for keeping an overdue item.
+    name          (str):      Location's name.
+    ip            (str):      (UNUSED) Location's IP address/block; intended to allow members to not enter location ID if signing in while physically at it.
+    fine_interval (int):      How often overdue fines are compounded.
+    _color        (int):      Raw number representing location's preferred color/scheme. Private variable.
+    color         (str):      _color, but string-formatted to work as an input to ngx-color-picker.
     """
     props = [
       'lid',

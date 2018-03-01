@@ -1,5 +1,10 @@
-"""Essentially just data classes. They store their 'names' attributes."""
+"""
+These are just data classes, essentially, but they're the only 'outlet'
+between the rest of the backend and their core.py base classes.
 
+(that is, nowhere else will you see the term 'PackedByteFieldMixin';
+just 'Perms')
+"""
 from .core import PackedByteFieldMixin, PackedBigIntMixin
 
 

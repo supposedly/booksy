@@ -32,6 +32,24 @@ except ModuleNotFoundError: # means I'm testing (can't access app.config.TESTING
 
 
 class User(AsyncInit):
+    """
+    Defines any user of the app.
+    
+    location    (Location): User's location (their library)
+    role        (Role):     User's role
+    is_checkout (bool):     Whether the user is actually a self-checkout patron account
+    manages     (bool):     Whether the user owns their location
+    username    (str):      User's username
+    name        (str):      User's full name
+    email       (str):      User's email (unused here)
+    phone       (str):      User's phone number (entirely unused)
+    recent      (int):      Genre of user's most-recent checkout
+    holds       (int):      Quantity of items the user has on hold
+    lid, rid    (int):      Shorthand for user.location.lid and user.role.rid
+    _permnum,
+    _maxnum,                Shorthand for user.perms/maxes/locks.raw, but
+    _locknum    (int):      not intended to be exposed outside this class
+    """
     @staticmethod
     def do_imports():
         global Location, Role, MediaItem, MediaType, User

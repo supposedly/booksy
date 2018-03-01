@@ -39,5 +39,13 @@ async def create_location(rqst):
 
 @signup.post('/member')
 async def member_signup(rqst):
+    """
+    I was originally entertaining the idea of allowing
+    users to sign up on their own and select a location
+    ID to be added to, but ended up opting not to.
+    
+    Members can instead be added to a location by its
+    operators.
+    """
     sanic.exceptions.abort(410, "Not implemented.")
     return NotImplemented

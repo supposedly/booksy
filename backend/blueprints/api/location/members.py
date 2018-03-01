@@ -56,6 +56,8 @@ async def add_members_from_csv(rqst, location, *, perms):
     """
     Batch addition of members.
     Really hope I can implement this but probably not.
+    
+    UPDATE: not :(
     """
     if not perms.can_manage_members:
         sanic.exceptions.abort(401, "You aren't allowed to add members.")
@@ -69,9 +71,11 @@ async def add_members_from_csv(rqst, location, *, perms):
 @uid_get('location', 'role', 'perms')
 @rqst_get('member')
 @jwtdec.protected()
-async def remove_member_from_location(rqst, location, role, perms, *, member: 'to remove'):
+async def delet_user(rqst, location, role, perms, *, member: 'to remove'):
     """
-    Removal of a given member.
+    Deletes a given user.
+    This deletes them *everywhere*, not just from within the location
+    (because a user can't exist without being a member of a library).
     """
     if not perms.can_manage_accounts:
         sanic.exceptions.abort(401, "You aren't allowed to remove members.")

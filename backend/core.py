@@ -37,6 +37,8 @@ class AsyncInit:
     """
     Neat trick from user khazhyk on StackOverflow.
     Allows asynchronous __init__() in inheritors.
+    
+    (Vital to everything!)
     """
     async def __new__(cls, *args, **kwargs):
         obj = super().__new__(cls)
@@ -47,6 +49,20 @@ class AsyncInit:
 
 
 class PackedField(metaclass=abc.ABCMeta):
+    """
+    There are certain items in the database that I store as "packed
+    fields", i.e. arrays condensed into a single integer for ease of
+    storage.
+    There are moreover two types of packed fields I use: those that
+    store their info in a bigint, where each said item comprises
+    a single byte (a number going up to 255),
+    
+    -- and those that store their info in a single byte, where each
+    item comprises a single on/off (1/0) 'flag' bit.
+    
+    These two share enough in common, of course, that I figured it'd
+    be handy to define an abstract base class for them.
+    """
     __slots__ = 'raw', 'seq', 'namemap', '_names',
     
     @classmethod
@@ -84,12 +100,12 @@ class PackedByteFieldMixin(PackedField):
     For now, it's only used in Perms.
     
     raw: The raw number, e.g. 45
-    bin: Binary string representing `raw', e.g. '0101101'
+    bin: Binary string representing `raw', e.g. '0101101'.
     seq: A sequence representing `bin', e.g. (0, 1, 0, 1, 1, 0, 1)
-    names: A dictionary with name:boolean pairs mapping to `seq'.
+    props: A dictionary with name: boolean pairs mapping to `seq'.
     
-    Each value in `names' is also added to the instance's attributes,
-    prefixed with "can_". For example, obj.namemap['do_thing']
+    Each value in `props' is also added to the instance's attributes,
+    prefixed with "can_". For example, obj.props['do_thing']
     can more-easily be accessed as `obj.can_do_thing'.
     """
     __slots__ = 'bin',
@@ -178,15 +194,15 @@ class PackedBigIntMixin(PackedField):
     #   255: Infinity
     #   254: NULL (Look one level up to a less-specific max)
     #   253: Default filler
-    #   251-252: Undefined
-    #   0-250: Regular values
+    #   251-252: Undefined but reserved
+    #   0-250: Regular values (inputs cannot exceed 250)
     
     raw: The raw number, e.g. 200449
     seq: A sequence representing `raw', e.g. (1, 15, 3, 253, 253, 253, 253, 253)
-    names: A dictionary with name:value key pairs; values are booleans.
+    props: A dictionary with name:value key pairs; values are booleans.
     
-    Each value in `names' is also added to the instance's attributes.
-    For example, obj.namemap['some_value'] can more-easily be accessed
+    Each value in `props' is also added to the instance's attributes.
+    For example, obj.props['some_value'] can more-easily be accessed
     as `obj.some_value'.
     """
     

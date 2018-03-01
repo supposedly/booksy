@@ -16,6 +16,10 @@ If you didn't attempt to register a library with Booksy, please disregard this m
 SENDER = 'booksy.db@gmail.com'
 
 async def send_email(recipient, fullname, locname, token, *, loop):
+    """
+    Constructs a verification email to send to the aspiring admin of a
+    new library.
+    """
     msg = MIMEText(BODY.format(name=fullname, locname=locname, token=token))
     msg['From'] = SENDER
     msg['To'] = recipient

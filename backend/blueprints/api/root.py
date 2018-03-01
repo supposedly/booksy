@@ -13,7 +13,7 @@ root = sanic.Blueprint('attrs_api', url_prefix='')
 @jwtdec.protected()
 async def serve_attrs(rqst, perms, location):
     """
-    Catch-all combination of location-related attributes
+    Catch-all combination of location-related attributes.
     """
     resp = {
       'types': await location.media_types(),
@@ -40,7 +40,7 @@ async def serve_attrs(rqst, perms, location):
         'Maximum $USD in fines allowed at a time',
         ]
       }
-    if perms.can_manage_location:
+    if perms.can_manage_location: # Don't want to expose these to someone not allowed to modify them
         resp['names']['perms'][0] = 'Manage location (edit name, info, etc.)'
         resp['names']['perms'][4] = (
           'Create administrative roles '

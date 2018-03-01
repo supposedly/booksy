@@ -14,6 +14,17 @@ from ..attributes import Perms, Maxes, Locks
 
 
 class Role(AsyncInit):
+    """
+    Defines a role, i.e. an abstract container for authorization stuff.
+    
+    location   (Location): The location this role is bound to
+    name       (str):      Role's given name
+    is_default (bool):     Whether this is one of the 3 roles created by default
+    rid        (int):      Role's unique ID
+    _permnum,
+    _maxnum,               Shorthand for role.perms/maxes/locks.raw, but
+    _locknum   (int):      not intended to be exposed outside this class
+    """
     @staticmethod
     def do_imports():
         global Location, Role, MediaItem, MediaType, User
