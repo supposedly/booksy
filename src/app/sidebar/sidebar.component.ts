@@ -20,7 +20,7 @@ export class SidebarComponent /*implements OnInit*/ {
     private buttonService: ButtonService,
     private sanitizer: DomSanitizer
   ) {
-      this.san = sanitizer.bypassSecurityTrustStyle; // so I can use it from the template
+      this.san = sanitizer.bypassSecurityTrustStyle; // so I can use it from the HTML template
   }
   
   @Input() uID: string;

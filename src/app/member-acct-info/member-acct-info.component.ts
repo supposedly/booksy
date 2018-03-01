@@ -32,6 +32,7 @@ export class MemberAcctInfoComponent implements OnInit {
   ngOnInit() {
     this.uID = this.route.snapshot.paramMap.get('uID');
     this.locationService.getFilteredRoles()
+      // sort by name
       .subscribe(res => this.roles = res.roles.sort((a, b) => a.name.localeCompare(b.name)));
     if (this.uID == 'new') {
       this.makeInfo();
@@ -43,7 +44,7 @@ export class MemberAcctInfoComponent implements OnInit {
   checkValid(): boolean {
     let m = this.member;
     // i do Not Understand why the below is necessary and chaining && doesn't work
-    // (I guess this is prettier than &&-chaining though)
+    // (I guess this is a bit prettier than &&-chaining though)
     return [m.username, m.name, m.rid, this.uID=='new'?m.password:true].every(n => n);
   }
   
