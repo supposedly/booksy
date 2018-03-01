@@ -153,7 +153,6 @@ class User(AsyncInit):
             [await conn.execute(query, self.uid) for query in queries]
     
     async def notifs(self):
-        
         async with self.acquire() as conn:
             holds = await conn.fetchval('''
             SELECT count(*) FROM holds, items

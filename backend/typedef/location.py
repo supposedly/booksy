@@ -249,21 +249,21 @@ class Location(AsyncInit):
             # 'rid' if var == 'per_role' else 'username' if var == 'per_user' else None
             return to_search, key, param
             query = '''
-            SELECT DISTINCT ON (items.mid) items.title
+            SELECT DISTINCT ON (items.mid) items.title || ' (#' || items.mid || ')' AS title
               FROM members, items
              WHERE items.issued_to IS NOT NULL
             '''
         if do['checkouts']:
             col = 'checkouts'
             query = '''
-            SELECT DISTINCT ON (items.mid) items.title
+            SELECT DISTINCT ON (items.mid) items.title || ' (#' || items.mid || ')' AS title
               FROM members, items
              WHERE items.issued_to IS NOT NULL
             '''
         elif do['overdues']:
             col = 'overdues'
             query = '''
-            SELECT DISTINCT ON (items.mid) items.title
+            SELECT DISTINCT ON (items.mid) items.title || ' (#' || items.mid || ')' AS title
               FROM members, items
              WHERE items.issued_to IS NOT NULL
                AND items.due_date < current_date
@@ -361,13 +361,13 @@ class Location(AsyncInit):
         """
         search_terms = title, genre, author, type_
         query = (
-              '''SELECT DISTINCT ON (lower(title)) title, mid, author, genre, type, image FROM items WHERE true ''' # stupid hack coming up
+              '''SELECT DISTINCT ON (lower(title)) title, mid, author, genre, type, issued_to, image FROM items WHERE true ''' # stupid hack coming up
               + ('''AND title ILIKE '%' || ${}::text || '%' ''' if title else '')
               + ('''AND genre ILIKE '%' || ${}::text || '%' ''' if genre else '')
               + ('''AND author ILIKE '%' || ${}::text || '%' ''' if author else '')
               + ('''AND type ILIKE '%' || ${}::text || '%' ''' if type_ else '')
               + ('''AND false ''' if not any(search_terms) else '') # because 'WHERE true' otherwise returns everything if not any(search_terms)
-              + ('''AND issued_to IS {} NULL '''.format(('', 'NOT')[where_taken or 0]))
+              + ('''AND issued_to IS {} NULL '''.format(('', 'NOT')[where_taken or 0]) if where_taken is not None else '')
               + ('''ORDER BY lower(title) ''') # just to establish a consistent order for `cont' param
             ).format(*range(1, 1+sum(map(bool, search_terms)))) \
             + ('''LIMIT {} OFFSET {} ''').format(max_results, cont) # these are ok not to parameterize because they're internal
@@ -379,7 +379,7 @@ class Location(AsyncInit):
         # I'd have liked to provide a full MediaItem for each result,
         # but that would take so so so so so unbearably long on Heroku's DB speeds,
         # not to mention being just pretty all-around inefficient
-        return [{j: i[j] for j in ('mid', 'title', 'author', 'genre', 'type', 'image')} for i in results]
+        return [{j: i[j] for j in ('mid', 'title', 'author', 'genre', 'type', 'issued_to', 'image')} for i in results]
     
     async def roles(self, *, lower_than: Perms.raw = None):
         async with self.acquire() as conn:
