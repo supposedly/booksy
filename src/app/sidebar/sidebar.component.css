@@ -10,7 +10,7 @@
   
   -webkit-transition: -webkit-transform 300ms;
   -moz-transition: -moz-transform 300ms;
-  transition: transform 300ms, filter 50ms;
+  transition: transform 300ms, filter 50ms, height 120ms;
 }
 #toggler:after {
   content: "";
@@ -26,6 +26,9 @@
 }
 #toggler:active {
   filter: brightness(80%);
+}
+#toggler:hover {
+  height: 3.7em;
 }
 #sidebar {
   box-shadow: -4px 8px 11px 0px black;
