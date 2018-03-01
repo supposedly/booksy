@@ -1,7 +1,7 @@
 <button routerLink="../../members/new">Add member</button> <whatsthis [ident]="10"></whatsthis>
 <ul>
   <label *ngFor="let role of roles">
-    <li> <!-- *ngIf="role.rid != +globals.rID" -->
+    <li>
       <b>{{role.name}}</b>
       <br/>
       <ul>

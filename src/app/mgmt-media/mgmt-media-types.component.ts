@@ -102,7 +102,7 @@ export class MediaTypeDetailComponent implements OnInit {
   }
   
   submit() {
-    var maxArr = {} // initialize to properly copy attrs to:
+    var maxArr = {} // initialize to properly copy attrs to this:
     for (let i in this.maxes.arr.names) { maxArr[i] = this.maxes.overrideArr.names[i]?this.maxes.overrideArr.names[i]:this.maxes.arr.names[i] }
     
     if (this.initialName == 'new') {

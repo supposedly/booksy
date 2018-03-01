@@ -3,7 +3,7 @@
     <li *ngFor="let button of buttons"
       [routerLink]="'./' + (button.hasOwnProperty('dest')?button.dest:button.text)"
       routerLinkActive="selected">
-        <!-- for darkening color on selected -->
+        <!-- below for darkening color on selected -->
         <div
         [attr.style]="san('background-color:'+(button.hasOwnProperty('color')?button.color:'#eee')+' !important')">
         </div>

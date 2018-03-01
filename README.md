@@ -1,61 +1,49 @@
 ## Booksy
 
-Hello! Please visit the following URL: https://booksy-db.herokuapp.com  
-It may take a while the first time you load it; please see the "annoyances" section at the bottom for
+Hello! Please visit this URL: https://booksy-db.herokuapp.com  
+It may take a while the first time you load it; refer to the "annoyances" section at the bottom for
 an explanation of why.
 
 ## Accounts
 
-Sign in with a **Location ID** of 1, and one of the following strings in both the userID and password fields:
-* `fbla-demo-checkout` to use the checkout account (Ctrl+F **checkout** here to see below what is meant by this).
+You can of course register your own library to use as a sandbox by clicking 'register' from the login page, but a demo library has
+been prepared nonetheless under the inspired name of *Fort Blaine Law Academy*. You can access it by signing in in with a
+**Location ID** of 1 and one of the following strings in both the userID and password fields (same user + pass):
+* `fbla-demo-checkout` to use the self-checkout account (Ctrl+F **checkout** to see here below what is meant by this).
 * `fbla-demo-admin` to use the administrator account, from which you may add users and media and edit info and
-   all that.
-* `fbla-demo-teacher` to use an account given the Organizer role (from which one can view reports and return
-   items but not be given any managerial functionality besides user management)
+   do essentially everything.
+* `fbla-demo-teacher` to use an account given the default Organizer role (from which one can view reports and return
+   items, but without any managerial functionality besides user management)
 * `fbla-demo-user` to use a user account given zero permissions except to find and check out media (i.e. given
-   the Subscriber role)
+   the default Subscriber role)
  
-Note that, of course, additional accounts of any stature can be created by the `fbla-demo-admin` user.
- 
-Note also that the "Sign up as an organization and/or administrator" and "Sign up as a user" buttons have been
-disabled for the purposes of the FBLA demo. (This is just because only one organization (school) is required by
-the FBLA competition spec, and creation of user accounts can be done from the administrator's management tab as 
-mentioned)
+Note that, of course, additional accounts of any stature can be created by the `fbla-demo-admin` user and by any member with the 'manage members' permission.
 
 ## The code
 
-Visit the [ABOUT](https://booksy-db.herokuapp.com/about) tab up top to see my credits and code, the latter being at https://gitlab.com/hdtrhn/fbla-webapp.
+Visit the [ABOUT](https://booksy-db.herokuapp.com/about) tab up top to see my credits and code, the latter being here at https://gitlab.com/hdtrhn/fbla-webapp.
 
-The code is a bit much to slog through, and to be honest what I'm most afraid of is that it could somehow violate the
-"Code contains unnecessary steps or complexity" section of the (really somewhat vague) rubric; I have no idea how much time you will have to look through it,
-but I will say that, save the parts clearly commented as "unused" as well as some
-more-or-less-unavoidable repetition TypeScript of the front-end, there is little to none present in the
-code that is not in some way necessary. The more complex a section, especially in the back end, the more necessary it
-generally was.
+The code is a bit much to slog through, but I hope my comments and (in the backend) docstrings are sufficient.
 
-To aid you in reviewing the code, here's a general what-to-look-for and a brief explanation of the project
-structure:
-* The server back-end code is in the "server.py" file of the root directory and in the "backend" folder of the same.  
-Within the backend folder, each sub-folder in the 'blueprints' directory corresponds to a path in the site's API;
-for example, to see which sections of the "HOME" page the current user can navigate to via the sidebar, the webapp sends a request to the URL `/stock/buttons/home-sidebar`.  
-This is reflected in the
-back-end directory structure; when the request is received, it's routed to the file in
-`backend/blueprints/stock/buttons.py`, and is handled within this file by the function decorated `@btn.get('/sidebar')`.
+To aid you in reviewing the project, here's a general what-to-look-for and a brief explanation of its structure:
+* The server back-end code is first in the "server.py" file of the root directory and second in the "backend" folder of the same.  
+  Within the backend folder, each sub-folder in the 'blueprints' directory corresponds to a path in the site's API;
+  for example, to see which sections of the "HOME" page the current user can navigate to via the sidebar, the webapp sends a request to the URL `/stock/buttons/home-sidebar`.  
+  This is reflected in the back-end directory structure; when this request is received, it's routed to the file in
+  `backend/blueprints/stock/buttons.py`, and is handled within this file by the function decorated `@btn.get('/sidebar')`.
 * The part of the back-end code that handles the actual accessing of the PostgreSQL database is contained within
-the `backend/typedef.py` file, where I've defined objects for locations (i.e. libraries registered with Booksy),
-users (anybody logged in), media items, media types (mostly unused in the final product), and roles (user
-permissions).
+  the `backend/typedef/` directory, where I've defined objects for locations (i.e. libraries registered with Booksy),
+  users (anybody logged in), media items, media types, and roles (user authorization container).
 * The front end, whose structure was generated by the Angular CLI shipped with Angular 5 (though of course the CLI
-does not do any actual coding), is contained in the `src/app` directory. Ignore the files that end in `.spec.ts`,
-if any have slipped past my .gitignore; these are generated by the CLI to be used for unit testing, which I elected
-to eschew for this project in the interest of time.
+  does not do any actual coding), is contained in the `src/app` directory.
 * Within the front end: the `.service.ts` files are what Angular calls Services, from which I do all the actual
   communication between the front and back end. These provide a way for the rest of the app to interface with the
-  server and get any pertinent information or data.
+  server and get any pertinent information or data, and are generally self-explanatory from the var/function names.
 * The files in the sub-folders of `src/app` are Components (as indicated by the word `.component` in their
   filename), which define the logic for pages served to the end user.  
-  Files that end in `.component.ts` are
-  the TypeScript code that grabs info from the Services to pass to their corresponding `.component.html` file, and the latter contains the HTML shown on the actual page.
+  Files that end in `.component.ts` are the TypeScript code that grabs info from the Services to pass to their corresponding
+  `.component.html` file, and the latter contains the HTML shown on the actual page. (If the HTML is short enough, it may
+  also be placed within the `.component.ts` file after the `template:` line.)
 * Any further questions about the project structure of an Angular app can be answered better than me by
   https://angular.io/docs and https://angular.io/tutorial.
 
@@ -71,8 +59,8 @@ to be used by leaving it up on a computer at the front desk of a library), and m
 long as they know their username and the ID of the book they'd like to check out.  
 ...It's somewhat useless in its current
 state because we don't have actual tangible books to use; in an ideal system, the user would scan the item's physical
-barcode into the Barcode field after entering their username, then just hit 'Submit' and be done. As it is now, however,
-you must first have memorized the book's barcode/ID (fortunately an easy task, though -- they haven't hit 4 digits yet!)
+barcode after entering their username, then just hit 'Submit' and be done. As it is now, however,
+you must first have memorized the book's barcode/ID (fortunately an easy task, though -- they haven't hit 3 digits yet!)
 by searching it up from your own account before going to the checkout account, and at that point you
 may as well just check it out from your own account and be done with it.
 2. A 'user' account, which is one that may access info about the library and such. Pretty standard fare.  
@@ -94,14 +82,18 @@ Two inconveniences, both sadly out of my control, should be made yet-further not
   to it from the back end); it also means that, if you are the first to visit the site in more than half an hour, the
   application will only load after an appreciable (5-to-10-ish-second) delay.  
   Apologies for both of these inconveniences.  
-  If you're ever browsing and see an "Auth required" message, or see some info not pop up when it should, this would also be the reason.
-   
-- Second: for reasons of security and because of an unfortunately necessitated clumsiness in connecting the back
-  end with the "single-page-application" front end, refreshing one of the protected pages in the HOME tab of the webapp will boot you out to the login screen,
-  irrespective to whether you're already logged in.  
-  If this happens and you in fact are logged in (you can tell by the presence of a LOG OUT button in the top right),
-  you can just click on the HOME tab to regain access to the webapp, though reentering login credentials will have no
-  harmful side effects.  
-  Otherwise just log in with the credentials presented at the top of this document and you'll be good to go.
- 
+  If you're ever browsing and see an "Auth required" message, or see some info not pop up when it should,
+  this would also be the reason.
+- The app does not function on Windows XP unless a modern browser were to somehow work its way on there, and it also (due to the
+  multi-library stateless nature of its webappliness) does not offer up a decent solution to generating *weekly* reports. Instead, if the
+  user wants reports to be generated at a specific interval of time, they must manually go and click the 'generate report' button
+  at precisely that point in time. I suppose I'll take my five-point hit for not following the spec here :)
+
+## Extras
+- Try it on your phone! It's not optimized for mobile at all, and the help tooltips are liable to run off the small screen, but it does work quite
+ nicely considering my only conscious attempt at responsiveness was shrinking some CSS things depending on screen size.
+- See `spec/d+ds.md` for a slightly-outdated-but-still-decently-accurate rundown of how the app interacts with the end-user. (It was my initial
+  planning document where I got my thoughts down, but I deviated a little from it in actually applying things)
+
 Thank you :)
+
