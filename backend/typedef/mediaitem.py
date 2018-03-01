@@ -81,6 +81,10 @@ class MediaItem(AsyncInit):
         return retdir
     
     async def set_maxes(self, newmaxes: Maxes, *, mid=True):
+        """
+        Changes this item's maxes... not implemented, because
+        this overriding was eventually relegated to just media types.
+        """
         if not isinstance(newmaxes, Maxes):
             raise TypeError('Argument must be of type Maxes')
         query = '''
@@ -96,7 +100,16 @@ class MediaItem(AsyncInit):
         await self.pool.execute(query, newmaxes.num, *([self.mid] if mid else [self.title, self.author, self.type]))
         self.maxes = newmaxes
     
-    async def status(self, *, resp = {'issued_to': None, 'due_date': None, 'fines': None}):
+    async def status(self):
+        """
+        Unused, but returns an item's status:
+        
+        whom it's checked out to,
+        its due date,
+        how much in fines has accrued thus far on it,
+        
+        and None if it's not checked out at all.
+        """
         query = '''
         SELECT
               CASE
@@ -113,10 +126,13 @@ class MediaItem(AsyncInit):
         else:
             # hacky? probably. But it just updates, for instance,
             # resp['issued_to'] to the local value of the `issued_to' variable
-            resp = {i: locals()[i] for i in resp}
+            resp = {i: locals()[i] for i in ('issued_to', 'due_date', 'fines')}
         return resp
     
     async def pay_off(self):
+        """
+        Clears this item's fines.
+        """
         query = '''
         UPDATE items
            SET fines = 0::numeric
@@ -125,6 +141,10 @@ class MediaItem(AsyncInit):
         return await self.pool.execute(query, self.mid)
     
     async def edit(self, title, author, genre, type_, price, length, published, isbn):
+        """
+        Edits all of this item's info.
+        type_ is a string holding the type's name, not a MediaType object.
+        """
         query = '''
         UPDATE items
            SET title = $2::text,
@@ -193,6 +213,9 @@ class MediaItem(AsyncInit):
         self.available = False
     
     async def check_in(self):
+        """
+        Returns a checked-out item.
+        """
         query = '''
         UPDATE items
            SET issued_to = NULL,
@@ -211,6 +234,10 @@ class MediaItem(AsyncInit):
     
     @property
     def maxes(self):
+        """
+        Because item-specific maxes were again not implemented,
+        this just returns either the item's type's maxes or None
+        """
         if not self._maxnum:
             return self.type.maxes
         return {k: v if v != 254 else self.type.maxes[k] for k, v in Maxes(self._maxnum).namemap.items()}
