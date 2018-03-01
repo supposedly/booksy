@@ -10,8 +10,8 @@
       {{genre_}}
     </option>
   </select>
-  <select placeholder="Medium" name="media-type" [(ngModel)]="type_">
-    <option [ngValue]="null" disabled>Medium</option>
+  <select placeholder="Type" name="media-type" [(ngModel)]="type_">
+    <option [ngValue]="null" disabled>Type</option>
     <option ngValue="null">Any (default)</option>
     <option *ngFor="let mtype of globals.locMediaTypes" [ngValue]="mtype">
       {{mtype.name}}
