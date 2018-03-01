@@ -18,7 +18,7 @@ import { Globals } from '../globals';
 @Component({
   selector: 'app-mgmt-media-types',
   template: `
-    <button routerLink="./new">New type</button>
+    <button routerLink="./new">New type</button> <whatsthis [ident]="9"></whatsthis>
     <p *ngIf="msg">{{msg}}</p>
     <ul>
       <li *ngFor="let mtype of globals.locMediaTypes; let i = index" routerLink="./{{mtype.name}}">

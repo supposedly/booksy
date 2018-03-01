@@ -1,4 +1,4 @@
-<h2>{{heading}}</h2>
+<h2>{{heading}}</h2>&nbsp;&nbsp;<whatsthis *ngIf="default!='all'" [ident]="5"></whatsthis>
 <p>{{msg}}</p>
 <form (ngSubmit)="search(true)">
   <input type="text" name="title" [(ngModel)]="title" placeholder="Title"/>
