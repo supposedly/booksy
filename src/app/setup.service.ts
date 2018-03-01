@@ -25,7 +25,7 @@ export class SetupService {
         this.globals.attrs = resp.names;
         this.globals.locMediaTypes = resp.types;
         this.globals.locGenres = resp.genres;
-        // set up header colors
+        // set up header colors... unimplemented though :(
         var rawColor = resp.locColor || 0xf7f7f7;
         this.globals.locColor = this.toRGB(rawColor);
         this.globals.locActiveColor = this.toRGB(rawColor-0x382f2b);
@@ -39,9 +39,6 @@ export class SetupService {
   
   getPerms(uID) {
     return this.http.get<any>(this.permCheckURL)
-      .subscribe(resp => {
-        this.globals.perms = resp.perms;
-        this.globals.rawPermNum = resp.raw;
-      });
+      .subscribe(resp => this.globals.perms = resp.perms);
   }
 }

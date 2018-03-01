@@ -5,12 +5,12 @@
   type="text"
   [value]="roleName"
   [(ngModel)]="roleName"
-  [attr.disabled]="+globals.rawPermNum <= +rawPermNum ? 'true' : null"
+  [attr.disabled]="+globals.perms.raw<=+rawPermNum?'y':null"
   />
 <whatsthis ident="2"></whatsthis>
 <form name="role-information" (ngSubmit)="submit()" *ngIf="rID">
-    <app-perms [editable]="!checkView()" [arr]="permArr"></app-perms>
-    <app-maxes [editable]="!checkView()" [arr]="maxArr"></app-maxes>
-    <app-locks [editable]="!checkView()" [arr]="lockArr"></app-locks>
-    <input *ngIf="globals.rawPermNum == 127 || checkView()" type="submit" value="Submit"/>
+    <app-perms [editable]="checkView()" [arr]="permArr"></app-perms>
+    <app-maxes [editable]="checkView()" [arr]="maxArr"></app-maxes>
+    <app-locks [editable]="checkView()" [arr]="lockArr"></app-locks>
+    <input *ngIf="globals.perms.raw == 127 || checkView()" type="submit" value="Submit"/>
 </form>

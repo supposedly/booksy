@@ -18,9 +18,6 @@ export class Globals {
   
   // user's role's permissions object
   perms: any; // corresponds to Perms.namemap as defined in PackedBigIntField (from core.py)
-  rawPermNum: number; // corresponds to Perms.raw
-                      // (literally the raw number derived from interpreting the perms sequence as a binary string;
-                      // this raw number is used in determining hierarchy)
   
   // Whether to hide the homepage sidebar.
   // It's here instead of in sidebar.component.ts because the

@@ -15,16 +15,11 @@ export class RoleService {
   private roleEditURL = '/api/roles/edit';
   private roleDelURL = '/api/roles/delete';
   private roleCreateURL = '/api/location/roles/add';
-  private allRolesURL = '/api/location/roles';
   
   constructor(
     private globals: Globals,
     private http: HttpClient
   ) {}
-  
-  getAll(): Observable<any> {
-    return this.http.get<any>(this.allRolesURL);
-  }
   
   getArrs(rID): Observable<any> {
     return this.http.get<any>(this.roleInfoURL, {params: {rid: rID}});
