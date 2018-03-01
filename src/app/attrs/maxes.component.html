@@ -22,7 +22,7 @@
       min="0" max="255"
       [value]="arr.names[name]"
       [(ngModel)]="arr.names[name]"
-      [attr.disabled]="!forMain && overrideArr.names[name]"
+      [attr.disabled]="(!forMain && overrideArr.names[name])?'y':null"
       [style.display]="(!forMain && name=='holds')?'none':''"
       />
     {{globals.attrs.maxes[i]}}

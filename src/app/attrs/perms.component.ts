@@ -12,7 +12,7 @@ export class PermsComponent implements OnChanges {
   override: boolean = false; // if in an auxiliary screen allow overriding of role-defined perms
   
   @Input('arr') inputArr: any;
-  @Input('just-view') editable: boolean = true;
+  @Input() editable: boolean = false;
   @Input('auxiliary') forMain: boolean = true;
   
   defaultArr = {

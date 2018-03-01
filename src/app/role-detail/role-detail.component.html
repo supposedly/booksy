@@ -9,8 +9,8 @@
   />
 <whatsthis ident="2"></whatsthis>
 <form name="role-information" (ngSubmit)="submit()" *ngIf="rID">
-    <app-perms [attr.just-view]="checkView()" [arr]="permArr"></app-perms>
-    <app-maxes [attr.just-view]="checkView()" [arr]="maxArr"></app-maxes>
-    <app-locks [attr.just-view]="checkView()" [arr]="lockArr"></app-locks>
+    <app-perms [editable]="!checkView()" [arr]="permArr"></app-perms>
+    <app-maxes [editable]="!checkView()" [arr]="maxArr"></app-maxes>
+    <app-locks [editable]="!checkView()" [arr]="lockArr"></app-locks>
     <input *ngIf="globals.rawPermNum == 127 || checkView()" type="submit" value="Submit"/>
 </form>

@@ -11,7 +11,7 @@ export class LocksComponent implements OnChanges {
   arr: any = [];
   
   @Input('arr') inputArr: any; // the array to modify
-  @Input('just-view') editable: boolean = true; // if user doesn't have permissions to modify the values, just show them
+  @Input() editable: boolean = false; // if user doesn't have permissions to modify the values, just show them
   @Input('auxiliary') forMain: boolean = true; // if this is outside the main roles/perms detail screen
   
   constructor(public globals: Globals) {}
