@@ -38,7 +38,12 @@ class MediaType(AsyncInit):
     def to_dict(self):
         return {'name': self.name, 'unit': self.unit, 'maxes': self.maxes.props}
 
-    async def edit(self, *, maxes=None, name=None, unit=None):
+    async def edit(self, *, maxes: int = None, name=None, unit=None):
+        """
+        Edits all of this media type's info.
+        
+        maxes is the raw number, not a 'props' dict or a sequence.
+        """
         query = '''
         UPDATE mtypes
           SET maxes = COALESCE($3::bigint, maxes),

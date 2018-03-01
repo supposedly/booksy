@@ -73,19 +73,13 @@ class Role(AsyncInit):
           'locks': self.locks.props
           }
     
-    async def set_attrs(self, perms, maxes, locks, name):
-        query = '''
-        UPDATE roles
-           SET name = $2::text,
-               permissions = $3::smallint,
-               maxes = $4::bigint,
-               locks = $5::bigint
-         WHERE rid = $1::bigint
-        '''
-        await self.pool.execute(query, self.rid, name, perms.raw, maxes.raw, locks.raw)
-    
     @staticmethod
     def attrs_from(*, seqs=None, kws=None):
+        """
+        Returns attrs (perms/maxes/locks) from whichever of
+        seqs (sequences, see PackedField.seq in core.py) and
+        kws (kwargs, see PackedField.from_kwargs) is not-None first.
+        """
         if kws is None:
             perms = Perms.from_seq(seqs['perms'])
             maxes = Maxes.from_seq(seqs['maxes'])
@@ -95,6 +89,21 @@ class Role(AsyncInit):
             maxes = Maxes.from_kwargs(**kws['maxes'])
             locks = Locks.from_kwargs(**kws['locks'])
         return perms, maxes, locks
+    
+    async def set_attrs(self, perms, maxes, locks, name):
+        """
+        Edits all of this role's attrs.
+        Also edits its name, if applicable.
+        """
+        query = '''
+        UPDATE roles
+           SET name = $2::text,
+               permissions = $3::smallint,
+               maxes = $4::bigint,
+               locks = $5::bigint
+         WHERE rid = $1::bigint
+        '''
+        await self.pool.execute(query, self.rid, name, perms.raw, maxes.raw, locks.raw)
     
     
     async def delete(self):
