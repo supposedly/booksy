@@ -1,5 +1,5 @@
-<h1>Item checkout</h1>&nbsp;&nbsp;<whatsthis [ident]="4"></whatsthis>
-<h2>Welcome, {{name}}</h2><br/>
+<h1>Item checkout</h1>
+<h2>Welcome, {{name}}</h2>
 <app-notifications [username]="username"></app-notifications>
 <p *ngIf="msg">{{msg}}</p>
 <form (ngSubmit)="submit(mID.value); mID.value=''; msg=null">
@@ -7,6 +7,6 @@
    <input name="user-identifier" [(ngModel)]="username" [ngModelOptions]="{updateOn: 'submit'}" placeholder="Your ID (AKA username)" #uID><br/>
 </div>
 <input name="item-id" [(ngModel)]="mid" [ngModelOptions]="{updateOn: 'submit'}" placeholder="Barcode" #mID>
-<button type="submit">Submit</button><br/>
+<button type="submit">Submit</button>&nbsp;&nbsp;<whatsthis [ident]="4"></whatsthis><br/>
 </form>
 <app-checkout-session [newItem]="_mid"></app-checkout-session>

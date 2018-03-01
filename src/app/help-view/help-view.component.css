@@ -35,7 +35,7 @@
 ::ng-deep #help-view p,
 ::ng-deep #help-view li {
   font-size: 18px;
-  font-weight: 300;
+  font-weight: 400; /* This looks SO much prettier as 300 but it also hurts the eyes to look at when it's that thin */
 }
 /*
 The below is mostly copied from ngx-md's CSS styling, but with the changes necessary to resolve this issue:

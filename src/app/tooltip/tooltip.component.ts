@@ -29,13 +29,14 @@ export class TooltipContainerDirective {}
         background-color: #eee;
         border: 1px solid #999;
         color: #555;
+        cursor: default;
         max-height: 6em;
         min-width: 20em;
         margin-left: auto;
         padding: 0.5em;
         position: absolute;
         border-radius: 6px;
-        z-index: 2;
+        z-index: 3;
       }
     `
   ]
