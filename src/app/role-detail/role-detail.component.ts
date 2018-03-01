@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 
@@ -31,8 +31,9 @@ export class RoleDetailComponent implements OnInit {
   constructor(
     public globals: Globals,
     public location: Location,
-    private roleService: RoleService,
     private route: ActivatedRoute,
+    private changeDetectorRef: ChangeDetectorRef,
+    private roleService: RoleService,
   ) {}
   
   ngOnInit() {
@@ -49,10 +50,7 @@ export class RoleDetailComponent implements OnInit {
   }
   
   checkView() {
-    if (+this.globals.rawPermNum > +this.rawPermNum || this.rID == 'new') {
-      return true;
-    }
-    return null;
+    return this.rID == 'new' || +this.globals.rawPermNum > +this.rawPermNum;
   }
   
   getArrs() {

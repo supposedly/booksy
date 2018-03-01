@@ -11,7 +11,7 @@ export class MaxesComponent implements OnChanges {
   arr: any;
   
   @Input('arr') inputArr: any; // the array to modify
-  @Input('just-view') editable: boolean = true; // just show these values instead of making them editable
+  @Input() editable: boolean = false; // whether to just show these values instead of making them editable
   @Input('auxiliary') forMain: boolean = true; // whether it is outside the main roles/perms detail screen
   
   constructor(public globals: Globals) {}
