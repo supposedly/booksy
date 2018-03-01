@@ -1,5 +1,5 @@
 h1 {
-  display: block;
+  display: inline-block;
   font-size: 2em;
   margin: 0.67em 0;
 }

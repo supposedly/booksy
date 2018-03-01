@@ -1,3 +1,6 @@
+h1 {
+  display: inline-block;
+}
 button.invalid {
   opacity: 0.5;
   cursor: default;

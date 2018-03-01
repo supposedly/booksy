@@ -15,6 +15,10 @@ mbrs = sanic.Blueprint('location_members_api', url_prefix='/members')
 @uid_get('location')
 @jwtdec.protected()
 async def serve_location_members(rqst, location, *, cont: 'where to continue search from'):
+    """
+    Serves all a location's members, in page determined by cont.
+    (Output is not paginated in the actual application)
+    """
     return sanic.response.json(await location.members(cont=int(cont)))
 
 @mbrs.get('/info')
@@ -22,6 +26,9 @@ async def serve_location_members(rqst, location, *, cont: 'where to continue sea
 @rqst_get('check')
 @jwtdec.protected()
 async def serve_specific_member(rqst, perms, *, check: 'member to check'):
+    """
+    Gives a specific members' info.
+    """
     if not perms.can_manage_accounts:
         sanic.exceptions.abort(403, "You aren't allowed to view member info.")
     user = await User(check, rqst.app)
