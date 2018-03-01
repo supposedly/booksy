@@ -12,7 +12,7 @@ mbr = sanic.Blueprint('member_api', url_prefix='/member')
 @rqst_get('user', 'fullname', 'newpass', 'curpass')
 @jwtdec.protected()
 async def edit_self(rqst, user, *, fullname, newpass, curpass):
-    """full name, new password, current password to verify"""
+    """Full name; new password; current password to verify"""
     if not await user.verify_pw(curpass):
         return sanic.exceptions.abort(403, "Incorrectly-entered password. Please try again.")
     await user.edit_self(name=fullname, pw=newpass)
@@ -34,7 +34,7 @@ async def get_notifs(rqst, location, *, username):
 async def get_recent(rqst, location, *, recent):
     """
     Serves what's shown in the 'based on your most-recent checkout'
-    section of the 'Find Media' page, when given a genre to match for.
+    section of the 'Find Media' page, given a genre to match for.
     """
     return sanic.response.json({'items': await location.search(genre=recent, max_results=2)}, status=200)
 
@@ -43,7 +43,7 @@ async def get_recent(rqst, location, *, recent):
 @jwtdec.protected()
 async def get_user_items(rqst, user, *, member):
     """
-    Serves user's checked-out items.
+    Serves user's currently-checked-out items.
     """
     member = await User(member, rqst.app)
     if not (user.uid == member.uid or user.perms.can_manage_accounts):
@@ -56,7 +56,7 @@ async def get_user_items(rqst, user, *, member):
 @jwtdec.protected()
 async def get_user_holds(rqst, user, *, member):
     """
-    Serves members's currently-active holds.
+    Serves user's currently-active holds.
     """
     member = await User(member, rqst.app)
     if not (user.uid == member.uid or user.perms.can_manage_accounts):
@@ -80,7 +80,7 @@ async def clear_hold(rqst, user, *, item):
 @jwtdec.protected()
 async def edit_member(rqst, user, *, member):
     """
-    Endpoint for editing user information. Works for both 
+    Edits user's information.
     """
     if not user.perms.can_manage_accounts:
         sanic.exceptions.abort(403, "You aren't allowed to modify member info.")

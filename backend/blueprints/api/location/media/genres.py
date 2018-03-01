@@ -11,6 +11,7 @@ genres = sanic.Blueprint('location_media_genres', url_prefix='/genres')
 @uid_get('location')
 @jwtdec.protected()
 async def get_location_genres(rqst, location):
+    """Serves all genres in a location."""
     return sanic.response.json(await location.genres(), status=200)
 
 @genres.post('/edit')

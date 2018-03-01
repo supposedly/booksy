@@ -7,6 +7,11 @@ class MediaType(AsyncInit):
     Defines a kind of media, e.g. books or audiotapes.
     Have maxes defined on them that override user/role maxes
     and are overridden by item maxes.
+    
+    location (Location): The location this media type is bound to
+    maxes    (Maxes):    The above-mentioned overrides
+    name     (str):      Media type's name
+    unit     (str):      Media type's unit of length, e.g. "pages" or "minutes"
     """
     
     @staticmethod
@@ -15,7 +20,6 @@ class MediaType(AsyncInit):
         from . import Location, Role, MediaItem, MediaType, User
     
     async def __init__(self, name, location, app):
-        self.name = name
         self._app = app
         self.pool = app.pg_pool
         self.acquire = self.pool.acquire
@@ -24,6 +28,7 @@ class MediaType(AsyncInit):
         if not check:
             raise ValueError('This type does not exist yet')
         res = await self.pool.fetchrow('''SELECT unit, maxes FROM mtypes WHERE name = $1::text AND lid = $2::bigint''', self.name, self.location.lid)
+        self.name = name
         self.maxes = Maxes(res['maxes']) if res['maxes'] else None
         self.unit = res['unit']
     

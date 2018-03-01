@@ -8,25 +8,29 @@ from ..attributes import Perms, Maxes, Locks
 
 class MediaItem(AsyncInit):
     """
-    Defines a single item of media.
-    Instance methods include:
+    Defines an item of media, e.g. a book or CD.
     
-    to_dict: Called to pass item data to front end.
-    set_maxes: Unused currently. Sets item-specific Maxes, and is able
-      to set either on a single instance of an item or across all items
-      with the same title & author & type
-    status: Whether item is checked out
-    pay_off: Clear fines
-    edit: Edits the item's metadata
-    issue_to: Check out to a given user
-    check_in: Check item in
-    remove: Delete from library's records
+    location    (Location):  The library this media item is located in.
+    type        (MediaType): The MediaType object representing the item's type.
+    issued_to   (User):      The User object, if applicable, of the member item is checked out to.
+    fines       (Decimal):   Amount in USD of fines on item, if checked out and overdue; 0 if checked out and not overdue, None if not checked out.
+    length      (Decimal):   How 'long' item is, though the unit of length ('minutes', 'pages'...) is defined on its media type.
+    price       (Decimal):   How much item costs.
+    available   (bool):      Whether item is not checked out to anybody.
+    acquired    (date):      What day item was added to library.
+    published   (date):      Specifically a datetime.date object; what year item was published.
+    due_date    (date):      Due date if item is checked out, or None otherwise.
+    mid         (int):       Item's unique ID, used on its barcode and when checking in/out.
+    lid         (int):       Shorthand for item.location.lid.
+    _issued_uid (int):       The raw uID of the member item is checked out to; not intended to be exposed elsewhere.
+    _maxnum     (int):       (UNUSED) contains the raw number of item's max overrides (was implemented on media *types* in the final project).
+    genre       (str):       Name of item's genre.
+    image       (str):       A link to Google Books' image for item (really only works on books and maybe audio recordings of books).
+    author      (str):       Name of item's author or creator.
+    title       (str):       Title of item.
+    _type       (str):       Shorthand for item.type.name, but not intended to be exposed outside this class.
+    isbn        (str):       Item's ISBN (if defined by user), or if not then whichever of its ISBN-10/-13 was available on Google Books' API.
     """
-    
-    @staticmethod
-    def do_imports():
-        global Location, Role, MediaItem, MediaType, User
-        from . import Location, Role, MediaItem, MediaType, User
     
     props = [
       'mid', 'genre', 'type',
@@ -36,11 +40,16 @@ class MediaItem(AsyncInit):
       'available', 'due_date'
       ]
     
+    @staticmethod
+    def do_imports():
+        global Location, Role, MediaItem, MediaType, User
+        from . import Location, Role, MediaItem, MediaType, User
+    
     async def __init__(self, mid, app):
         try:
             self.mid = int(mid)
         except (ValueError, TypeError):
-            raise TypeError('item with this ID')
+            raise TypeError('item with this ID') # passed to frontend as 'Item with this ID does not exist'
         self._app = app
         self.pool = app.pg_pool
         self.acquire = self.pool.acquire
