@@ -100,20 +100,33 @@ class User(AsyncInit):
     
     @property
     def cannot_check_out(self):
-        able = self.locks.checkouts, self.maxes.checkout_duration
-        if all(able): # success
+        """
+        Determines whether this user is prohibited from checking out,
+        and if not, why.
+        (could be that they've checked out too many books already or
+        that their checkout duration is restricted to 0)
+        """
+        chk, dur = self.locks.checkouts, self.maxes.checkout_duration
+        if chk and dur: # user is able to check out, that is unless the item's type's maxes won't allow it
             return False
-        ret = ("You can't check anything out at the moment"
-        
-        + ('' if able[0] else
+        ret = (
+          "You can't check anything out at the moment"
+          + (
+            '' if chk else
             ' (currently using {} of {} allowed concurrent checkouts'
-                .format(self.num_checkouts, self.locks.checkouts))
-        
-        + ('' if able[1] else '; allowed to check out for 0 weeks'))
-        return ret + ('' if able[0] else ')')
+              .format(self.num_checkouts, self.locks.checkouts)
+            )
+          + ('' if dur else '; allowed to check out for 0 weeks')
+          )
+        return ret + ('' if chk else ')') # construct dynamic notif string
     
     @classmethod
     async def create(cls, app, **kwargs):
+        """
+        Unused; was intended to work with letting users
+        sign up independently and then choose the location ID they
+        belonged to, but I decided not to impl that.
+        """
         props = ['username', 'pwhash', 'lid', 'email', 'phone']
         query = '''
         INSERT INTO members (
@@ -142,17 +155,16 @@ class User(AsyncInit):
         return await cls(uid, app)
     
     def edit_perms(self, **new):
+        """Just shorthand"""
         self.perms.edit(**new)
     
     def edit_perms_from_seq(self, *new):
+        """Just shorthand"""
         self.perms.edit_from_seq(*new)
-    
-    async def verify_pw(self, pw):
-        return await self._app.aexec(self._app.ppe, bcrypt.checkpw, pw.encode(), self._pwhash)
     
     async def delete(self):
         """
-        Get rid of & clean up after a member on deletion.
+        Get rid of & clean up after a member.
         """
         queries = '''
         DELETE FROM members
@@ -171,6 +183,11 @@ class User(AsyncInit):
             [await conn.execute(query, self.uid) for query in queries]
     
     async def notifs(self):
+        """
+        Construct a user's notifications, which appear on the checkout
+        page and serve info regarding whether the user has holds available
+        or fines accrued or items overdue.
+        """
         async with self.acquire() as conn:
             holds = await conn.fetchval('''
             SELECT count(*) FROM holds, items
@@ -207,6 +224,12 @@ class User(AsyncInit):
         return response
     
     async def hold(self, *, title, author, type_, genre, item=None):
+        """
+        Places a hold from this user on an item.
+        All the extra attrs are to determine whether the item (as a whole, i.e.
+        not just the specifically-requested media ID) is available at all
+        before allowing the hold.
+        """
         if item is None:
             item = await self.location.search(title=title, genre=genre, type_=str(type_), author=author, max_results=1, where_taken=True)
         templ = '''
@@ -233,6 +256,9 @@ class User(AsyncInit):
                 return 'You already have a hold placed on this item!'
     
     async def clear_hold(self, item):
+        """
+        Removes a hold.
+        """
         query = '''
         DELETE FROM holds
               WHERE uid = $1::bigint
@@ -241,6 +267,9 @@ class User(AsyncInit):
         return await self.pool.execute(query, self.uid, item.mid)
     
     async def edit(self, username, rid, fullname):
+        """
+        Edits all this user's info.
+        """
         query = '''
         UPDATE members
            SET username = $2::text,
@@ -252,7 +281,7 @@ class User(AsyncInit):
     
     async def edit_self(self, name, pw):
         """
-        Differs from just edit(), ofc; this method allows user to
+        Differs from above edit(): this method allows user to
         change their own password.
         """
         query = '''
@@ -265,12 +294,18 @@ class User(AsyncInit):
         await self.pool.execute(query, self.uid, name, pwhash)
     
     async def items(self):
+        """
+        Returns all this user's checked-out items.
+        """
         query = '''
         SELECT mid, title, author, type, genre, image, due_date FROM items WHERE issued_to = $1::bigint
         '''
         return [{j: str(i[j]) for j in ('mid', 'title', 'author', 'genre', 'type', 'image', 'due_date')} for i in await self.pool.fetch(query, self.uid)]
     
     async def held(self):
+        """
+        Returns all items this user has on hold.
+        """
         query = '''
         SELECT items.mid AS mid,
                items.title AS title,
@@ -285,6 +320,12 @@ class User(AsyncInit):
     
     @property
     def checkouts_left(self) -> int:
+        """
+        Returns how many more items this user is allowed
+        to check out, taking into account their max-allowed
+        checkouts (from their role) and their current
+        number of checkouts.
+        """
         return self.locks.checkouts - self.num_checkouts
     
     @property

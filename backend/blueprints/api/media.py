@@ -13,10 +13,7 @@ media = sanic.Blueprint('media_api', url_prefix='/media')
 @jwtdec.protected()
 async def put_item_on_hold(rqst, user, *, item):
     """
-    Places an item on hold, assigning it to 
-    
-    Unfortunately does not operate on whole items (i.e. all items with
-    the same genre+mediatype+title+author), just a specific media ID.
+    Places item on hold, assigning it to the given user.
     """
     if user.cannot_check_out:
         sanic.exceptions.abort(403, "You aren't allowed to place holds.")
