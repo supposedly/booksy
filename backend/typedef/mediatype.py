@@ -24,11 +24,11 @@ class MediaType(AsyncInit):
         self.pool = app.pg_pool
         self.acquire = self.pool.acquire
         self.location = location if isinstance(location, Location) else await Location(int(location), self._app)
+        self.name = name
         check = await self.pool.fetchval('''SELECT name FROM mtypes WHERE name = $1::text AND lid = $2::bigint''', self.name, self.location.lid)
         if not check:
             raise ValueError('This type does not exist yet')
         res = await self.pool.fetchrow('''SELECT unit, maxes FROM mtypes WHERE name = $1::text AND lid = $2::bigint''', self.name, self.location.lid)
-        self.name = name
         self.maxes = Maxes(res['maxes']) if res['maxes'] else None
         self.unit = res['unit']
     
