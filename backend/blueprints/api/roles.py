@@ -46,9 +46,8 @@ async def edit_role(rqst, role, user, *, name, seqs):
     new = Role.attrs_from(kws=seqs) # new[0] == perms
     if user.perms.raw <= new[0].raw or not user.perms.can_manage_roles:
         # Users can only modify roles *below* them in perms hierarchy
-        sanic.exceptions.abort(403, "You aren't allowed to modify this role.")
-    if name.lower() in ('admin', 'organizer', 'subscriber'):
-        sanic.exceptions.abort(401, 'That name is reserved.')
+        if user.perms.raw < 127: # unless they're admins
+            sanic.exceptions.abort(403, "You aren't allowed to modify this role.")
     await role.set_attrs(*new, name=name)
     return sanic.response.raw(b'', status=204)
 

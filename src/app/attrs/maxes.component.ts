@@ -11,7 +11,7 @@ export class MaxesComponent implements OnChanges {
   arr: any;
   
   @Input('arr') inputArr: any; // the array to modify
-  @Input() editable: boolean = false; // whether to just show these values instead of making them editable
+  @Input() editable: boolean = true; // whether to just show these values instead of making them editable
   @Input('auxiliary') forMain: boolean = true; // whether it is outside the main roles/perms detail screen
   
   constructor(public globals: Globals) {}
@@ -36,9 +36,9 @@ export class MaxesComponent implements OnChanges {
     this.arr = [];
     if (this.inputArr && !Array.isArray(this.inputArr)) { // it's initialized to [array(0)] but when it has data it'll be {object}
       for (let i in this.inputArr.names) { // could probably one-line this with a map or something
-        if (this.inputArr.names[i] > 250) {
+        if (this.inputArr.names[i] > 250) { // transfer overrides to the overrideArr
           this.overrideArr.names[i] = this.inputArr.names[i];
-          this.inputArr.names[i] = 0;
+          this.inputArr.names[i] = 0; // and reset them in the inputArr so they show up disabled and 0
         }
       }
     }

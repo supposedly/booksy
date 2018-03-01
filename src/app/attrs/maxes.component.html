@@ -2,27 +2,27 @@
 <div *ngIf="editable; else just_view">
   <aside>None of these values may exceed 250.</aside>
   <label *ngFor="let name of keys(arr.names); let i=index">
-    <div>
+    <div *ngIf="forMain || name!='holds'">
       <input
         type="checkbox"
         [checked]="overrideArr.names[name]==255"
-        (change)="overrideArr.names[name]=$event.target.checked?255:null"
+        (change)="overrideArr.names[name] = $event.target.checked?255:null"
       > <span class="b">Infinity (no limit)</span>
       <div *ngIf="!forMain">
         <input
           type="checkbox"
           [checked]="overrideArr.names[name]==254"
-          (change)="overrideArr.names[name]=$event.target.checked?254:null"
+          (change)="overrideArr.names[name] = $event.target.checked?254:null"
         > <span class="b">None (do not override)</span>
       </div>
     </div>
     <input
       [name]="name"
       type="number"
-      min="0" max="255"
+      min="0" max="250"
       [value]="arr.names[name]"
       [(ngModel)]="arr.names[name]"
-      [attr.disabled]="(!forMain && overrideArr.names[name])?'y':null"
+      [attr.disabled]="(overrideArr.names[name])?'y':null"
       [style.display]="(!forMain && name=='holds')?'none':''"
       />
     {{globals.attrs.maxes[i]}}
