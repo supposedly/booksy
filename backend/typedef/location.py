@@ -107,9 +107,15 @@ class Location(AsyncInit):
     
     @staticmethod
     async def prelim_signup(rqst, email, locname, color, adminname):
+        """
+        Stores the given info to the 'signups' table's purgatory until
+        they verify.
+        Also generates admin+checkout usernames based on the location name.
+        """
         # Some Guy's Name High School
         # ->
         # sgnhs
+        # (initials up to the 5th word)
         base = ''.join(i for i, *_ in locname.split(None, 4)).lower()
         chk_usr, admin_usr = f'{base}-checkout', f'{base}-admin'
         token = uuid.uuid4().hex
@@ -140,7 +146,7 @@ class Location(AsyncInit):
     
     @classmethod
     async def instate(cls, rqst, token, checkoutpw, adminpw):
-        """Takes a location from "signup-table purgatory" to the main DB"""
+        """Takes a location from signup-table purgatory to the main DB"""
         # args in this order:
         props = [
           'name', 'ip', 'color',
@@ -185,12 +191,15 @@ class Location(AsyncInit):
     
     @classmethod
     async def from_ip(cls, rqst):
+        """
+        Unused, but intended to help implement the 'no-lID-if-at-location'
+        thing.
+        """
         query = '''
         SELECT lid
           FROM locations
          WHERE ip = $1::text
         '''
-        print('REQUEST IP ADDRESSES:', rqst.ip, rqst.remote_addr)
         result = await rqst.app.pg_pool.fetchval(query, rqst.ip)
         if result:
             return await cls(result, rqst.app)
@@ -204,13 +213,15 @@ class Location(AsyncInit):
         CSV file WITH a header, and columns in this order:
         
         fullname,username,password
+        
+        (NOT IMPLEMENTED)
         """
         def fix(df):
             """
             Fix+reorder all necessary attributes to match DB in the user CSV dataframe.
             """
-            # to ensure the generated salt is random, redo it for every row (DOESN'T DO WHAT I THOUGHT IT DID LOL)
-            df.password = df.password.apply(functools.partial(bcrypt.hashpw, salt=lambda: bcrypt.gensalt(12)))
+            # XXX FIXME: I need a way to ensure the below salt is random and regenerated for EVERY row
+            df.password = df.password.apply(functools.partial(bcrypt.hashpw, salt=bcrypt.gensalt(12)))
             # assign the given role ID to all members
             df['rid'] = int(rid)
             # Rearrange to remain compliant with asyncpg's copy_to_table
@@ -245,7 +256,8 @@ class Location(AsyncInit):
         
         {'checkouts': 'per_user', 'overdues': False, 'fines': False, 'holds': False, 'items': False}
         
-        or something similar, with only one of the values being non-False.
+        or something similar, with only one of the values being non-False. This will be the value to
+        generate a report for.
         """
         def query_setup(name: str, var: object):
             num = (var == 'per_user') or 2*(var == 'per_role')
@@ -326,11 +338,17 @@ class Location(AsyncInit):
         return res
     
     async def get_user(self, username: str):
+        """
+        Grabs a user object from its username.
+        """
         query = '''SELECT uid FROM members WHERE username = $1::text AND lid = $2::bigint AND type = 0'''
         uid = await self.pool.fetchval(query)
         return await User(uid, self._app, location=self)
     
     async def members(self, by_role=True, *, limit=True, cont=0, max_results=15):
+        """
+        Serves all of this location's members.
+        """
         roles = {}
         async with self.acquire() as conn:
             if by_role:
@@ -344,6 +362,9 @@ class Location(AsyncInit):
             return [{j: i[j] for j in ('uid', 'username', 'fullname')} for i in await conn.fetch(query, self.lid)]
     
     async def add_member(self, username, password, rid, fullname):
+        """
+        Adds a new member to this location, given the above info.
+        """
         pwhash = await self._app.aexec(self._app.ppe, bcrypt.hashpw, password.encode('utf-8'), bcrypt.gensalt(12))
         query = '''
         INSERT INTO members (
@@ -376,7 +397,7 @@ class Location(AsyncInit):
               + ('''AND author ILIKE '%' || ${}::text || '%' ''' if author else '')
               + ('''AND type ILIKE '%' || ${}::text || '%' ''' if type_ else '')
               + ('''AND false ''' if not any(search_terms) else '') # because 'WHERE true' otherwise returns everything if not any(search_terms)
-              + ('''AND issued_to IS {} NULL '''.format(('', 'NOT')[where_taken or 0]) if where_taken is not None else '')
+              + ('''AND issued_to IS {} NULL '''.format(('', 'NOT')[where_taken]) if where_taken is not None else '')
               + ('''ORDER BY lower(title) ''') # just to establish a consistent order for `cont' param
             ).format(*range(1, 1+sum(map(bool, search_terms)))) \
             + ('''LIMIT {} OFFSET {} ''').format(max_results, cont) # these are ok not to parameterize because they're internal
@@ -391,6 +412,13 @@ class Location(AsyncInit):
         return [{j: i[j] for j in ('mid', 'title', 'author', 'genre', 'type', 'issued_to', 'image')} for i in results]
     
     async def roles(self, *, lower_than: Perms.raw = None):
+        """
+        Serves all this location's roles.
+        lower_than is an optional argument that, when given,
+        effects 'filtering' -- only returns the roles whose
+        permissions number is lower than it, to prevent less-endowed
+        operators from assigning higher-permed roles to members.
+        """
         async with self.acquire() as conn:
             query = '''
             SELECT rid, name, isdefault, permissions AS perms, maxes, locks
@@ -409,6 +437,12 @@ class Location(AsyncInit):
         return res
     
     async def add_role(self, name, *, kws=None, seqs=None):
+        """
+        Adds a new role to a location, taking either keyword arguments
+        (kws) for each of its perms/maxes/locks, or sequences (seqs)
+        from either of which the perms/maxes/locks objects can be
+        constructed.
+        """
         perms, maxes, locks = Role.attrs_from(seqs=seqs, kws=kws)
         async with self.acquire() as conn:
             query = '''
@@ -424,6 +458,10 @@ class Location(AsyncInit):
         return await Role(rid, self._app, location=self)
     
     async def items(self, *, cont=0, max_results=5):
+        """
+        Returns all this location's items in chunks of
+        max_results items, on page cont.
+        """
         query = '''
         SELECT mid, type, title, author, genre, image
           FROM items
@@ -469,10 +507,17 @@ class Location(AsyncInit):
         # and may never be ...
     
     async def media_types(self):
+        """
+        Returns all this location's media types, with their maxes included as a Maxes obj.
+        """
         query = '''SELECT name, maxes FROM mtypes WHERE lid = $1::bigint'''
         return [{'name': i['name'], 'maxes': Maxes(i['maxes'])} for i in await self.pool.fetch(query, self.lid)]
     
-    async def add_media_type(self, name, unit, maxes: 'Maxes.namemap'):
+    async def add_media_type(self, name, unit, maxes: Maxes.props):
+        """
+        Adds a new media type to the location from its name,
+        unit of length, and max overrides.
+        """
         query = '''
         INSERT INTO mtypes (name, unit, maxes, lid)
         SELECT $1::text, $2::text, $3::bigint, $4::bigint
@@ -482,16 +527,16 @@ class Location(AsyncInit):
     
     async def edit_media_type(self, mtype, *, maxes=None, name=None, unit=None):
         """
-        Edit's a media type's maxes and name.
+        Edit's a media type's maxes, unit, and name.
         """
         mtype = await MediaType(mtype, self, self._app)
         await mtype.edit(maxes=maxes and Maxes.from_kwargs(**maxes).raw, name=name, unit=unit)
     
     async def remove_media_type(self, name):
         """
-        Gets rid of a media type, also making sure to clean up where
+        Gets rid of a media type, making sure to clean up where
         any media items might have it.
-        (Else MediaItem just throws "this type doesn't exist yet"
+        (If this isn't done MediaItem throws "this type doesn't exist yet"
         whenever you try to access one of said items' info)
         """
         query = '''
@@ -522,12 +567,17 @@ class Location(AsyncInit):
         return [i['genre'] for i in await self.pool.fetch(query, self.lid)]
     
     async def rename_genre(self, cur, to):
-        """Changes the name of a genre, from [cur]rent value [to] a new value"""
+        """
+        Changes the name of a genre, from [cur]rent value [to] a new value
+        """
         await self.pool.execute(
           '''UPDATE items SET genre = lower($2::text) WHERE genre = lower($1::text)''', cur, to
           )
     
     async def remove_genre(self, genre):
+        """
+        Removes a genre from this location.
+        """
         await self.pool.execute(
           '''UPDATE items SET genre = NULL WHERE genre = lower($1::text)''', genre
           )
@@ -536,8 +586,8 @@ class Location(AsyncInit):
         """
         Adds a new media item to location.
         Genre will be added regardless of whether it's new, because
-        again there's no table or anything storing genres.
-        Price will be converted to a proper representation of its
+        again there's no table or anything keeping track of genres.
+        Item's price will be converted to a proper representation of its
         value through the Decimal class before being passed to
         PostgreSQL.
         """
