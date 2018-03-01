@@ -21,12 +21,15 @@ export class LocationService {
   private locItemsURL: string = this.loc + '/media';
   private searchURL: string = this.loc + '/media/search';
   
+  private allRolesURL = this.loc + '/roles';
+  private filteredRolesURL = this.allRolesURL + '/filtered';
+  
   private allMembersURL: string = this.loc + '/members';
   private memberInfoURL: string = this.loc + '/members/info';
   private createMemberURL: string = this.loc + '/members/add';
   private deleteMemberURL: string = this.loc + '/members/remove';
   
-  locMedia: string = this.loc + '/media'
+  private locMedia: string = this.loc + '/media'
   
   private createItemURL: string = this.locMedia + '/add';
   private delItemURL: string = this.locMedia + '/remove';
@@ -72,6 +75,14 @@ export class LocationService {
   
   getAllMedia(cont): Observable<any> {
     return this.http.get<any>(this.locItemsURL, {params: {cont: cont}});
+  }
+  
+  getAllRoles(): Observable<any> {
+    return this.http.get<any>(this.allRolesURL);
+  }
+  
+  getFilteredRoles(): Observable<any> {
+    return this.http.get<any>(this.filteredRolesURL);
   }
   
   searchMedia(cont=0, title=null, author=null, genre=null, type_=null): Observable<any> {

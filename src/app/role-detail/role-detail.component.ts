@@ -50,7 +50,7 @@ export class RoleDetailComponent implements OnInit {
   }
   
   checkView() {
-    return this.rID == 'new' || +this.globals.rawPermNum > +this.rawPermNum;
+    return this.rID == 'new' || +this.globals.perms.raw > +this.rawPermNum;
   }
   
   getArrs() {

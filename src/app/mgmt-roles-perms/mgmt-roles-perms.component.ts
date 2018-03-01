@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { RoleService } from '../role.service';
+import { LocationService } from '../location.service';
 
 import { Role } from '../classes';
 
@@ -21,11 +22,12 @@ export class MgmtRolesPermsComponent implements OnInit {
   constructor(
     public globals: Globals,
     public router: Router,
-    public roleService: RoleService
+    public roleService: RoleService,
+    private locationService: LocationService
   ) {}
 
   ngOnInit() {
-    this.roleService.getAll()
+    this.locationService.getAllRoles()
       .subscribe(
         res => this.roles = res.roles.sort((a, b) => a.name.localeCompare(b.name)), // sort received roles alphabetically by name
         err => this.msg = err.error?err.error:'Error.'

@@ -12,9 +12,12 @@ roles = sanic.Blueprint('location_roles_api', url_prefix='/roles')
 @uid_get('perms', 'location')
 @jwtdec.protected()
 async def all_roles(rqst, location, *, perms):
-    if not perms.can_manage_roles:
-        sanic.exceptions.abort(403, "You aren't allowed to view roles.")
-    return sanic.response.json({"roles": await location.roles()}, status=200)
+    return sanic.response.json({'roles': await location.roles()}, status=200)
+
+@roles.get('/filtered')
+@uid_get('perms', 'location')
+async def filtered_roles(rqst, location, *, perms):
+    return sanic.response.json({'roles': await location.roles(lower_than=perms.raw)}, status=200)
 
 @roles.post('/add')
 @rqst_get('user', 'name', 'seqs')
@@ -22,7 +25,5 @@ async def all_roles(rqst, location, *, perms):
 async def add_role_to_location(rqst, user, *, name, seqs):
     if not user.perms.can_manage_roles:
         sanic.exceptions.abort(403, "You aren't allowed to modify roles.")
-    if name.lower() in ('admin', 'organizer', 'subscriber'):
-        sanic.exceptions.abort(401, 'That name is reserved.')
     role = await user.location.add_role(name=name, kws=seqs)
     return sanic.response.json({'rid': role.rid}, status=200)

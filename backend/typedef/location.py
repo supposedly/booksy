@@ -381,20 +381,22 @@ class Location(AsyncInit):
         # not to mention being just pretty all-around inefficient
         return [{j: i[j] for j in ('mid', 'title', 'author', 'genre', 'type', 'image')} for i in results]
     
-    async def roles(self):
+    async def roles(self, *, lower_than: Perms.raw = None):
         async with self.acquire() as conn:
             query = '''
             SELECT rid, name, isdefault, permissions AS perms, maxes, locks
               FROM roles
              WHERE lid = $1::bigint
             '''
-            q2ery = '''SELECT count(*) FROM members WHERE rid = $1::bigint'''
+            sums = '''SELECT count(*) FROM members WHERE rid = $1::bigint'''
             res = [{j: i[j] for j in ('rid', 'name', 'isdefault', 'perms', 'maxes', 'locks')} for i in await conn.fetch(query, self.lid)]
+            if lower_than and lower_than < 127: # if it isn't an admin role
+                res = [i for i in res if i['perms'] < lower_than]
             for i in res:
                 i['perms'] = Perms(i['perms']).props
                 i['maxes'] = Maxes(i['maxes']).props
                 i['locks'] = Locks(i['locks']).props
-                i['count'] = await conn.fetchval(q2ery, i['rid'])
+                i['count'] = await conn.fetchval(sums, i['rid'])
         return res
     
     async def add_role(self, name, *, kws=None, seqs=None):

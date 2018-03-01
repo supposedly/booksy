@@ -31,7 +31,7 @@ export class MemberAcctInfoComponent implements OnInit {
 
   ngOnInit() {
     this.uID = this.route.snapshot.paramMap.get('uID');
-    this.roleService.getAll()
+    this.locationService.getFilteredRoles()
       .subscribe(res => this.roles = res.roles.sort((a, b) => a.name.localeCompare(b.name)));
     if (this.uID == 'new') {
       this.makeInfo();

@@ -1,7 +1,7 @@
 <p>{{msg}}</p>
 <button (click)="location.back()">Go back</button>
 <div *ngIf="member">
-  <div *ngIf="globals.perms.raw >= member.perms.raw || globals.uID == member.user_id; else just_the_info">
+  <div *ngIf="globals.perms.raw > member.perms.raw || globals.perms.raw >= 127; else just_the_info">
     <br/>
     <button class="bad" *ngIf="uID!='new' && globals.uID != member.user_id" (click)="removeMember()">Delete member</button>
     <button class="new" *ngIf="showMediaLink" routerLink="../../dashboard/{{uID}}/items">Checked-out items</button>
