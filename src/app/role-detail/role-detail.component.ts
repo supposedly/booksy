@@ -50,7 +50,8 @@ export class RoleDetailComponent implements OnInit {
   }
   
   checkView() {
-    return this.rID == 'new' || +this.globals.perms.raw > +this.rawPermNum;
+    var gRaw = +this.globals.perms.raw;
+    return this.rID == 'new' || gRaw >= 127 || gRaw > +this.rawPermNum;
   }
   
   getArrs() {
@@ -67,11 +68,14 @@ export class RoleDetailComponent implements OnInit {
   }
   
   submit() {
+    var sMaxArr = {}, sLockArr = {}; // initialize to properly copy attrs to this:
+    for (let i in this.maxes.arr.names) { sMaxArr[i] = this.maxes.overrideArr.names[i]?this.maxes.overrideArr.names[i]:this.maxes.arr.names[i] }
+    for (let i in this.locks.arr.names) { sLockArr[i] = this.locks.overrideArr.names[i]?this.locks.overrideArr.names[i]:this.locks.arr.names[i] }
     if (this.rID == 'new') {
-      this.roleService.create(this.roleName, this.perms.arr.names, this.maxes.arr.names, this.locks.arr.names)
+      this.roleService.create(this.roleName, this.perms.arr.names, sMaxArr, sLockArr)
         .subscribe(resp => {this.rID = resp.rid; this.msg = "Successfully created."}, err => this.msg = err.error?err.error:"Not allowed!");
     } else {
-      this.roleService.modify(this.rID, this.roleName, this.perms.arr.names, this.maxes.arr.names, this.locks.arr.names)
+      this.roleService.modify(this.rID, this.roleName, this.perms.arr.names, sMaxArr, sLockArr)
         .subscribe(_ => this.msg = "Successfully edited.", err => this.msg = err.error?err.error:"Not allowed!");
     }
   }
