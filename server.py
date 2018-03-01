@@ -312,4 +312,4 @@ Have fun!
 
 if __name__ == '__main__':
     # more than 1 worker and you get too many DB connections :((
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)), debug=True, workers=1)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)), debug=False, access_log=False, workers=1)
