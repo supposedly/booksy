@@ -277,14 +277,14 @@ class Location(AsyncInit):
         if do['checkouts']:
             col = 'checkouts'
             query = '''
-            SELECT DISTINCT ON (items.mid) items.title || ' (#' || items.mid || ')' AS title
+            SELECT DISTINCT ON (items.mid) items.title || ' (#' || items.mid || '; ' || items.due_date || ')' AS title
               FROM members, items
              WHERE items.issued_to IS NOT NULL
             '''
         elif do['overdues']:
             col = 'overdues'
             query = '''
-            SELECT DISTINCT ON (items.mid) items.title || ' (#' || items.mid || ')' AS title
+            SELECT DISTINCT ON (items.mid) items.title || ' (#' || items.mid || '; ' || items.due_date || ')' AS title
               FROM members, items
              WHERE items.issued_to IS NOT NULL
                AND items.due_date < current_date
