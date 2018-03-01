@@ -33,7 +33,7 @@
 </p>
 <!-- TODO: (?) maybe move this along with media-suggestion's identical block to its own item-list.component or something -->
 <ul>
-  <li *ngFor="let item of items" class="item-box" [class.result]="query">
+  <li *ngFor="let item of items" class="item-box" [class.result]="query" [class.bad]="item.issued_to">
     <div class="text"> <!-- div in a list ahah yikes -->
       <span class="title link" routerLink="{{breadcrumbs}}{{item.mid}}">{{item.title}}</span>
       <span class="link" *ngIf="globals.perms.names.canManageMedia" routerLink="{{breadcrumbs}}edit/{{item.mid}}"> (edit)</span>

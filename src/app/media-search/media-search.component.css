@@ -33,6 +33,10 @@ ul {
   border-color: #00c516;
   background-color: #e0ffe0;
 }
+.item-box.bad {
+  border-color: #ff2929;
+  background-color: #fef0ed;
+}
 .item-box img {
   display: inline-block;
   height: 128px;
