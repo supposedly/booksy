@@ -33,7 +33,7 @@ class MediaType(AsyncInit):
         self.unit = res['unit']
     
     def __str__(self):
-        return self.name
+        return self.name if hasattr(self, 'name') else ''
     
     def to_dict(self):
         return {'name': self.name, 'unit': self.unit, 'maxes': self.maxes.props}
