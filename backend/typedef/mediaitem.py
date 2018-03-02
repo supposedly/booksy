@@ -73,11 +73,12 @@ class MediaItem(AsyncInit):
         self.location = await Location(self.lid, self._app)
         self.available = not self._issued_uid
         self.issued_to = None if self._issued_uid is None else await User(self._issued_uid, self._app, location=self.location)
-        self.type = await MediaType(self._type, self.location, self._app)
+        self.type = None if self._type is None else await MediaType(self._type, self.location, self._app)
     
     def to_dict(self):
         retdir = {attr: str(getattr(self, attr, None)) for attr in self.props}
-        retdir['type'], retdir['available'] = self.type.to_dict(), not self.issued_to
+        retdir['type'] = self.type.to_dict() if self.type else ''
+        retdir['available'] = not self.issued_to
         return retdir
     
     async def set_maxes(self, newmaxes: Maxes, *, mid=True):
@@ -238,6 +239,8 @@ class MediaItem(AsyncInit):
         Because item-specific maxes were again not implemented,
         this just returns either the item's type's maxes or None
         """
+        if not self.type:
+            return None
         if not self._maxnum:
             return self.type.maxes
         return {k: v if v != 254 else self.type.maxes[k] for k, v in Maxes(self._maxnum).namemap.items()}
