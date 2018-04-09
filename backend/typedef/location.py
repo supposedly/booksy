@@ -523,14 +523,14 @@ class Location(AsyncInit):
         SELECT $1::text, $2::text, $3::bigint, $4::bigint
         '''
         await self.pool.execute(query, name.lower(), unit.lower(), Maxes.from_kwargs(**maxes).raw, self.lid)
-        return await MediaType(name, self, self._app)
+        return await MediaType(name.lower(), self, self._app)
     
     async def edit_media_type(self, mtype, *, maxes=None, name=None, unit=None):
         """
         Edit's a media type's maxes, unit, and name.
         """
-        mtype = await MediaType(mtype, self, self._app)
-        await mtype.edit(maxes=maxes and Maxes.from_kwargs(**maxes).raw, name=name, unit=unit)
+        mtype = await MediaType(mtype.lower(), self, self._app)
+        await mtype.edit(maxes=maxes and Maxes.from_kwargs(**maxes).raw, name=name.lower(), unit=unit)
     
     async def remove_media_type(self, name):
         """

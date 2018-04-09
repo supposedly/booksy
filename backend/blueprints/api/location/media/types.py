@@ -37,8 +37,10 @@ async def add_location_media_type(rqst, user, *, add: {'name': str, 'unit': str,
     """
     if not user.perms.can_manage_media:
         sanic.exceptions.abort(401, "You aren't allowed to manage media types.")
-    if not name:
+    if 'name' not in add or not add['name']:
         sanic.exceptions.abort(422, "add_media_type() missing 1 required positional argument: 'name'")
+    if 'unit' not in add or not add['unit']:
+        sanic.exceptions.abort(422, "add_media_type() missing 1 required positional argument: 'unit'")
     try:
         await user.location.add_media_type(**add)
     except UniqueViolationError:
