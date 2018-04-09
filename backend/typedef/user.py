@@ -1,12 +1,4 @@
-import asyncio
-import functools
-import io
-import datetime as dt
-from decimal import Decimal
-from asyncio import iscoroutinefunction as is_coro
-
 import asyncpg
-import pandas
 
 from ..core import AsyncInit
 from ..attributes import Perms, Maxes, Locks
@@ -89,7 +81,7 @@ class User(AsyncInit):
         self._permnum = permbin
         self._maxnum = maxbin
         self._locknum = lockbin
-        self.is_checkout = bool(self._type) # == 1
+        self.is_checkout = bool(self._type)  # == 1
     
     def to_dict(self) -> dict:
         props = ['user_id', 'username', 'name', 'lid', 'manages', 'rid', 'email', 'phone', 'is_checkout', 'perms', 'recent']
@@ -107,7 +99,7 @@ class User(AsyncInit):
         that their checkout duration is restricted to 0)
         """
         chk, dur = self.locks.checkouts, self.maxes.checkout_duration
-        if chk and dur: # user is able to check out, that is unless the item's type's maxes won't allow it
+        if chk and dur:  # user is able to check out, that is unless the item's type's maxes won't allow it
             return False
         ret = (
           "You can't check anything out at the moment"
@@ -118,7 +110,7 @@ class User(AsyncInit):
             )
           + ('' if dur else '; allowed to check out for 0 weeks')
           )
-        return ret + ('' if chk else ')') # construct dynamic notif string
+        return ret + ('' if chk else ')')  # construct dynamic notif string
     
     @classmethod
     async def create(cls, app, **kwargs):
@@ -330,7 +322,7 @@ class User(AsyncInit):
     
     @property
     def perms(self):
-        if self.is_checkout: # Checkout accounts have no perms
+        if self.is_checkout:  # Checkout accounts have no perms
             return Perms(0)
         if self._permnum is None:
             return self.role.perms

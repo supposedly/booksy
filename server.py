@@ -2,8 +2,11 @@ import asyncio
 import itertools
 import os
 import struct
+import urllib
+import uuid
 from concurrent.futures import ProcessPoolExecutor
 from glob import glob
+from inspect import cleandoc
 from urllib import parse
 
 import aiohttp
@@ -11,12 +14,8 @@ import aioredis
 import asyncpg
 import bcrypt
 import sanic
-import urllib
-import uuid
 import uvloop
 import sanic_jwt as jwt
-from Crypto.Cipher import AES
-from Crypto.Util import Counter
 from sanic_jwt import decorators as jwtdec
 from sanic import Sanic
 
@@ -153,11 +152,11 @@ async def set_up_dbs(app, loop):
         app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = False
     else:
         app.rd_pool = await aioredis.create_pool(
-                        os.getenv('REDIS_URL'),
-                        minsize=5,
-                        maxsize=15,
-                        loop=loop
-                        )
+          os.getenv('REDIS_URL'),
+          minsize=5,
+          maxsize=15,
+          loop=loop
+          )
 
 @app.listener('before_server_stop')
 async def close_dbs(app, loop):
@@ -205,110 +204,112 @@ async def login_refresh_fix(rqst):
 @app.get('/verify')
 @deco.rqst_get('token')
 async def finalize_registration(rqst, token):
-    return sanic.response.html(f'''
-<html><head><style>
-* {{ font-family: sans-serif; }}
-h1 {{ text-decoration: underline; }}
-h3 {{ font-weight: normal; margin-bottom: 5px; }}
-input {{
-  margin-bottom: 1em;
-  border-radius: 5px;
-  border: 1px solid #bbb;
-  padding: 10px;
-}}
-button {{
-  background-color: #43ba2e;
-  color: white;
-  padding: 10px 10px;
-  margin: auto;
-  cursor: pointer;
-  border: none;
-  border-radius: 5px;
-  padding: 15px;
-  transition: opacity .2s;
-}}
-</style></head><body>
-  <h1>Registering your library</h1>
-  <p>You're almost done! Fill out the form below to finalize your registration.</p>
-  <br/>
-  <form method="post" action="../register" oninput="checkMatching()">
-    <input name="token" type="hidden" value="{token}">
-    <h3>Your admin password:</h3>
-    <input type="password" id="adminpw" name="adminpw" placeholder="Admin account password"/>
-    <input type="password" id="aconf" placeholder="Confirm admin password">
-    <h3>Your library's self-checkout account's password:</h3>
-    <input type="password" id="checkoutpw" name="checkoutpw" placeholder="Self-checkout account password"/>
-    <input type="password" id="cconf" placeholder="Confirm checkout account password">
-    <p>Make sure you keep these on hand!</p>
-    <button id="sbmt" type="submit">Register</button>
-  </form>
-</body><script>
-function checkMatching() {{
-    var adminpw = document.getElementById("adminpw");
-    var aconf = document.getElementById("aconf");
-    var checkoutpw = document.getElementById("checkoutpw");
-    var cconf = document.getElementById("cconf");
-    var sbmt = document.getElementById("sbmt");
-    
-    if (aconf.value && aconf.value !== adminpw.value) {{
-        aconf.style.backgroundColor = "#fef0ed";
-        aconf.style.color = "#ff2929";
-        aconf.style.borderColor = "#ff2929";
-        sbmt.style.display = "none";
-    }} else {{
-        aconf.style.backgroundColor = "white";
-        aconf.style.color = "black";
-        aconf.style.borderColor = "#bbb";
-        sbmt.style.display = (cconf.value && cconf.value !== checkoutpw.value)?"none":"";
-    }}
-    if (cconf.value && cconf.value !== checkoutpw.value) {{
-        cconf.style.backgroundColor = "#fef0ed";
-        cconf.style.color = "#ff2929";
-        cconf.style.borderColor = "#ff2929";
-        sbmt.style.display = "none";
-    }} else {{
-        cconf.style.backgroundColor = "white";
-        cconf.style.color = "black";
-        cconf.style.borderColor = "#bbb";
-        sbmt.style.display = (aconf.value && aconf.value !== adminpw.value)?"none":"";
-    }}
-    if (!aconf.value || !cconf.value) {{
-        sbmt.style.display = "none";
-    }}
-}}
-</script></html>''', status=200)
+    return sanic.response.html(cleandoc(f'''
+      <html><head><style>
+      * {{ font-family: sans-serif; }}
+      h1 {{ text-decoration: underline; }}
+      h3 {{ font-weight: normal; margin-bottom: 5px; }}
+      input {{
+        margin-bottom: 1em;
+        border-radius: 5px;
+        border: 1px solid #bbb;
+        padding: 10px;
+      }}
+      button {{
+        background-color: #43ba2e;
+        color: white;
+        padding: 10px 10px;
+        margin: auto;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        padding: 15px;
+        transition: opacity .2s;
+      }}
+      </style></head><body>
+        <h1>Registering your library</h1>
+        <p>You're almost done! Fill out the form below to finalize your registration.</p>
+        <br/>
+        <form method="post" action="../register" oninput="checkMatching()">
+          <input name="token" type="hidden" value="{token}">
+          <h3>Your admin password:</h3>
+          <input type="password" id="adminpw" name="adminpw" placeholder="Admin account password"/>
+          <input type="password" id="aconf" placeholder="Confirm admin password">
+          <h3>Your library's self-checkout account's password:</h3>
+          <input type="password" id="checkoutpw" name="checkoutpw" placeholder="Self-checkout account password"/>
+          <input type="password" id="cconf" placeholder="Confirm checkout account password">
+          <p>Make sure you keep these on hand!</p>
+          <button id="sbmt" type="submit">Register</button>
+        </form>
+      </body><script>
+      function checkMatching() {{
+          var adminpw = document.getElementById("adminpw");
+          var aconf = document.getElementById("aconf");
+          var checkoutpw = document.getElementById("checkoutpw");
+          var cconf = document.getElementById("cconf");
+          var sbmt = document.getElementById("sbmt");
+          
+          if (aconf.value && aconf.value !== adminpw.value) {{
+              aconf.style.backgroundColor = "#fef0ed";
+              aconf.style.color = "#ff2929";
+              aconf.style.borderColor = "#ff2929";
+              sbmt.style.display = "none";
+          }} else {{
+              aconf.style.backgroundColor = "white";
+              aconf.style.color = "black";
+              aconf.style.borderColor = "#bbb";
+              sbmt.style.display = (cconf.value && cconf.value !== checkoutpw.value)?"none":"";
+          }}
+          if (cconf.value && cconf.value !== checkoutpw.value) {{
+              cconf.style.backgroundColor = "#fef0ed";
+              cconf.style.color = "#ff2929";
+              cconf.style.borderColor = "#ff2929";
+              sbmt.style.display = "none";
+          }} else {{
+              cconf.style.backgroundColor = "white";
+              cconf.style.color = "black";
+              cconf.style.borderColor = "#bbb";
+              sbmt.style.display = (aconf.value && aconf.value !== adminpw.value)?"none":"";
+          }}
+          if (!aconf.value || !cconf.value) {{
+              sbmt.style.display = "none";
+          }}
+      }}
+      </script></html>'''), status=200)
 
 @app.post('/register')
 @deco.rqst_get('token', 'adminpw', 'checkoutpw', form=True)
 async def register_location(rqst, token, adminpw, checkoutpw):
     """Have to *unpack these attrs because rqst.form returns single-item lists."""
     locname, lid, chk_usr, admin_usr = await Location.instate(rqst, *token, *adminpw, *checkoutpw)
-    return sanic.response.html('''
-<html><head></head><body>
-<p style="font-family:monospace;font-size:20px"><strong>'''
-+ '''
-╔════════════════════════════════════════════════════════╗<br/>
-║ PLEASE SCREENSHOT OR OTHERWISE SAVE THIS PAGE!!!       ║<br/>
-║                                                        ║<br/>
-║ The information given here, particularly the location  ║<br/>
-║ ID and self-checkout account's username, are vital to  ║<br/>
-║ logging in — but they will not be displayed anywhere   ║<br/>
-║ else.                                                  ║<br/>
-╚════════════════════════════════════════════════════════╝
-</strong></p>
-'''.replace(' ', '&nbsp;') # otherwise the third line gets screwed with
-+ f'''
-<p style="font-family:sans-serif">
-Thanks! Your new library, <b>{locname}</b>, has been registered, with location ID <b>{lid}</b>.
-<br/><br/>
-Your admin account's username is <b>{admin_usr}</b>, and you can log into it along with the above location ID to start adding members and media.
-<br/>
-Your library's self-checkout account's username is <b>{chk_usr}</b>. Your patrons (once they're registered too!) can check out from it as a convenience method, without needing to log in to their full accounts.
-<br/><br/>
-Have fun!
-</p>
-</body></html>
-''', status=200)
+    return sanic.response.html(cleandoc('''
+        <html><head></head><body>
+        <p style="font-family:monospace;font-size:20px"><strong>
+        ''')
+        + cleandoc('''
+        ╔════════════════════════════════════════════════════════╗<br/>
+        ║ PLEASE SCREENSHOT OR OTHERWISE SAVE THIS PAGE!!!       ║<br/>
+        ║                                                        ║<br/>
+        ║ The information given here, particularly the location  ║<br/>
+        ║ ID and self-checkout account's username, are vital to  ║<br/>
+        ║ logging in — but they will not be displayed anywhere   ║<br/>
+        ║ else.                                                  ║<br/>
+        ╚════════════════════════════════════════════════════════╝
+        </strong></p>
+        ''').replace(' ', '&nbsp;') # otherwise the third line gets screwed with
+      + cleandoc(f'''
+        <p style="font-family:sans-serif">
+        Thanks! Your new library, <b>{locname}</b>, has been registered, with location ID <b>{lid}</b>.
+        <br/><br/>
+        Your admin account's username is <b>{admin_usr}</b>, and you can log into it along with the above location ID to start adding members and media.
+        <br/>
+        Your library's self-checkout account's username is <b>{chk_usr}</b>. Your patrons (once they're registered too!) can check out from it as a convenience method, without needing to log in to their full accounts.
+        <br/><br/>
+        Have fun!
+        </p>
+        </body></html>
+        '''),
+    status=200)
 
 if __name__ == '__main__':
     # more than 1 worker and you get too many DB connections :((

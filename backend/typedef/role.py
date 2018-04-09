@@ -27,8 +27,8 @@ class Role(AsyncInit):
     """
     @staticmethod
     def do_imports():
-        global Location, Role, MediaItem, MediaType, User
-        from . import Location, Role, MediaItem, MediaType, User
+        global Location, MediaItem, MediaType, User
+        from . import Location, MediaItem, MediaType, User
     
     async def __init__(self, rid, app, *, location=None):
         self._app = app

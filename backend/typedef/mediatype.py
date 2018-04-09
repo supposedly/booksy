@@ -1,5 +1,5 @@
 from ..core import AsyncInit
-from ..attributes import Perms, Maxes, Locks
+from ..attributes import Maxes
 
 
 class MediaType(AsyncInit):
@@ -16,8 +16,8 @@ class MediaType(AsyncInit):
     
     @staticmethod
     def do_imports():
-        global Location, Role, MediaItem, MediaType, User
-        from . import Location, Role, MediaItem, MediaType, User
+        global Location, Role, MediaItem, User
+        from . import Location, Role, MediaItem, User
     
     async def __init__(self, name, location, app):
         self._app = app
