@@ -42,8 +42,8 @@ class MediaItem(AsyncInit):
     
     @staticmethod
     def do_imports():
-        global Location, Role, MediaItem, MediaType, User
-        from . import Location, Role, MediaItem, MediaType, User
+        global Location, Role, MediaType, User
+        from . import Location, Role, MediaType, User
     
     async def __init__(self, mid, app):
         try:

@@ -29,8 +29,8 @@ except ModuleNotFoundError: # means I'm testing (can't access app.config.TESTING
     def __gensalt(*_, **__):
         return 0
     bcrypt = types.SimpleNamespace(
-      hashpw = __hashpw,
-      gensalt = __gensalt
+      hashpw=__hashpw,
+      gensalt=__gensalt
     )
 #################################################
 
@@ -60,8 +60,8 @@ class Location(AsyncInit):
     
     @staticmethod
     def do_imports():
-        global Location, Role, MediaItem, MediaType, User
-        from . import Location, Role, MediaItem, MediaType, User
+        global Role, MediaItem, MediaType, User
+        from . import Role, MediaItem, MediaType, User
     
     async def __init__(self, lid, app, *, owner=None):
         self._app = app
@@ -269,11 +269,7 @@ class Location(AsyncInit):
             param = (None, 'username', 'rid')[num]
             # 'rid' if var == 'per_role' else 'username' if var == 'per_user' else None
             return to_search, key, param
-            query = '''
-            SELECT DISTINCT ON (items.mid) items.title || ' (#' || items.mid || ')' AS title
-              FROM members, items
-             WHERE items.issued_to IS NOT NULL
-            '''
+        
         if do['checkouts']:
             col = 'checkouts'
             query = '''

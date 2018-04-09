@@ -1,3 +1,18 @@
+# A QUICK NOTE (March 7th, 2018)
+**THE BELOW "ANNOYANCES" SECTION erroneously states** that this project cannot be run on Windows XP. **But it can:** I'd falsely assumed that XP had no modern browser offerings,
+but Firefox 52 is in fact available on XP *and* can run my webapp perfectly fine -- meaning the submission is compliant with the *`"The program must run on Windows XP or higher."`*
+[guideline](http://www.fbla-pbl.org/competitive-event/coding-programming/).
+
+For other operating systems, **you will have the best experience using Chrome 57 or newer**, but if Chrome is unavailable then Firefox 52+ or Opera 44+ will suffice.  
+Internet Explorer, Microsoft Edge, and Safari are unfortunately no-gos: the former two experience an incompatibility with Angular 5 (my web framework) that renders them unable to progress
+past the login screen, and Safari in all its versions exhibits a CSS misbehavior that causes some pages' sub-headers to run off the top of the screen where they can't be clicked. Unfortunate.
+
+**NOTE** that this message was added way after the deadline (seven days!). Plase understand, however, that **nothing** within the actual project was modified -- just this README --
+and you can verify by looking through commit history and checking what files were changed. Apologies for the hassle! I'd have separated this document from the
+rest of the project if I'd had the foresight.
+
+The otherwise-unmodified README starts below. :)
+
 ## Booksy
 
 Hello! Please visit this URL: https://booksy-db.herokuapp.com  
@@ -97,10 +112,9 @@ Two inconveniences, both sadly out of my control, should be made yet-further not
 
 ## Extras
 - Try it on your phone! It's not optimized for mobile at all, and the help tooltips are liable to run off the small screen, but it does work quite
- nicely considering my only conscious attempt at responsiveness was shrinking some CSS things depending on screen size.
+  nicely considering my only conscious attempt at responsiveness was shrinking some CSS things depending on screen size.
 - See `spec/d+ds.md` for a slightly-outdated-but-still-decently-accurate rundown of how the app interacts with the end-user. (It was my initial
   planning document where I got my thoughts down, but I deviated a little from it in actually applying things)
 - See the "General UX overview" help article for a rundown of how to navigate the application and where to look for certain functionality.
 
 Thank you :)
-
