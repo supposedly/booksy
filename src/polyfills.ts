@@ -38,7 +38,7 @@ import 'core-js/es6/set';
 // import 'classlist.js';  // Run `npm install --save classlist.js`.
 
 /** IE10 and IE11 requires the following for the Reflect API. */
-// import 'core-js/es6/reflect';
+import 'core-js/es6/reflect';
 
 
 /** Evergreen browsers require these. **/
@@ -64,3 +64,19 @@ import 'zone.js/dist/zone';  // Included with Angular CLI.
 /***************************************************************************************************
  * APPLICATION IMPORTS
  */
+
+import 'core-js/client/shim'; // or load it before other angular2 & zone.js stuff
+import 'zone.js';
+import 'reflect-metadata';
+
+import 'core-js/es7';
+import 'core-js/es7/array';
+import 'core-js/es7/global';
+import 'core-js/es7/string';
+import 'core-js/es7/map';
+import 'core-js/es7/set';
+import 'core-js/es7/error';
+import 'core-js/es7/math';
+import 'core-js/es7/system';
+import 'core-js/es7/symbol';
+import 'core-js/es7/observable';

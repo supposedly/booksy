@@ -12,8 +12,8 @@
       "node_modules/@types"
     ],
     "lib": [
-      "dom",
-      "es2017"
+      "es7",
+      "dom"
     ]
   }
 }
