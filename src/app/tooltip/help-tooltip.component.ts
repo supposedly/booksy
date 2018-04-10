@@ -10,6 +10,7 @@ import {
 import { HelpService } from '../help.service';
 
 @Component({
+    // tslint:disable-next-line:component-selector
     selector: 'whatsthis',
     template: `
       <div>
@@ -53,7 +54,7 @@ export class HelpTooltipComponent implements OnInit {
   ngOnInit() {
     this.linkUrl = `/help/${this.ident}`;
     this.helpService.getBrief(this.ident)
-      .subscribe(resp => {this.linkText = resp.help.title; this.content = resp.help.brief;});
+      .subscribe(resp => { this.linkText = resp.help.title; this.content = resp.help.brief; });
   }
   
   @HostListener('document:click', ['$event.target'])

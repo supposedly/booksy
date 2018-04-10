@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Router, CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 
 import { Observable } from 'rxjs/Observable';
-import 'rxjs/Rx'; // eh
+import 'rxjs/Rx'; // !!! FIXME !!!
 
 import { MemberAuthService } from './member-auth.service';
 import { Globals } from './globals';

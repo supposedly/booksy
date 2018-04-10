@@ -36,7 +36,7 @@ export class MediaInfoComponent implements OnInit {
         resp => {
           this.showFines = !!(this.globals.perms.names.canManageMedia && +resp.info.fines);
           this.item = resp.info;
-          if (this.item.fines == 'None') { // because Python fails to properly serialize None to null for some reason
+          if (this.item.fines === 'None') { // Python sometimes fails to serialize None to null for some reason
             this.item.fines = null;
           }
         });

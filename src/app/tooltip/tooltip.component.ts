@@ -10,6 +10,8 @@ import {
 } from '@angular/core';
 
 @Directive({
+  // TODO: Figure out what this rule means and how it applies
+  // tslint:disable-next-line:directive-selector
   selector: '.tooltip-container'
 })
 export class TooltipContainerDirective {}
@@ -54,7 +56,7 @@ export class TooltipComponent implements OnInit {
     const {height} = this.tooltipContainer.nativeElement.getBoundingClientRect();
 
     const enclosedBy = this.config.host.attributes['relative'] ? 'relative' : 'absolute';
-    if (enclosedBy == 'absolute') {
+    if (enclosedBy === 'absolute') {
       this.top = `${top - height}px`;
       this.left = `${left}px`;
     } else {

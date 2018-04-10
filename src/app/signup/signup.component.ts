@@ -23,6 +23,9 @@ export class SignupComponent {
   
   submit() {
     this.locationService.register(this.email, this.locname, this.color, this.adminname)
-      .subscribe(resp => this.msg = 'Submitted! Please check your email for a verification link.', err => this.msg = err.error ? err.error : 'Error.');
+      .subscribe(
+        resp => this.msg = 'Submitted! Please check your email for a verification link.',
+        err => this.msg = err.error ? err.error : 'Error.'
+      );
   }
 }

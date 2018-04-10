@@ -67,7 +67,7 @@ export class CheckoutComponent {
                 },
                 err => this.msg = err.error ? err.error : 'Error checking in'
               );
-          } else if (status.issued_to && status.issued_to.uid == this.globals.uID) {
+          } else if (status.issued_to && status.issued_to.uid === this.globals.uID) {
             this.msg = 'Error: You don\'t have permission to check in your own items! Hand it in to a library operator instead.';
           } else {
             this.msg = 'Error: Item is checked out to ' + status.issued_to.name.toString() + '.';

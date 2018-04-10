@@ -28,7 +28,7 @@ export class MediaEditComponent implements OnInit {
   
   ngOnInit(): void {
     this.mID = this.route.snapshot.paramMap.get('mID');
-    if (this.mID == 'new') {
+    if (this.mID === 'new') {
       this.makeItem();
     } else {
       this.getItem();
@@ -67,7 +67,7 @@ export class MediaEditComponent implements OnInit {
       this.globals.locGenres.push(this.genre_);
       this.item.genre = this.genre_;
     }
-    if (this.mID == 'new') {
+    if (this.mID === 'new') {
       this.locationService.addItem(this.item)
         .subscribe(
           resp => {

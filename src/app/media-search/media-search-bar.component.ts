@@ -6,6 +6,7 @@ import { MemberService } from '../member.service';
 import { Globals } from '../globals';
 
 @Component({
+  // tslint:disable-next-line:component-selector
   selector: 'media-search-bar',
   templateUrl: './media-search-bar.component.html',
   styleUrls: ['./media-search.component.css']
@@ -44,14 +45,14 @@ export class MediaSearchBarComponent implements OnInit {
 
   ngOnInit() {
     this.breadcrumbs = this.level <= 1 ? '.'.repeat(this.level) : '../'.repeat(this.level - 1);
-    if (this.default == 'all') {
+    if (this.default === 'all') {
       this.getAllItems(true);
     }
   }
   
   reset() {
     this.query = this.cont = this.title = this.author = this.genre = this.type_ = null;
-    if (this.default == 'all') {
+    if (this.default === 'all') {
       this.getAllItems(true);
     }
   }
@@ -72,11 +73,11 @@ export class MediaSearchBarComponent implements OnInit {
   }
   
   checkVisible(): boolean {
-    return [this.title, this.author, this.genre, this.type_].some(a => a && a != 'null');
+    return [this.title, this.author, this.genre, this.type_].some(a => a && a !== 'null');
   }
   
   search(reset: boolean = false) {
-    if (this.default == 'all' && !this.checkVisible()) {
+    if (this.default === 'all' && !this.checkVisible()) {
       this.getAllItems(reset);
       return;
     }
