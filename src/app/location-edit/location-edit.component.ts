@@ -8,12 +8,12 @@ import { LocationService } from '../location.service';
   styles: ['strong { font-weight: 400; }']
 })
 export class LocationEditComponent implements OnInit {
-  color: string = '#f7f7f7';
-  initialColor: string = '#f7f7f7';
+  color = '#f7f7f7';
+  initialColor = '#f7f7f7';
   msg: string;
   locname: string;
-  checkoutpw: string = '';
-  nomodify: boolean = true;
+  checkoutpw = '';
+  nomodify = true;
   fine_amt: number;
   fine_interval: number;
   
@@ -30,7 +30,7 @@ export class LocationEditComponent implements OnInit {
   }
   
   submit() {
-    this.locationService.edit(this.locname, this.color, this.fine_amt, this.fine_interval, this.nomodify?null:this.checkoutpw)
-      .subscribe(resp => this.msg = "Edited successfully.", err => this.msg = err.error?err.error:"Error.");
+    this.locationService.edit(this.locname, this.color, this.fine_amt, this.fine_interval, this.nomodify ? null : this.checkoutpw)
+      .subscribe(resp => this.msg = 'Edited successfully.', err => this.msg = err.error ? err.error : 'Error.');
   }
 }

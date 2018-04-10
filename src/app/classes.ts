@@ -2,7 +2,7 @@ import { HttpHeaders } from '@angular/common/http';
 
 export const HttpOptions = {
   headers: new HttpHeaders({'Content-Type': 'application/json'}),
-}
+};
 export class NavButton {
   text: string;
   dest?: string;

@@ -16,7 +16,7 @@ export class MediaInfoComponent implements OnInit {
   item: MediaItem;
   mID: string;
   msg: string;
-  showFines: boolean = false;
+  showFines = false;
   
   constructor(
     public globals: Globals,
@@ -44,17 +44,17 @@ export class MediaInfoComponent implements OnInit {
   
   placeOnHold(): void {
     this.mediaService.placeHold(this.mID)
-      .subscribe(resp => this.msg = "Hold placed.", err => this.msg = err.error?err.error:'Error.');
+      .subscribe(resp => this.msg = 'Hold placed.', err => this.msg = err.error ? err.error : 'Error.');
   }
   
   markFinesPaid(): void {
     this.mediaService.markFinesPaid(this.mID)
       .subscribe(
         resp => {
-          this.msg = "Fines have been reset to 0 and will remain so until tomorrow.";
+          this.msg = 'Fines have been reset to 0 and will remain so until tomorrow.';
           this.item.fines = null;
         },
-        err => this.msg = err.error?err.error:'Error.'
+        err => this.msg = err.error ? err.error : 'Error.'
       );
   }
 

@@ -16,7 +16,7 @@ const httpOptions = HttpOptions;
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  isLoggedIn: boolean = false;
+  isLoggedIn = false;
   
   constructor(
     private router: Router,
@@ -26,7 +26,7 @@ export class AuthGuard implements CanActivate {
   ) {}
   
   canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
-    let href: string = next.url.toString();
+    const href: string = next.url.toString();
     if (Object.keys(next.queryParams).indexOf('redirect') > -1 && !(next.queryParams['redirect'])) {
       this.router.navigateByUrl(next.url.toString());
       return true;
@@ -66,24 +66,24 @@ export class AuthGuard implements CanActivate {
         res => {
           if (res.valid) {
             return this.memberAuthService.getInfo()
-              .map(res => {
-                this.memberAuthService.saveToGlobals(res.me);
+              .map(infores => {
+                this.memberAuthService.saveToGlobals(infores.me);
                 this.globals.isLoggedIn = true;
                 return Observable.of(true);
               });
           } else {
             return this.memberAuthService.refresh()
               .map(
-                res => {
-                  if (res.access_token || res.valid) {
+                refres => {
+                  if (refres.access_token || refres.valid) {
                     return this.memberAuthService.getInfo()
-                      .map(res => {
-                        this.memberAuthService.saveToGlobals(res.me);
+                      .map(infores => {
+                        this.memberAuthService.saveToGlobals(infores.me);
                         this.globals.isLoggedIn = true;
                         return true;
                       });
                   }
-                  this.router.navigate(['/login'], {queryParams: state.url==='/'?{}:{returnURL: state.url}})
+                  this.router.navigate(['/login'], {queryParams: state.url === '/' ? {} : {returnURL: state.url}});
                   return false;
                 }
               ); // .catch not necessary, right?
@@ -92,7 +92,7 @@ export class AuthGuard implements CanActivate {
       )
       .catch(
         err => {
-          this.router.navigate(['/login'], {queryParams: state.url==='/'?{}:{returnURL: state.url}});
+          this.router.navigate(['/login'], {queryParams: state.url === '/' ? {} : {returnURL: state.url}});
           return Observable.of(false);
         }
       );

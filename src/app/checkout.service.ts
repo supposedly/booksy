@@ -11,8 +11,8 @@ const httpOptions = HttpOptions;
 
 @Injectable()
 export class CheckoutService {
-  private checkoutURL: string = '/api/media/check/out';
-  private checkinURL: string = '/api/media/check/in';
+  private checkoutURL = '/api/media/check/out';
+  private checkinURL = '/api/media/check/in';
   
   constructor(
     private globals: Globals,
@@ -24,7 +24,7 @@ export class CheckoutService {
       username: username,
       lid: this.globals.lID,
       mid: mID,
-    }, httpOptions)
+    }, httpOptions);
   }
   
   checkIn(mID, username) {
@@ -32,7 +32,7 @@ export class CheckoutService {
       username: username,
       lid: this.globals.lID,
       mid: mID,
-    }, httpOptions)
+    }, httpOptions);
   }
 
 }

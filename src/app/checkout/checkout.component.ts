@@ -35,7 +35,7 @@ export class CheckoutComponent {
           this.name = globals.name;
         }
       } else {
-        this.name = globals.locname + ' Patron'
+        this.name = globals.locname + ' Patron';
       }
   }
 
@@ -50,7 +50,7 @@ export class CheckoutComponent {
                 this.msg = 'Checked out! Due ' + resp.due;
                 this._mid = this.mid;
               },
-              err => this.msg = err.error?err.error:'Error checking out'
+              err => this.msg = err.error ? err.error : 'Error checking out'
             );
           } else if (this.globals.perms.names.canReturnItems) {
             // This conditional had previously included  `|| (status.name.issued_to == this.username && !this.isCheckoutAccount)`,
@@ -65,15 +65,15 @@ export class CheckoutComponent {
                   this.msg = 'Checked in!';
                   this._mid = this.mid;
                 },
-                err => this.msg = err.error?err.error:'Error checking in'
+                err => this.msg = err.error ? err.error : 'Error checking in'
               );
           } else if (status.issued_to && status.issued_to.uid == this.globals.uID) {
-            this.msg = "Error: You don't have permission to check in your own items! Hand it in to a library operator instead."
+            this.msg = 'Error: You don\'t have permission to check in your own items! Hand it in to a library operator instead.';
           } else {
             this.msg = 'Error: Item is checked out to ' + status.issued_to.name.toString() + '.';
           }
         },
-        err => this.msg = err.error?err.error:'Error checking out'
+        err => this.msg = err.error ? err.error : 'Error checking out'
       );
   }
 }

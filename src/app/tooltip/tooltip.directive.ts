@@ -56,12 +56,12 @@ export class TooltipDirective {
     let blur: boolean; // determine whether the tooltip or its native element are out of focus
     if (target.attributes['data-ident']) {
       // ...then we know we're clicking on a tooltip, so now check if it's `this` one
-      blur = target.attributes['data-ident'].value == this.el.nativeElement.attributes['ident'].value
+      blur = target.attributes['data-ident'].value == this.el.nativeElement.attributes['ident'].value;
     } else {
       // ...we're just clicking anywhere on the document, so check if it's on the icon that launched this
       blur = this.el.nativeElement.contains(target);
     }
-    if(!blur) {
+    if (!blur) {
       // get rid of the tooltip if not clicked anywhere near it
       this.destroy();
     }

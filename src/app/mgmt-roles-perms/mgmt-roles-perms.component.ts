@@ -16,7 +16,7 @@ import { Globals } from '../globals';
 export class MgmtRolesPermsComponent implements OnInit {
   roles: any = null;
   msg: string;
-  deleteDown: boolean = false;
+  deleteDown = false;
   wait = setTimeout;
   
   constructor(
@@ -30,7 +30,7 @@ export class MgmtRolesPermsComponent implements OnInit {
     this.locationService.getAllRoles()
       .subscribe(
         res => this.roles = res.roles.sort((a, b) => a.name.localeCompare(b.name)), // sort received roles alphabetically by name
-        err => this.msg = err.error?err.error:'Error.'
+        err => this.msg = err.error ? err.error : 'Error.'
       );
   }
   

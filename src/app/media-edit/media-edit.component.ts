@@ -53,12 +53,12 @@ export class MediaEditComponent implements OnInit {
       price: null,
       length: null,
       available: null,
-    }
+    };
   }
   
   checkAllNecessary() {
     // ugly
-    let item = this.item;
+    const item = this.item;
     return (item.isbn || (item.title && item.author)) && (this.genre_ || item.genre) && item.type && item.price && item.length;
   }
   
@@ -77,12 +77,12 @@ export class MediaEditComponent implements OnInit {
             this.msg = 'Successfully created.';
           },
           err => {
-            this.msg = err.error?err.error:'Error.';
+            this.msg = err.error ? err.error : 'Error.';
           }
         );
     } else {
       this.mediaService.editItem(this.item)
-        .subscribe(resp => this.msg = 'Successfully edited.', err => this.msg = err.error?err.error:'Error.')
+        .subscribe(resp => this.msg = 'Successfully edited.', err => this.msg = err.error ? err.error : 'Error.');
     }
   }
 }

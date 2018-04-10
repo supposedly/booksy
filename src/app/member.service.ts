@@ -13,13 +13,13 @@ const httpOptions = HttpOptions;
 
 @Injectable()
 export class MemberService {
-  private notifURL: string = 'api/member/notifications';
-  private suggestionURL: string = 'api/member/suggest';
-  private holdsURL: string = 'api/member/held';
-  private clearHoldURL: string = 'api/member/clear-hold';
-  private itemsURL: string = 'api/member/checked-out';
-  private editMemberURL: string = 'api/member/edit';
-  private editSelfURL: string = 'api/member/self';
+  private notifURL = 'api/member/notifications';
+  private suggestionURL = 'api/member/suggest';
+  private holdsURL = 'api/member/held';
+  private clearHoldURL = 'api/member/clear-hold';
+  private itemsURL = 'api/member/checked-out';
+  private editMemberURL = 'api/member/edit';
+  private editSelfURL = 'api/member/self';
   
   constructor(
     private http: HttpClient,
@@ -39,7 +39,7 @@ export class MemberService {
   }
   
   getNotifs(username?: string): Observable<any> {
-    return this.http.get<any>(this.notifURL, {params: {username: username?username:this.globals.username, lid: this.globals.lID}}).shareReplay();
+    return this.http.get<any>(this.notifURL, {params: {username: username ? username : this.globals.username, lid: this.globals.lID}}).shareReplay();
   }
   
   getSuggestions(): Observable<any> {

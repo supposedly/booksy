@@ -18,7 +18,7 @@ export class MemberAcctInfoComponent implements OnInit {
   uID: string;
   member: any;
   roles: any[] = [];
-  showMediaLink: boolean = false;
+  showMediaLink = false;
   
   constructor(
     public location: Location,
@@ -42,10 +42,10 @@ export class MemberAcctInfoComponent implements OnInit {
   }
   
   checkValid(): boolean {
-    let m = this.member;
+    const m = this.member;
     // i do Not Understand why the below is necessary and chaining && doesn't work
     // (I guess this is a bit prettier than &&-chaining though)
-    return [m.username, m.name, m.rid, this.uID=='new'?m.password:true].every(n => n);
+    return [m.username, m.name, m.rid, this.uID == 'new' ? m.password : true].every(n => n);
   }
   
   getInfo() {
@@ -71,22 +71,22 @@ export class MemberAcctInfoComponent implements OnInit {
       manages: false,
       recent: null,
       password: null,
-    }
+    };
   }
   
   submit() {
     if (this.uID == 'new') {
       this.locationService.createMember(this.member)
-        .subscribe(resp => this.location.back(), err => this.msg = err.error?err.error:'Error.');
+        .subscribe(resp => this.location.back(), err => this.msg = err.error ? err.error : 'Error.');
     } else {
       this.memberService.edit(this.member)
-        .subscribe(resp => this.msg = 'Successfully edited.', err => this.msg = err.error?err.error:'Error.');
+        .subscribe(resp => this.msg = 'Successfully edited.', err => this.msg = err.error ? err.error : 'Error.');
     }
   }
   
   removeMember() {
     this.locationService.removeMember(this.member.user_id)
-      .subscribe(resp => this.location.back(), err => this.msg = err.error?err.error:'Error.')
+      .subscribe(resp => this.location.back(), err => this.msg = err.error ? err.error : 'Error.');
   }
 
 }

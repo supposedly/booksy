@@ -12,8 +12,8 @@ const httpOptions = HttpOptions;
 @Injectable()
 export class ButtonService {
   private mainHeaderButtonURL = 'stock/buttons/main-header';
-  private mgmtHeaderButtonsURL: string = 'stock/buttons/mgmt-header';
-  private sideButtonURL: string = 'stock/buttons/home-sidebar';
+  private mgmtHeaderButtonsURL = 'stock/buttons/mgmt-header';
+  private sideButtonURL = 'stock/buttons/home-sidebar';
   mgmtHeaderButtons: Observable<NavButton[]> = null;
   sideButtons: Observable<SideButton[]> = null;
   

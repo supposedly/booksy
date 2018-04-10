@@ -11,13 +11,13 @@ import { Globals } from './globals';
 
 @Injectable()
 export class ReportsService {
-  reportsURL: string = 'api/location/reports';
+  reportsURL = 'api/location/reports';
   constructor(
     private globals: Globals,
     private http: HttpClient
   ) {}
   
-  getReport(chks=false, ovds=false, fins=false, hlds=false, itms=false) {
+  getReport(chks= false, ovds= false, fins= false, hlds= false, itms= false) {
     return this.http.put( // This is really just a GET request, but I need to be able to send it as json
       this.reportsURL, {
         get: {

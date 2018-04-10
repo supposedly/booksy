@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 
 @Component({
-  selector: 'generic-header',
+  selector: 'app-generic-header',
   templateUrl: './generic-header.component.html',
   styleUrls: ['./generic-header.component.css']
 })

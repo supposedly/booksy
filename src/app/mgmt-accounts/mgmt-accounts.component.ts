@@ -11,7 +11,7 @@ import { Globals } from '../globals';
   styleUrls: ['./mgmt-accounts.component.css']
 })
 export class MgmtAccountsComponent implements OnInit {
-  cont: number = 0;
+  cont = 0;
   roles: any[] = [];
   
   constructor(

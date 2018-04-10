@@ -20,7 +20,7 @@ import { Globals } from '../globals';
   template: `
     <div id="container">
       <div id="spacer"></div>
-      <generic-header [buttons]="buttons"></generic-header>
+      <app-generic-header [buttons]="buttons"></app-generic-header>
       <router-outlet></router-outlet>
     </div>
   `,
@@ -31,7 +31,7 @@ export class MgmtMediaComponent {
     {text: 'search & list', dest: 'list'},
     {text: 'media types', dest: 'types'},
     {text: 'genres'}
-  ]
+  ];
 }
 
 /* -------------------------------------- */
@@ -80,7 +80,7 @@ export class MgmtMediaListComponent {}
   styleUrls: ['./mgmt-media-genres.component.css'],
 })
 export class MgmtMediaGenresComponent {
-  msg: string = '';
+  msg = '';
   isBeingEdited: boolean[];
   intermediateNames: string[];
   
@@ -101,16 +101,16 @@ export class MgmtMediaGenresComponent {
           this.isBeingEdited[i] = false;
           this.intermediateNames[i] = '';
         },
-        err => this.msg = err.error?err.error:'Error.'
-      )
+        err => this.msg = err.error ? err.error : 'Error.'
+      );
   }
     
   rm(i) {
     this.locationService.removeGenre(this.globals.locGenres[i])
       .subscribe(
         resp => this.globals.locGenres.splice(i, 1),
-        err => this.msg = err.error?err.error:'Error.'
-      )
+        err => this.msg = err.error ? err.error : 'Error.'
+      );
   }
   
 }

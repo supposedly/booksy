@@ -11,8 +11,8 @@ import { Globals } from './globals';
 
 @Injectable()
 export class SetupService {
-  private attrsURL: string = 'api/attrs';
-  private permCheckURL: string = 'api/member/check-perms';
+  private attrsURL = 'api/attrs';
+  private permCheckURL = 'api/member/check-perms';
   
   constructor(
     private globals: Globals,
@@ -26,15 +26,15 @@ export class SetupService {
         this.globals.locMediaTypes = resp.types;
         this.globals.locGenres = resp.genres;
         // set up header colors... unimplemented though :(
-        var rawColor = resp.locColor || 0xf7f7f7;
+        let rawColor = resp.locColor || 0xf7f7f7;
         this.globals.locColor = this.toRGB(rawColor);
-        this.globals.locActiveColor = this.toRGB(rawColor-0x382f2b);
-        this.globals.locDepressedColor = this.toRGB(rawColor-0x6f6f6f);
+        this.globals.locActiveColor = this.toRGB(rawColor - 0x382f2b);
+        this.globals.locDepressedColor = this.toRGB(rawColor - 0x6f6f6f);
       });
   }
   
   toRGB(num): string {
-    return "#" + (num>>>0).toString(16).slice(-6);
+    return '#' + (num >>> 0).toString(16).slice(-6);
   }
   
   getPerms(uID) {

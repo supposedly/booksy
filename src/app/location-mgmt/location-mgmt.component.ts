@@ -11,7 +11,7 @@ import { Globals } from '../globals';
   template: `
     <div id="container">
       <div id="spacer"></div>
-      <generic-header [buttons]="buttons"></generic-header> <!-- the management header -->
+      <app-generic-header [buttons]="buttons"></app-generic-header> <!-- the management header -->
       <router-outlet></router-outlet>
     </div>
   `,

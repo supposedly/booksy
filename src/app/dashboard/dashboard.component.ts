@@ -8,7 +8,7 @@ import { MemberService } from '../member.service';
   template: `
     <div id="container">
       <div id="spacer"></div>
-      <generic-header [buttons]="buttons" [inbetween]="uID"></generic-header>
+      <app-generic-header [buttons]="buttons" [inbetween]="uID"></app-generic-header>
       <router-outlet></router-outlet>
     </div>
   `,
@@ -19,7 +19,7 @@ export class DashboardComponent implements OnInit {
   buttons = [
     {text: 'items'},
     {text: 'holds'}
-  ]
+  ];
   
   constructor(private route: ActivatedRoute) {}
   

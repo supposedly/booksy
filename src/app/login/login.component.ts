@@ -12,17 +12,17 @@ import { Globals } from '../globals';
 })
 export class LoginComponent implements OnInit {
   public msg: string = null;
-  public err: boolean = false;
-  loading: boolean = false;
+  public err = false;
+  loading = false;
   returnURL: string;
-  isLocationRegistered: boolean = false;
+  isLocationRegistered = false;
   uID: string;
   password: string;
   lID: string;
   pw;
   uid;
   lid;
-  numRe = /^\d+$/
+  numRe = /^\d+$/;
   
   constructor(
     private globals: Globals,
@@ -51,7 +51,7 @@ export class LoginComponent implements OnInit {
           if (resp) {
             this.memberAuthService.getInfo()
               .subscribe(res => {
-                this.memberAuthService.saveToGlobals(res.me)
+                this.memberAuthService.saveToGlobals(res.me);
                 this.globals.isLoggedIn = true;
                 this.err = false;
                 this.msg = 'Thank you! You may now navigate to the HOME tab.'; // this should never be shown!
