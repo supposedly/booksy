@@ -80,7 +80,7 @@ __[CONCEPTS]__
    > members:
       Data for every single patron across libraries. LID and UID are composite unique.
          ╔════════════════════╦═══════════╦═══════════╦═════════════╦══════════╦════════════╦══════════════════╦════════════════╦═══════════╦════════════╦═══════╦═══════╗
-         ║ uid (PRIMARY KEY)  ║ username [U] lid      ║ fullname    ║ email    ║ phone      ║ manages          ║ rid            ║ pwhash    ║ type       ║ maxes ║ locks ║ (custom values; they override role maxes+locks, but are overridden by item maxes)
+         ║ uid (PRIMARY KEY)  ║ username [U] lid      ║ fullname    ║ email    ║ phone      ║ manages          ║ rid            ║ pwhash    ║ type       ║ limits ║ locks ║ (custom values; they override role limits+locks, but are overridden by item limits)
          ╠════════════════════╬═══════════╬═══════════╬═════════════╬══════════╬════════════╬══════════════════╬════════════════╬═══════════╬════════════╬═══════╬═══════╣
          ║ BIGSERIAL          ║ TEXT UNIQ ║ BIGINT    ║ TEXT        ║ TEXT     ║ TEXT       ║ BOOL             ║ BIGINT         ║ TEXT      ║ SMALLINT   ║ BINT  ║ BINT  ║
          ║ (unique member ID) ║ DEFAULT   ║ (location ║ (full name) ║ (email   ║ (phone #   ║ (can they manage ║ (ID of this    ║ (bcrypted ║ (user acc  ║ <= 0 for member, 1 for library
@@ -91,12 +91,12 @@ __[CONCEPTS]__
       location and checkout data if applicable (else NULL).
       An automatic "Heroku Scheduler" job will update the `fines` field every midnight by comparing the current date to the due date.
          ╔═══════════════════════╦════════════╦════════════════════╦══════════════╦═══════╦════════╦═══════════╦══════════════╦══════════════╦════════════╦═════════════════╦════════════╦══════════════════╗
-         ║ mid (PRIMARY KEY      ║ type       ║ isbn               ║ lid          ║ title ║ author ║ published ║ issued_to    ║ due_date     ║ fines      ║ acquired        ║ genre      ║ maxes            ║
+         ║ mid (PRIMARY KEY      ║ type       ║ isbn               ║ lid          ║ title ║ author ║ published ║ issued_to    ║ due_date     ║ fines      ║ acquired        ║ genre      ║ limits            ║
          ╠═══════════════════════╬════════════╬════════════════════╬══════════════╬═══════╬════════╬═══════════╬══════════════╬══════════════╬════════════╬═════════════════╬════════════╬══════════════════╣
          ║ BIGSERIAL             ║ TEXT       ║ TEXT               ║ BIGINT       ║ TEXT  ║ TEXT   ║ DATE      ║ BIGINT       ║ DATE         ║ MONEY      ║ TIMESTAMP       ║ TEXT       ║ BIGINT           ║
-         ║ (internal ID of item) ║ ('book' or ║ (maybe bigint)     ║ (internal id ║       ║        ║           ║ (user ID, or ║ (determined  ║ (overdue   ║ (when this copy ║ (app sorts ║ (per-item maxes, ║ <= value of 254 == defer to role maxes
+         ║ (internal ID of item) ║ ('book' or ║ (maybe bigint)     ║ (internal id ║       ║        ║           ║ (user ID, or ║ (determined  ║ (overdue   ║ (when this copy ║ (app sorts ║ (per-item limits, ║ <= value of 254 == defer to role limits
          ║                       ║ whatever)  ║ (null if not book) ║ of location) ║       ║        ║           ║ NULL if not  ║ according to ║ fines on   ║ was added to    ║ by type &  ║ overrides role   ║ <= 254 is default ofc
-         ║                       ║            ║                    ║              ║       ║        ║           ║ checked out) ║ user's role) ║ this item) ║ the location)   ║ genre)     ║ maxes)           ║
+         ║                       ║            ║                    ║              ║       ║        ║           ║ checked out) ║ user's role) ║ this item) ║ the location)   ║ genre)     ║ limits)           ║
          ╚═══════════════════════╩════════════╩════════════════════╩══════════════╩═══════╩════════╩═══════════╩══════════════╩══════════════╩════════════╩═════════════════╩════════════╩══════════════════╝
    > holds:
       Holds for every item, with the item's ID and ID of the user placing it on hold.
@@ -111,7 +111,7 @@ __[CONCEPTS]__
    > roles:
       Every role registered, with record of its perms and name.
          ╔═══════════════════╦═══════════╦═════════════╦════════════════╦═══════════════╦═══════════════╗
-         ║ rid (PRIMARY KEY) ║ lid       ║ name        ║ permissions    ║ maxes         ║ locks         ║
+         ║ rid (PRIMARY KEY) ║ lid       ║ name        ║ permissions    ║ limits         ║ locks         ║
          ╠═══════════════════╬═══════════╬═════════════╬════════════════╬═══════════════╬═══════════════╣
          ║ BIGSERIAL         ║ BIGINT    ║ TEXT        ║ SMALLINT       ║ BIGINT        ║ BIGINT        ║
          ║ (role ID)         ║ (location ║ (role name) ║ (packed field; ║ (four 1-byte  ║ (two 1-byte   ║
@@ -143,12 +143,12 @@ __[CONCEPTS]__
          This role CAN view & generate reports.
          This role CAN return items.
       Default values: [111111] for Admin, [0110111] for Organizer, [000000] for Subscriber.
-   >>The "maxes" packed big-integer field is as follows.
+   >>The "limits" packed big-integer field is as follows.
      NOTE that a value of 255, binary [11111111], in any one byte field is interpreted
      as *infinity* -- i.e. no limit -- and a value of 254 is 'null', telling the backend
      to look one level up for the proper values.
      NOTE also that the values are 'flipped' due to little-endianness.
-     NOTE lastly that all maxes can be additionally customized per-item
+     NOTE lastly that all limits can be additionally customized per-item
       1st byte: CHECKOUT DURATION (WEEKS)
            The maximum amount of time this role may check out an item for.
            Can also customize per media category.

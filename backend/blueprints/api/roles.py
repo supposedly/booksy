@@ -13,23 +13,23 @@ roles = sanic.Blueprint('roles_api', url_prefix='/roles')
 @jwtdec.protected()
 async def provide_me_attrs(rqst, user):
     """
-    Provides all attributes - permissions, maxes, and lock thresholds -
+    Provides all attributes - permissions, limits, and lock thresholds -
     for current user.
     
     Requires current session's Role ID from client.
     """
-  # resp = {'rid': user.role.rid, 'perms': user.perms, 'maxes': user.maxes, 'locks': user.locks}
-    resp = {i: getattr(user, i) for i in ('perms', 'maxes', 'locks')}
+  # resp = {'rid': user.role.rid, 'perms': user.perms, 'limits': user.limits, 'locks': user.locks}
+    resp = {i: getattr(user, i) for i in ('perms', 'limits', 'locks')}
     return sanic.response.json(resp, status=200)
 
-@roles.get('/me/<attr:(perms|maxes|locks)>')
+@roles.get('/me/<attr:(perms|limits|locks)>')
 @uid_get()
 @jwtdec.protected()
 async def provide_specific_me_attr(rqst, user, *, attr):
     """
-    Provides a specific attribute (of perms/maxes/locks) for requesting role.
+    Provides a specific attribute (of perms/limits/locks) for requesting role.
     """
-    if attr not in ('perms', 'maxes', 'locks'):
+    if attr not in ('perms', 'limits', 'locks'):
         # won't ever be called, for obvious reason
         # (that is, bc of the regex in the roles.get deco)
         sanic.exceptions.abort(422)
@@ -41,7 +41,7 @@ async def provide_specific_me_attr(rqst, user, *, attr):
 async def edit_role(rqst, role, user, *, name, seqs):
     """
     Edits a role's attributes, taking in a sequence (seqs) of its
-    perms, maxes, and locks, plus its modified name.
+    perms, limits, and locks, plus its modified name.
     """
     new = Role.attrs_from(kws=seqs) # new[0] == perms
     if not user.beats(perms=new[0], and_has='manage_roles'):

@@ -27,7 +27,7 @@ import { LocationEditComponent } from './location-edit/location-edit.component';
 import { LocationMgmtComponent } from './location-mgmt/location-mgmt.component';
 import { LocksComponent } from './attrs/locks.component';
 import { LoginComponent } from './login/login.component';
-import { MaxesComponent } from './attrs/maxes.component';
+import { LimitsComponent } from './attrs/limits.component';
 import { MediaEditComponent } from './media-edit/media-edit.component';
 import { MediaInfoComponent } from './media-info/media-info.component';
 import { MediaSearchComponent } from './media-search/media-search.component';
@@ -111,7 +111,7 @@ import { SetupService } from './setup.service';
     MediaSearchBarComponent,
     MediaSuggestionComponent,
     PermsComponent,
-    MaxesComponent,
+    LimitsComponent,
     LocksComponent,
     GenericHeaderComponent,
   ],

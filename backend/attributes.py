@@ -20,7 +20,7 @@ class Perms(PackedByteFieldMixin):
       ]
 
 
-class Maxes(PackedBigIntMixin):
+class Limits(PackedBigIntMixin):
     _names = [
       'checkout_duration',
       'renewals',

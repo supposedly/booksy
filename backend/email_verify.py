@@ -12,8 +12,8 @@ It'll expire in approximately 24 hours.
 
 If you didn't attempt to register a library with Booksy, please disregard this message!
 '''
-
 SENDER = 'booksy.db@gmail.com'
+
 
 async def send_email(recipient, fullname, locname, token, *, loop):
     """
@@ -28,13 +28,17 @@ async def send_email(recipient, fullname, locname, token, *, loop):
     client = aiosmtplib.SMTP(hostname='smtp.gmail.com', port=587, use_tls=False, loop=loop)
     
     try:
+        # TODO: Could this sequence be better implemented as a
+        # one-off async context manager? Along the lines of
+        '''
+        async with custom_thing.login(SENDER, os.getenv('GMAIL_PASSWORD')) as client:
+            await client.send_message(msg, SENDER, recipient)
+        '''
         await client.connect()  # Connect to gsmtp
         await client.ehlo()     # ensure gsmtp server availability
         await client.starttls() # wait until server is ready to start TLS
         await client.ehlo()     # ensure return availability
         await client.login(SENDER, os.getenv('GMAIL_PASSWORD')) # log in / authenticate
         await client.send_message(msg, SENDER, recipient)       # send the email obj
-    except:
-        raise
     finally:
         await client.quit()

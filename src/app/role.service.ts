@@ -25,12 +25,12 @@ export class RoleService {
     return this.http.get<any>(this.roleInfoURL, {params: {rid: rID}});
   }
   
-  modify(rID, name, perms, maxes, locks): Observable<any> {
-    return this.http.post(this.roleEditURL, {rid: rID, name: name, seqs: {perms: perms, maxes: maxes, locks: locks}}, httpOptions);
+  modify(rID, name, perms, limits, locks): Observable<any> {
+    return this.http.post(this.roleEditURL, {rid: rID, name: name, seqs: {perms: perms, limits: limits, locks: locks}}, httpOptions);
   }
   
-  create(name, perms, maxes, locks): Observable<any> {
-    return this.http.post(this.roleCreateURL, {name: name, seqs: {perms: perms, maxes: maxes, locks: locks}}, httpOptions);
+  create(name, perms, limits, locks): Observable<any> {
+    return this.http.post(this.roleCreateURL, {name: name, seqs: {perms: perms, limits: limits, locks: locks}}, httpOptions);
   }
   
   delete(rID): Observable<any> {

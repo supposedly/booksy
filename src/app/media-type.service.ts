@@ -30,12 +30,12 @@ export class MediaTypeService {
     return this.http.get<any>(this.infoURL, {params: {name: name}});
   }
   
-  edit(name, maxes, newName, unit): Observable<any> {
-    return this.http.post<any>(this.typeEditURL, {edit: name, maxes: maxes, name: newName, unit: unit});
+  edit(name, limits, newName, unit): Observable<any> {
+    return this.http.post<any>(this.typeEditURL, {edit: name, limits: limits, name: newName, unit: unit});
   }
   
-  add(maxes, name, unit): Observable<any> {
-    return this.http.post<any>(this.typeAddURL, {add: {maxes: maxes, name: name, unit: unit}});
+  add(limits, name, unit): Observable<any> {
+    return this.http.post<any>(this.typeAddURL, {add: {limits: limits, name: name, unit: unit}});
   }
   
   delete(name): Observable<any> {

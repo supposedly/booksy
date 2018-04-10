@@ -31,7 +31,7 @@ async def get_media_type_info(rqst, location, *, name):
 @types.post('/add')
 @rqst_get('user', 'add')
 @jwtdec.protected()
-async def add_location_media_type(rqst, user, *, add: {'name': str, 'unit': str, 'maxes': dict}):
+async def add_location_media_type(rqst, user, *, add: {'name': str, 'unit': str, 'limits': dict}):
     """
     Adds a new media type to the location, taking its name, unit of length, and max overrides.
     """
@@ -62,11 +62,11 @@ async def remove_location_media_type(rqst, user, *, remove: str):
     return sanic.response.raw(b'', status=204)
 
 @types.post('/edit')
-@rqst_get('user', 'edit', 'maxes', 'name', 'unit') # name is the new name, edit is the old name (i.e. what to rename from)
+@rqst_get('user', 'edit', 'limits', 'name', 'unit') # name is the new name, edit is the old name (i.e. what to rename from)
 @jwtdec.protected()
-async def edit_location_media_type(rqst, user, *, edit: str, maxes, name: str, unit: str):
+async def edit_location_media_type(rqst, user, *, edit: str, limits, name: str, unit: str):
     """
     Edits all attrs of a media type.
     """
-    await user.location.edit_media_type(edit, maxes=maxes, name=name, unit=unit)
+    await user.location.edit_media_type(edit, limits=limits, name=name, unit=unit)
     return sanic.response.raw(b'', status=204)

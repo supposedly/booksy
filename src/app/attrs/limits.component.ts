@@ -3,11 +3,11 @@ import { Component, OnChanges, Input } from '@angular/core';
 import { Globals } from '../globals';
 
 @Component({
-  selector: 'app-maxes',
-  templateUrl: './maxes.component.html',
+  selector: 'app-limits',
+  templateUrl: './limits.component.html',
   styles: ['.b { font-weight: 400; } h3 { display: inline-block; }']
 })
-export class MaxesComponent implements OnChanges {
+export class LimitsComponent implements OnChanges {
   arr: any;
   
   @Input('arr') inputArr: any; // the array to modify

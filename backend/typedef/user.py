@@ -1,7 +1,7 @@
 import asyncpg
 
 from ..core import AsyncInit
-from ..attributes import Perms, Maxes, Locks
+from ..attributes import Perms, Limits, Locks
 
 
 #################################################
@@ -39,7 +39,7 @@ class User(AsyncInit):
     holds       (int):      Quantity of items the user has on hold
     lid, rid    (int):      Shorthand for user.location.lid and user.role.rid
     _permnum,
-    _maxnum,                Shorthand for user.perms/maxes/locks.raw, but
+    _maxnum,                Shorthand for user.perms/limits/locks.raw, but
     _locknum    (int):      not intended to be exposed outside this class
     """
     @staticmethod
@@ -56,7 +56,7 @@ class User(AsyncInit):
         except TypeError:
             raise ValueError('No user exists with this username!')
         async with self.acquire() as conn:
-            query = '''SELECT username, fullname, lid, rid, manages, email, phone, type, recent, perms, maxes, locks, pwhash FROM members WHERE uid = $1::bigint;'''
+            query = '''SELECT username, fullname, lid, rid, manages, email, phone, type, recent, perms, limits, locks, pwhash FROM members WHERE uid = $1::bigint;'''
             (
               username, name, lid,
               rid, manages, email,
@@ -116,8 +116,8 @@ class User(AsyncInit):
         (could be that they've checked out too many books already or
         that their checkout duration is restricted to 0)
         """
-        chk, dur = self.locks.checkouts, self.maxes.checkout_duration
-        if chk and dur:  # user is able to check out, that is unless the item's type's maxes won't allow it
+        chk, dur = self.locks.checkouts, self.limits.checkout_duration
+        if chk and dur:  # user is able to check out, that is unless the item's type's limits won't allow it
             return False
         ret = (
           "You can't check anything out at the moment"
@@ -347,10 +347,10 @@ class User(AsyncInit):
         return Perms(self._permnum)
     
     @property
-    def maxes(self):
+    def limits(self):
         if self._maxnum is None:
-            return self.role.maxes
-        return Maxes(self._maxnum)
+            return self.role.limits
+        return Limits(self._maxnum)
     
     @property
     def locks(self):
