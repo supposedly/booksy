@@ -11,7 +11,7 @@ import { Globals } from './globals';
 
 @Injectable()
 export class MediaTypeService {
-  private loc: string = '/api/location/media/types';
+  private loc = '/api/location/media/types';
   private infoURL: string = this.loc + '/info';
   private typeAddURL: string = this.loc + '/add';
   private typeRmURL: string = this.loc + '/remove';

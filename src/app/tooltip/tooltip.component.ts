@@ -53,13 +53,13 @@ export class TooltipComponent implements OnInit {
     const {left, top} = this.config.host.getBoundingClientRect();
     const {height} = this.tooltipContainer.nativeElement.getBoundingClientRect();
 
-    let enclosedBy = this.config.host.attributes['relative']?'relative':'absolute';
+    const enclosedBy = this.config.host.attributes['relative'] ? 'relative' : 'absolute';
     if (enclosedBy == 'absolute') {
       this.top = `${top - height}px`;
-      this.left = `${left}px`
+      this.left = `${left}px`;
     } else {
-      this.top = `-${height + 10}px`
-      this.left = `15px`
+      this.top = `-${height + 10}px`;
+      this.left = `15px`;
     }
     this.ident = this.config.host.attributes['ident'].value;
   }

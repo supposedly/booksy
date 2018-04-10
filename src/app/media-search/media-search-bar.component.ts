@@ -12,7 +12,7 @@ import { Globals } from '../globals';
 })
 export class MediaSearchBarComponent implements OnInit {
   items: any[] = []; // items to show in enumerating search results
-  cont: number = 0;
+  cont = 0;
   
   
   msg: string;
@@ -29,12 +29,12 @@ export class MediaSearchBarComponent implements OnInit {
   _type_: string;
   
   breadcrumbs: string; // the dots representing what directory to go to, eg ./dir/ or ../../dir/
-  PAGELEN: number = 5; // perhaps subject to change
+  PAGELEN = 5; // perhaps subject to change
   
   @Input() heading: string; // message that shows up top
-  @Input() level: number = 2; // how many levels up to go in item links (1 for same level, 2 for one up, 3 for two up...)
-  @Input() default: string = 'blank'; // if 'all', shows all of location's items when query is blank
-  @Input('with-delete') forbidDeletion: boolean = true; // opposite trick like in tooltip.component; controls whether the red (delete) link shows
+  @Input() level = 2; // how many levels up to go in item links (1 for same level, 2 for one up, 3 for two up...)
+  @Input() default = 'blank'; // if 'all', shows all of location's items when query is blank
+  @Input('with-delete') forbidDeletion = true; // opposite trick like in tooltip.component; controls whether the red (delete) link shows
   
   constructor(
     public globals: Globals,
@@ -43,7 +43,7 @@ export class MediaSearchBarComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.breadcrumbs = this.level<=1 ? '.'.repeat(this.level) : '../'.repeat(this.level-1);
+    this.breadcrumbs = this.level <= 1 ? '.'.repeat(this.level) : '../'.repeat(this.level - 1);
     if (this.default == 'all') {
       this.getAllItems(true);
     }
@@ -60,7 +60,7 @@ export class MediaSearchBarComponent implements OnInit {
     this.locationService.deleteItem(mID)
       .subscribe(
         resp => this.msg = 'Deleted successfully.',
-        err => this.msg = err.error?err.error:'Error.',
+        err => this.msg = err.error ? err.error : 'Error.',
         () => this.search(false)
       );
   }
@@ -68,7 +68,7 @@ export class MediaSearchBarComponent implements OnInit {
   getAllItems(reset: boolean = false) {
     if (reset) { this.cont = 0; }
     this.locationService.getAllMedia(this.cont)
-      .subscribe(resp => this.items = resp.items, err => this.msg = err.error?err.error:'Error.');
+      .subscribe(resp => this.items = resp.items, err => this.msg = err.error ? err.error : 'Error.');
   }
   
   checkVisible(): boolean {
@@ -85,12 +85,12 @@ export class MediaSearchBarComponent implements OnInit {
       .subscribe(
         resp => {
           this.query = {
-            page: this.cont/this.PAGELEN,
+            page: this.cont / this.PAGELEN,
             title: this.title,
             author: this.author,
             genre: this.genre,
             type_: this.type_
-          }
+          };
           this.items = resp;
           this._title = this.title;
           this._author = this.author;
@@ -98,7 +98,7 @@ export class MediaSearchBarComponent implements OnInit {
           this._type_ = this.type_;
         },
         err => {
-          this.msg = err.error?err.error:'Error.';
+          this.msg = err.error ? err.error : 'Error.';
         }
       );
   }

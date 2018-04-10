@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnChanges, Input } from '@angular/core';
 
 import { MediaService } from '../media.service';
 
@@ -11,7 +11,7 @@ import { Globals } from '../globals';
   templateUrl: './checkout-session.component.html',
   styleUrls: ['./checkout-session.component.css']
 })
-export class CheckoutSessionComponent implements OnInit {
+export class CheckoutSessionComponent implements OnChanges {
   items: MediaItem[] = [];
   
   constructor(
@@ -27,9 +27,6 @@ export class CheckoutSessionComponent implements OnInit {
     } else if (this.newItem) {
       this.updateList(this.newItem);
     }
-  }
-  
-  ngOnInit() {
   }
   
   updateList(mid) {

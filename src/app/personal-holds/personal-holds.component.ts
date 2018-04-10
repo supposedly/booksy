@@ -11,9 +11,9 @@ import { Globals } from '../globals';
   styleUrls: ['./personal-holds.component.css']
 })
 export class PersonalHoldsComponent implements OnInit {
-  msg: string = '';
+  msg = '';
   items: any[] = [];
-  cont: number = 0;
+  cont = 0;
   uID: string;
 
   constructor(
@@ -29,7 +29,7 @@ export class PersonalHoldsComponent implements OnInit {
   
   getHolds(uID) {
     this.memberService.getHolds(uID)
-      .subscribe(resp => this.items = resp, err => this.msg = err.error?err.error:'Error.')
+      .subscribe(resp => this.items = resp, err => this.msg = err.error ? err.error : 'Error.');
   }
   
   clearHold(mID) {

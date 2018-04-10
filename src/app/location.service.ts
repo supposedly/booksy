@@ -13,7 +13,7 @@ import { Globals } from './globals';
 
 @Injectable()
 export class LocationService {
-  private loc: string = 'api/location';
+  private loc = 'api/location';
   
   private locSignupURL: string = this.loc + '/signup';
   private locEditURL: string = this.loc + '/edit';
@@ -29,7 +29,7 @@ export class LocationService {
   private createMemberURL: string = this.loc + '/members/add';
   private deleteMemberURL: string = this.loc + '/members/remove';
   
-  private locMedia: string = this.loc + '/media'
+  private locMedia: string = this.loc + '/media';
   
   private createItemURL: string = this.locMedia + '/add';
   private delItemURL: string = this.locMedia + '/remove';
@@ -85,14 +85,14 @@ export class LocationService {
     return this.http.get<any>(this.filteredRolesURL);
   }
   
-  searchMedia(cont=0, title=null, author=null, genre=null, type_=null): Observable<any> {
+  searchMedia(cont= 0, title= null, author= null, genre= null, type_= null): Observable<any> {
     return this.http.get<any>(this.searchURL, {
       params: {
         cont: cont.toString(),
-        title: title?title:null,     // doesn't produce the expected result if I don't do the ternary, hmm.
-        author: author?author:null,  // It may also be that I had another error that I fixed at the same time
-        genre: genre?genre:null,     // as I was messing with the ternary, and so I myself am erroneously
-        media_type: type_?type_:null // ascribing the error's cause to something to do with the ternary...
+        title: title ? title : null,     // doesn't produce the expected result if I don't do the ternary, hmm.
+        author: author ? author : null,  // It may also be that I had another error that I fixed at the same time
+        genre: genre ? genre : null,     // as I was messing with the ternary, and so I myself am erroneously
+        media_type: type_ ? type_ : null // ascribing the error's cause to something to do with the ternary...
       }
     });
   }

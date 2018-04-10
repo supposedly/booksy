@@ -18,7 +18,7 @@ export class ReportsComponent /* implements OnInit */ {
     {name: 'Fines', value: false},
     {name: 'Holds', value: false},
  // {name: 'Items', value: false}
-  ]
+  ];
   
   constructor(
     private router: Router,
@@ -28,12 +28,12 @@ export class ReportsComponent /* implements OnInit */ {
   ) {}
 
   onSortChange(item, value) {
-    if (item=='on') {this.sortBy = value;}
+    if (item == 'on') {this.sortBy = value; }
   }
   
   onTypeChange(idx, event) {
-    for (let i in this.buttons) {
-      {this.buttons[i].value = i==idx;}
+    for (const i in this.buttons) {
+      {this.buttons[i].value = i == idx; }
     }
   }
   
@@ -43,9 +43,9 @@ export class ReportsComponent /* implements OnInit */ {
   }
   
   getReport() {
-    let arr = [];
-    for (let btn of this.buttons) {
-      arr.push(btn.value?this.sortBy:false);
+    const arr = [];
+    for (const btn of this.buttons) {
+      arr.push(btn.value ? this.sortBy : false);
     }
     if (!arr.some(n => n) || !this.sortBy) { return; }
     this.reportsService.getReport(...arr)

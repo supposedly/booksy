@@ -37,7 +37,7 @@ export class SidebarComponent /*implements OnInit*/ {
   
   getButtons(): void {
     this.buttonService.getSidebarButtons(this.uID)
-      .subscribe(resp => this.buttons = resp.buttons)
+      .subscribe(resp => this.buttons = resp.buttons);
   }
 
 }

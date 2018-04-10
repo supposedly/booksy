@@ -15,7 +15,7 @@ export class MediaSuggestionComponent implements OnInit {
   
   breadcrumbs: string;
   
-  @Input() level: number = 2;
+  @Input() level = 2;
   @Input() heading: string;
   
   constructor(
@@ -24,13 +24,13 @@ export class MediaSuggestionComponent implements OnInit {
   ) {}
   
   ngOnInit() {
-    this.breadcrumbs = this.level<=1 ? '.'.repeat(this.level) : '../'.repeat(this.level-1);
+    this.breadcrumbs = this.level <= 1 ? '.'.repeat(this.level) : '../'.repeat(this.level - 1);
     // see media-search-bar for brief explanation
     this.getSuggestions();
   }
   
   getSuggestions() {
     this.memberService.getSuggestions()
-      .subscribe(res => this.suggested = res.items, err => this.msg = err.error?err.error:'Error.');
+      .subscribe(res => this.suggested = res.items, err => this.msg = err.error ? err.error : 'Error.');
   }
 }

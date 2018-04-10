@@ -34,13 +34,13 @@ import { HelpService } from '../help.service';
 
 export class HelpTooltipComponent implements OnInit {
     @Input() ident: string;
-    @Input('relative') absolute: boolean = true;
-    @Input('newtab') inplace: boolean = true; // open in place == not in a new tab
+    @Input('relative') absolute = true;
+    @Input('newtab') inplace = true; // open in place == not in a new tab
     // `absolute` and `inplace` are input as the opposite of what they should be;
     // this is so I can write <tag ... relative> instead of <tag ... relative="meaningless value that evals to truthy">
     // This way, if the tag *doesn't* contain the name `relative`, the variable `absolute` will be set to `true`
     // and if the tag *does* contain the name `relative` without a value, `absolute` will be undefined (which is falsey).
-    showLink: boolean = false;
+    showLink = false;
     linkText: string;
     linkUrl: string;
     content: string;
@@ -51,9 +51,9 @@ export class HelpTooltipComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.linkUrl = `/help/${this.ident}`
+    this.linkUrl = `/help/${this.ident}`;
     this.helpService.getBrief(this.ident)
-      .subscribe(resp => {this.linkText = resp.help.title; this.content = resp.help.brief});
+      .subscribe(resp => {this.linkText = resp.help.title; this.content = resp.help.brief;});
   }
   
   @HostListener('document:click', ['$event.target'])

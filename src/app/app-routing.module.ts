@@ -12,7 +12,7 @@ import { HelpViewComponent } from './help-view/help-view.component';
 import { LocationEditComponent } from './location-edit/location-edit.component';
 import { LocationMgmtComponent } from './location-mgmt/location-mgmt.component';
 import { LoginComponent } from './login/login.component';
-import { MediaEditComponent } from'./media-edit/media-edit.component';
+import { MediaEditComponent } from './media-edit/media-edit.component';
 import { MediaInfoComponent } from './media-info/media-info.component';
 import { MediaSearchComponent } from './media-search/media-search.component';
 import { MemberAcctInfoComponent } from './member-acct-info/member-acct-info.component';
@@ -45,7 +45,7 @@ const routes: Routes = [
     // routed to by the sidebar
     {path: '', redirectTo: 'checkout', pathMatch: 'full'},
     {path: 'media/search', component: MediaSearchComponent},
-    {path: 'media/manage', component: MgmtMediaComponent, children:[
+    {path: 'media/manage', component: MgmtMediaComponent, children: [
       {path: '', redirectTo: 'list', pathMatch: 'full'},
       {path: 'list', component: MgmtMediaListComponent},
       {path: 'types/:name', component: MediaTypeDetailComponent},

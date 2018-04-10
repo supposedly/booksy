@@ -31,7 +31,7 @@ import { Globals } from '../globals';
 })
 export class MgmtMediaTypesComponent {
   mtypes: any = [];
-  msg: string = '';
+  msg = '';
   
   constructor(
     public globals: Globals,
@@ -70,7 +70,7 @@ export class MediaTypeDetailComponent implements OnInit {
   initialName: string;
   name: string;
   unit: string;
-  msg: string = '';
+  msg = '';
   
   @ViewChild(LimitsComponent) private limits: LimitsComponent;
   
@@ -102,8 +102,8 @@ export class MediaTypeDetailComponent implements OnInit {
   }
   
   submit() {
-    var maxArr = {} // initialize to properly copy attrs to this:
-    for (let i in this.limits.arr.names) { maxArr[i] = this.limits.overrideArr.names[i]?this.limits.overrideArr.names[i]:this.limits.arr.names[i] }
+    const maxArr = {}; // initialize to properly copy attrs to this:
+    for (const i in this.limits.arr.names) { maxArr[i] = this.limits.overrideArr.names[i] ? this.limits.overrideArr.names[i] : this.limits.arr.names[i]; }
     
     if (this.initialName == 'new') {
       this.mTypeService.add(maxArr, this.name, this.unit)
@@ -111,15 +111,15 @@ export class MediaTypeDetailComponent implements OnInit {
           _ => {
             this.initialName = this.name;
             this.globals.locMediaTypes.push({name: this.name, limits: maxArr});
-            this.msg = "Successfully created."
+            this.msg = 'Successfully created.';
           },
-          err => this.msg = err.error?err.error:"Not allowed!"
+          err => this.msg = err.error ? err.error : 'Not allowed!'
         );
     } else {
       this.mTypeService.edit(this.initialName, maxArr, this.name, this.unit)
         .subscribe(
-          _ => this.msg = "Successfully edited.",
-          err => this.msg = err.error?err.error:"Not allowed!",
+          _ => this.msg = 'Successfully edited.',
+          err => this.msg = err.error ? err.error : 'Not allowed!',
           () => this.mTypeService.all() // refresh global list of media types
                   .subscribe(res => this.globals.locMediaTypes = res.types.map((dict, _) => dict))
         );

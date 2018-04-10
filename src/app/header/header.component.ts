@@ -24,7 +24,7 @@ export class HeaderComponent implements OnInit {
       '--main-color': globals.locColor,
       '--active-color': globals.locActiveColor,
       '--depressed-color': globals.locDepressedColor
-    }
+    }; // attempting to get header color scheme working...
   }
 
   ngOnInit() {

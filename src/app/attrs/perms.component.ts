@@ -9,11 +9,11 @@ import { Globals } from '../globals';
 })
 export class PermsComponent implements OnChanges {
   arr: any = [];
-  override: boolean = false; // if in an auxiliary screen allow overriding of role-defined perms
+  override = false; // if in an auxiliary screen (ie not on the main role-editing screen), then allow overriding of role-defined perms
   
   @Input('arr') inputArr: any;
-  @Input() editable: boolean = false;
-  @Input('auxiliary') forMain: boolean = true;
+  @Input() editable = false;
+  @Input('auxiliary') forMain = true;
   
   defaultArr = {
     names: { // put every attr here and globals.perms.names[i] will take care of hiding appropriate ones
@@ -25,12 +25,12 @@ export class PermsComponent implements OnChanges {
         generate_reports: false,
         return_items: false
     }
-  }
+  };
   
   constructor(public globals: Globals) {}
   
   ngOnChanges() {
-    this.arr = this.inputArr?this.inputArr:this.defaultArr;
+    this.arr = this.inputArr ? this.inputArr : this.defaultArr;
   }
   
   keys(obj) {

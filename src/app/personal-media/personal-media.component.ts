@@ -11,9 +11,9 @@ import { Globals } from '../globals';
   styleUrls: ['./personal-media.component.css']
 })
 export class PersonalMediaComponent implements OnInit {
-  msg: string = '';
+  msg = '';
   items: any[] = [];
-  cont: number = 0;
+  cont = 0;
   uID: string;
   
   constructor(
@@ -29,7 +29,7 @@ export class PersonalMediaComponent implements OnInit {
   
   getItems(uID) {
     this.memberService.getItems(uID)
-      .subscribe(resp => this.items = resp, err => this.msg = err.error?err.error:'Error.')
+      .subscribe(resp => this.items = resp, err => this.msg = err.error ? err.error : 'Error.');
   }
 
 }

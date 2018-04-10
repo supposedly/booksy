@@ -94,7 +94,7 @@ export class MemberAuthService {
       user_id: uid,
       password: password,
       lid: this.lID ? this.lID : lid,
-    }, httpOptions)
+    }, httpOptions);
   }
   
   verify(): any {
@@ -106,7 +106,7 @@ export class MemberAuthService {
   }
   
   logOut() {
-    this.globals.isLoggedIn = false
+    this.globals.isLoggedIn = false;
     return this.http.post(this.logoutURL, httpOptions)
       .subscribe(resp => this.globals.isLoggedIn = false, err => console.log(err));
   }
