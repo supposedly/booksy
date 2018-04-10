@@ -9,7 +9,7 @@ from decimal import Decimal
 import pandas
 
 from ..core import AsyncInit
-from ..attributes import Perms, Maxes, Locks
+from ..attributes import Perms, Limits, Locks
 
 
 # first two args map to each other; str.maketrans('ab', 'xy') turns a->x and b->y
@@ -416,17 +416,17 @@ class Location(AsyncInit):
         """
         async with self.acquire() as conn:
             query = '''
-            SELECT rid, name, isdefault, permissions AS perms, maxes, locks
+            SELECT rid, name, isdefault, permissions AS perms, limits, locks
               FROM roles
              WHERE lid = $1::bigint
             '''
             sums = '''SELECT count(*) FROM members WHERE rid = $1::bigint'''
-            res = [{j: i[j] for j in ('rid', 'name', 'isdefault', 'perms', 'maxes', 'locks')} for i in await conn.fetch(query, self.lid)]
+            res = [{j: i[j] for j in ('rid', 'name', 'isdefault', 'perms', 'limits', 'locks')} for i in await conn.fetch(query, self.lid)]
             if lower_than and lower_than < 127: # if it isn't an admin role
                 res = [i for i in res if i['perms'] < lower_than]
             for i in res:
                 i['perms'] = Perms(i['perms']).props
-                i['maxes'] = Maxes(i['maxes']).props
+                i['limits'] = Limits(i['limits']).props
                 i['locks'] = Locks(i['locks']).props
                 i['count'] = await conn.fetchval(sums, i['rid'])
         return res
@@ -434,21 +434,21 @@ class Location(AsyncInit):
     async def add_role(self, name, *, kws=None, seqs=None):
         """
         Adds a new role to a location, taking either keyword arguments
-        (kws) for each of its perms/maxes/locks, or sequences (seqs)
-        from either of which the perms/maxes/locks objects can be
+        (kws) for each of its perms/limits/locks, or sequences (seqs)
+        from either of which the perms/limits/locks objects can be
         constructed.
         """
-        perms, maxes, locks = Role.attrs_from(seqs=seqs, kws=kws)
+        perms, limits, locks = Role.attrs_from(seqs=seqs, kws=kws)
         async with self.acquire() as conn:
             query = '''
             INSERT INTO roles (
                           lid, name, isdefault,
-                          permissions, maxes, locks
+                          permissions, limits, locks
                           )
                  SELECT $1::bigint, $2::text, FALSE,
                         $3::smallint, $4::bigint, $5::bigint;
             '''
-            await conn.execute(query, self.lid, name, perms.raw, maxes.raw, locks.raw)
+            await conn.execute(query, self.lid, name, perms.raw, limits.raw, locks.raw)
             rid = await conn.fetchval('''SELECT currval(pg_get_serial_sequence('roles', 'rid'))''')
         return await Role(rid, self._app, location=self)
     
@@ -503,29 +503,29 @@ class Location(AsyncInit):
     
     async def media_types(self):
         """
-        Returns all this location's media types, with their maxes included as a Maxes obj.
+        Returns all this location's media types, with their limits included as a Limits obj.
         """
-        query = '''SELECT name, maxes FROM mtypes WHERE lid = $1::bigint'''
-        return [{'name': i['name'], 'maxes': Maxes(i['maxes'])} for i in await self.pool.fetch(query, self.lid)]
+        query = '''SELECT name, limits FROM mtypes WHERE lid = $1::bigint'''
+        return [{'name': i['name'], 'limits': Limits(i['limits'])} for i in await self.pool.fetch(query, self.lid)]
     
-    async def add_media_type(self, name, unit, maxes: Maxes.props):
+    async def add_media_type(self, name, unit, limits: Limits.props):
         """
         Adds a new media type to the location from its name,
         unit of length, and max overrides.
         """
         query = '''
-        INSERT INTO mtypes (name, unit, maxes, lid)
+        INSERT INTO mtypes (name, unit, limits, lid)
         SELECT $1::text, $2::text, $3::bigint, $4::bigint
         '''
-        await self.pool.execute(query, name.lower(), unit.lower(), Maxes.from_kwargs(**maxes).raw, self.lid)
+        await self.pool.execute(query, name.lower(), unit.lower(), Limits.from_kwargs(**limits).raw, self.lid)
         return await MediaType(name.lower(), self, self._app)
     
-    async def edit_media_type(self, mtype, *, maxes=None, name=None, unit=None):
+    async def edit_media_type(self, mtype, *, limits=None, name=None, unit=None):
         """
-        Edit's a media type's maxes, unit, and name.
+        Edit's a media type's limits, unit, and name.
         """
         mtype = await MediaType(mtype.lower(), self, self._app)
-        await mtype.edit(maxes=maxes and Maxes.from_kwargs(**maxes).raw, name=name.lower(), unit=unit)
+        await mtype.edit(limits=limits and Limits.from_kwargs(**limits).raw, name=name.lower(), unit=unit)
     
     async def remove_media_type(self, name):
         """
@@ -608,7 +608,7 @@ class Location(AsyncInit):
                           isbn, lid, 
                           title, author, published,
                           price, length,
-                          acquired, maxes,
+                          acquired, limits,
                           image
                           )
                  SELECT $2::text, lower($3::text),

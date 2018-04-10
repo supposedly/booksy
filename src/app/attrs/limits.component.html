@@ -1,4 +1,4 @@
-<h3>Maxes</h3> <whatsthis *ngIf="!forMain" ident="3"></whatsthis>
+<h3>Limits</h3> <whatsthis *ngIf="!forMain" ident="3"></whatsthis>
 <div *ngIf="editable; else just_view">
   <aside>None of these values may exceed 250.</aside>
   <label *ngFor="let name of keys(arr.names); let i=index">
@@ -25,7 +25,7 @@
       [attr.disabled]="(overrideArr.names[name])?'y':null"
       [style.display]="(!forMain && name=='holds')?'none':''"
       />
-    {{globals.attrs.maxes[i]}}
+    {{globals.attrs.limits[i]}}
   </label>
 </div>
 <ng-template #just_view>
@@ -36,7 +36,7 @@
         [value]="arr.names[name]"
         disabled
         />
-      {{globals.attrs.maxes[i]}}
+      {{globals.attrs.limits[i]}}
       <br/>
     </label>
   </div>

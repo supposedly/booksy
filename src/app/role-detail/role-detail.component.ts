@@ -4,7 +4,7 @@ import { Location } from '@angular/common';
 
 import { PermsComponent } from '../attrs/perms.component';
 import { LocksComponent } from '../attrs/locks.component';
-import { MaxesComponent } from '../attrs/maxes.component';
+import { LimitsComponent } from '../attrs/limits.component';
 
 import { RoleService } from '../role.service';
 
@@ -25,7 +25,7 @@ export class RoleDetailComponent implements OnInit {
   rID: string;
   
   @ViewChild(PermsComponent) private perms: PermsComponent;
-  @ViewChild(MaxesComponent) private maxes: MaxesComponent;
+  @ViewChild(LimitsComponent) private limits: LimitsComponent;
   @ViewChild(LocksComponent) private locks: LocksComponent;
   
   constructor(
@@ -60,7 +60,7 @@ export class RoleDetailComponent implements OnInit {
         seqs => {
           this.rawPermNum = seqs.perms_raw;
           this.permArr = seqs.perms;
-          this.maxArr = seqs.maxes;
+          this.maxArr = seqs.limits;
           this.lockArr = seqs.locks;
           this.roleName = seqs.name;
         }
@@ -69,7 +69,7 @@ export class RoleDetailComponent implements OnInit {
   
   submit() {
     var sMaxArr = {}, sLockArr = {}; // initialize to properly copy attrs to this:
-    for (let i in this.maxes.arr.names) { sMaxArr[i] = this.maxes.overrideArr.names[i]?this.maxes.overrideArr.names[i]:this.maxes.arr.names[i] }
+    for (let i in this.limits.arr.names) { sMaxArr[i] = this.limits.overrideArr.names[i]?this.limits.overrideArr.names[i]:this.limits.arr.names[i] }
     for (let i in this.locks.arr.names) { sLockArr[i] = this.locks.overrideArr.names[i]?this.locks.overrideArr.names[i]:this.locks.arr.names[i] }
     if (this.rID == 'new') {
       this.roleService.create(this.roleName, this.perms.arr.names, sMaxArr, sLockArr)

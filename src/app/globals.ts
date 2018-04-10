@@ -29,7 +29,7 @@ export class Globals {
   // messages displayed on checkout; same deal, if we didn't have them here then they'd
   // pop up again every time the page is reloaded, even if the user had X-ed them away
   checkoutMessages = null;
-  // generic names for the Perms, Maxes, and Locks attributes (shown as descriptions on the edit screens)
+  // generic names for the Perms, Limits, and Locks attributes (shown as descriptions on the edit screens)
   attrs;
   
   // report data received from server

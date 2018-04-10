@@ -30,7 +30,7 @@ async def serve_attrs(rqst, perms, location):
         'Generate & view reports',
         'Return items',
         ],
-      'maxes': [
+      'limits': [
         'Maximum checkout duration allowed (in weeks)',
         'Number of renewals allowed per checkout',
         'Number of holds allowed at a time',

@@ -33,7 +33,7 @@ async def filtered_roles(rqst, location, *, perms):
 @jwtdec.protected()
 async def add_role_to_location(rqst, user, *, name, seqs):
     """
-    Adds a new role, taking a sequence (seqs) of its perms, maxes, and locks,
+    Adds a new role, taking a sequence (seqs) of its perms, limits, and locks,
     to the locatin.
     """
     if not user.perms.can_manage_roles:

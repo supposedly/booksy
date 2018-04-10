@@ -213,8 +213,8 @@ class PackedBigIntMixin(PackedField):
         If instantiating manually, one of the classmethods would
         likely be used instead.
         
-        >>> Maxes(-144680345691944444)
-        <Maxes-type PackedBigIntMixin-type PackedField raw=-14468034569
+        >>> Limits(-144680345691944444)
+        <Limits-type PackedBigIntMixin-type PackedField raw=-14468034569
         2141052 seq=(4, 10, 10, 253, 253, 253, 253, 253) namemap={'chec
         kout_duration': 4, 'renewals': 10, 'holds': 10}>
         >>>
@@ -236,15 +236,15 @@ class PackedBigIntMixin(PackedField):
     def __repr__(self):
         """
         The genexp at the beginning is to generate a string resembling:
-        <Maxes-type PackedBigIntMixin-type PackedField ... >
+        <Limits-type PackedBigIntMixin-type PackedField ... >
         """
         return f'<{"-type ".join(i.__name__ for i in type(self).__mro__[:-1])} raw={self.raw!r} seq={self.seq!r} namemap={self.namemap!r}>'
     
     @classmethod
     def from_kwargs(cls, filler=253, **kwargs):
         """
-        >>> Maxes.from_kwargs(checkout_duration=4, renewals=10, holds=10)
-        <Maxes-type PackedBigIntMixin-type PackedField raw=-14468034569
+        >>> Limits.from_kwargs(checkout_duration=4, renewals=10, holds=10)
+        <Limits-type PackedBigIntMixin-type PackedField raw=-14468034569
         2141052 seq=(4, 10, 10, 253, 253, 253, 253, 253) namemap={'chec
         kout_duration': 4, 'renewals': 10, 'holds': 10}>
         >>>
@@ -259,8 +259,8 @@ class PackedBigIntMixin(PackedField):
     @classmethod
     def from_seq(cls, seq, *, filler=253):
         """
-        >>> Maxes.from_seq([4, 10, 10])
-        <Maxes-type PackedBigIntMixin-type PackedField raw=-14468034569
+        >>> Limits.from_seq([4, 10, 10])
+        <Limits-type PackedBigIntMixin-type PackedField raw=-14468034569
         2141052 seq=(4, 10, 10, 253, 253, 253, 253, 253) namemap={'chec
         kout_duration': 4, 'renewals': 10, 'holds': 10}>
         >>>

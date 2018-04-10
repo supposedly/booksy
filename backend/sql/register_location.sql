@@ -8,13 +8,13 @@ INSERT INTO roles (
               lid, name,
               isdefault,
               permissions, 
-              maxes, locks
+              limits, locks
               )
      SELECT currval(pg_get_serial_sequence('locations', 'lid')),
             'Admin'::text,
             TRUE,
             127::smallint, -- 32767::smallint, -- maximum smallint value, so every permission bc admin
-            -1::bigint, -- 9223372036854775807::bigint, -- maximum bigint value, so no maxes
+            -1::bigint, -- 9223372036854775807::bigint, -- maximum bigint value, so no limits
             -1::bigint; -- 9223372036854775807::bigint[semicolon] -- maximum bigint value, so no locks
 
 -- ADMIN ACCOUNT SETUP --
@@ -37,7 +37,7 @@ INSERT INTO roles (
               lid, name,
               isdefault,
               permissions, 
-              maxes, locks
+              limits, locks
               )
      SELECT currval(pg_get_serial_sequence('locations', 'lid')),
             'Organizer'::text,
@@ -50,7 +50,7 @@ INSERT INTO roles (
               lid, name,
               isdefault,
               permissions, 
-              maxes, locks
+              limits, locks
               )
      SELECT currval(pg_get_serial_sequence('locations', 'lid')),
             'Subscriber'::text,

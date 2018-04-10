@@ -14,7 +14,7 @@ export class SideButton {
 }
 export class Role {
   perms: number[];
-  maxes: number[];
+  limits: number[];
   locks: number[];
 }
 export class MediaItem {

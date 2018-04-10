@@ -10,7 +10,7 @@ import pandas
 
 
 from ..core import AsyncInit
-from ..attributes import Perms, Maxes, Locks
+from ..attributes import Perms, Limits, Locks
 
 
 class Role(AsyncInit):
@@ -22,7 +22,7 @@ class Role(AsyncInit):
     is_default (bool):     Whether this is one of the 3 roles created by default
     rid        (int):      Role's unique ID
     _permnum,
-    _maxnum,               Shorthand for role.perms/maxes/locks.raw, but
+    _maxnum,               Shorthand for role.perms/limits/locks.raw, but
     _locknum   (int):      not intended to be exposed outside this class
     """
     @staticmethod
@@ -35,7 +35,7 @@ class Role(AsyncInit):
         self.pool = self._app.pg_pool
         self.acquire = self.pool.acquire
         self.rid = int(rid)
-        query = '''SELECT lid, name, isdefault, permissions, maxes, locks FROM roles WHERE rid = $1::bigint'''
+        query = '''SELECT lid, name, isdefault, permissions, limits, locks FROM roles WHERE rid = $1::bigint'''
         try:
             lid, name, default, permbin, maxbin, lockbin = await self.pool.fetchrow(query, self.rid)
         except TypeError:
@@ -50,7 +50,7 @@ class Role(AsyncInit):
         # Straightforward, convert the perms number to binary string
         # e.g. 45 --> '1011010'.
         # 
-        # Then, split the signed maxes/locks into their
+        # Then, split the signed limits/locks into their
         # constituent bytes
         # e.g. 200449 --> (1, 15, 3, 0, 0, 0, 0, 0)
         # because 200449 is binary 0b000000110000111100000001
@@ -69,28 +69,28 @@ class Role(AsyncInit):
           'name': self.name,
           'perms_raw': self.perms.raw,
           'perms': self.perms.props,
-          'maxes': self.maxes.props,
+          'limits': self.limits.props,
           'locks': self.locks.props
           }
     
     @staticmethod
     def attrs_from(*, seqs=None, kws=None):
         """
-        Returns attrs (perms/maxes/locks) from whichever of
+        Returns attrs (perms/limits/locks) from whichever of
         seqs (sequences, see PackedField.seq in core.py) and
         kws (kwargs, see PackedField.from_kwargs) is not-None first.
         """
         if kws is None:
             perms = Perms.from_seq(seqs['perms'])
-            maxes = Maxes.from_seq(seqs['maxes'])
+            limits = Limits.from_seq(seqs['limits'])
             locks = Locks.from_seq(seqs['locks'])
         else:
             perms = Perms.from_kwargs(**kws['perms'])
-            maxes = Maxes.from_kwargs(**kws['maxes'])
+            limits = Limits.from_kwargs(**kws['limits'])
             locks = Locks.from_kwargs(**kws['locks'])
-        return perms, maxes, locks
+        return perms, limits, locks
     
-    async def set_attrs(self, perms, maxes, locks, name):
+    async def set_attrs(self, perms, limits, locks, name):
         """
         Edits all of this role's attrs.
         Also edits its name, if applicable.
@@ -99,11 +99,11 @@ class Role(AsyncInit):
         UPDATE roles
            SET name = $2::text,
                permissions = $3::smallint,
-               maxes = $4::bigint,
+               limits = $4::bigint,
                locks = $5::bigint
          WHERE rid = $1::bigint
         '''
-        await self.pool.execute(query, self.rid, name, perms.raw, maxes.raw, locks.raw)
+        await self.pool.execute(query, self.rid, name, perms.raw, limits.raw, locks.raw)
     
     
     async def delete(self):
@@ -121,8 +121,8 @@ class Role(AsyncInit):
         return Perms(self._permbin)
     
     @property
-    def maxes(self):
-        return Maxes(self._maxbin)
+    def limits(self):
+        return Limits(self._maxbin)
     
     @property
     def locks(self):

@@ -41,7 +41,7 @@ async def search_location_media(rqst, location, *, title, genre, media_type, aut
 @root.post('/add')
 @rqst_get('user', 'title', 'author', 'published', 'media_type', 'genre', 'isbn', 'price', 'length')
 @jwtdec.protected()
-async def add_media_item_to_db(rqst, user, *, title, author, published, media_type: {'name': str, 'maxes': list}, genre, isbn, price, length):
+async def add_media_item_to_db(rqst, user, *, title, author, published, media_type: {'name': str, 'limits': list}, genre, isbn, price, length):
     """
     Adds a new media item, taking all of its attributes.
     """

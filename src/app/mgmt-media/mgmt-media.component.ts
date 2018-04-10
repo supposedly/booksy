@@ -4,7 +4,7 @@ import { Location } from '@angular/common';
 
 import { PermsComponent } from '../attrs/perms.component';
 import { LocksComponent } from '../attrs/locks.component';
-import { MaxesComponent } from '../attrs/maxes.component';
+import { LimitsComponent } from '../attrs/limits.component';
 
 import { MediaTypeService } from '../media-type.service';
 import { LocationService } from '../location.service';

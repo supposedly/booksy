@@ -17,7 +17,7 @@ async def put_item_on_hold(rqst, user, *, item):
     """
     if user.cannot_check_out:
         sanic.exceptions.abort(403, "You aren't allowed to place holds.")
-    if user.holds > user.maxes.holds:
+    if user.holds > user.limits.holds:
         sanic.exceptions.abort(403, "You aren't allowed to place any more holds.")
     if not item._issued_uid:
         sanic.exceptions.abort(409, "This item is already available.")
@@ -94,7 +94,7 @@ async def issue_item(rqst, location, username, *, item):
         user = await User.from_identifiers(username, location, app=rqst.app)
     except ValueError as err:
         sanic.exceptions.abort(404, err)
-    if user.cannot_check_out or not getattr(item.maxes, 'checkout_duration', """NO MAXES"""):
+    if user.cannot_check_out or not getattr(item.limits, 'checkout_duration', """NO MAXES"""):
         sanic.exceptions.abort(403, "You aren't allowed to check this item out.")
     if not item.available and user.uid != item._issued_uid:
         # will never be triggered really unless I forget to query /check first

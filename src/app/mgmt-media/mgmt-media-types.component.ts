@@ -4,7 +4,7 @@ import { Location } from '@angular/common';
 
 import { PermsComponent } from '../attrs/perms.component';
 import { LocksComponent } from '../attrs/locks.component';
-import { MaxesComponent } from '../attrs/maxes.component';
+import { LimitsComponent } from '../attrs/limits.component';
 
 import { MediaTypeService } from '../media-type.service';
 import { LocationService } from '../location.service';
@@ -59,7 +59,7 @@ export class MgmtMediaTypesComponent {
   <br/>
   <input type="text" [value]="unit" [(ngModel)]="unit"/>
   <form name="media-type-information" (ngSubmit)="submit()">
-     <app-maxes [arr]="maxArr" auxiliary></app-maxes>
+     <app-limits [arr]="maxArr" auxiliary></app-limits>
      <input type="submit" value="Submit"/>
   </form>
   `,
@@ -72,7 +72,7 @@ export class MediaTypeDetailComponent implements OnInit {
   unit: string;
   msg: string = '';
   
-  @ViewChild(MaxesComponent) private maxes: MaxesComponent;
+  @ViewChild(LimitsComponent) private limits: LimitsComponent;
   
   constructor(
     public globals: Globals,
@@ -95,7 +95,7 @@ export class MediaTypeDetailComponent implements OnInit {
     this.mTypeService.info(this.name)
       .subscribe(
         resp => {
-          this.maxArr = resp.type.maxes;
+          this.maxArr = resp.type.limits;
           this.unit = resp.type.unit;
         }
       );
@@ -103,14 +103,14 @@ export class MediaTypeDetailComponent implements OnInit {
   
   submit() {
     var maxArr = {} // initialize to properly copy attrs to this:
-    for (let i in this.maxes.arr.names) { maxArr[i] = this.maxes.overrideArr.names[i]?this.maxes.overrideArr.names[i]:this.maxes.arr.names[i] }
+    for (let i in this.limits.arr.names) { maxArr[i] = this.limits.overrideArr.names[i]?this.limits.overrideArr.names[i]:this.limits.arr.names[i] }
     
     if (this.initialName == 'new') {
       this.mTypeService.add(maxArr, this.name, this.unit)
         .subscribe(
           _ => {
             this.initialName = this.name;
-            this.globals.locMediaTypes.push({name: this.name, maxes: maxArr});
+            this.globals.locMediaTypes.push({name: this.name, limits: maxArr});
             this.msg = "Successfully created."
           },
           err => this.msg = err.error?err.error:"Not allowed!"

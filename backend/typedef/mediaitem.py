@@ -3,7 +3,7 @@ import types
 from decimal import Decimal
 
 from ..core import AsyncInit
-from ..attributes import Perms, Maxes, Locks
+from ..attributes import Perms, Limits, Locks
 
 
 class MediaItem(AsyncInit):
@@ -54,7 +54,7 @@ class MediaItem(AsyncInit):
         self.pool = app.pg_pool
         self.acquire = self.pool.acquire
         query = '''
-        SELECT type, isbn, lid, author, title, published, genre, issued_to, due_date, fines, acquired, maxes, image, length, price
+        SELECT type, isbn, lid, author, title, published, genre, issued_to, due_date, fines, acquired, limits, image, length, price
           FROM items
          WHERE mid = $1::bigint
         '''
@@ -81,16 +81,16 @@ class MediaItem(AsyncInit):
         retdir['available'] = not self.issued_to
         return retdir
     
-    async def set_maxes(self, newmaxes: Maxes, *, mid=True):
+    async def set_limits(self, newlimits: Limits, *, mid=True):
         """
-        Changes this item's maxes... not implemented, because
+        Changes this item's limits... not implemented, because
         this overriding was eventually relegated to just media types.
         """
-        if not isinstance(newmaxes, Maxes):
-            raise TypeError('Argument must be of type Maxes')
+        if not isinstance(newlimits, Limits):
+            raise TypeError('Argument must be of type Limits')
         query = '''
         UPDATE items
-           SET maxes = $1::bigint
+           SET limits = $1::bigint
          WHERE {}
         '''.format(
           'mid = $2::bigint'
@@ -98,8 +98,8 @@ class MediaItem(AsyncInit):
           else
           "title ILIKE '%' || $2::text || '%' AND author ILIKE '%' || $3::text || '%'"
           )
-        await self.pool.execute(query, newmaxes.num, *([self.mid] if mid else [self.title, self.author, self.type]))
-        self.maxes = newmaxes
+        await self.pool.execute(query, newlimits.num, *([self.mid] if mid else [self.title, self.author, self.type]))
+        self.limits = newlimits
     
     async def status(self):
         """
@@ -166,22 +166,22 @@ class MediaItem(AsyncInit):
         set item's issued_to to the user's ID,
         and clear the user's holds on the item
         """
-        # Give priority to mediatype/mediaitem maxes over user/role maxes --
+        # Give priority to mediatype/mediaitem limits over user/role limits --
         # unless a max on the mediatype/mediaitem is 254, the 'null' code,
-        # in which case refer to to user/role maxes
-        if self.maxes is None:
-            maxes = user.maxes
+        # in which case refer to to user/role limits
+        if self.limits is None:
+            limits = user.limits
         else:
-            maxes = types.SimpleNamespace(
+            limits = types.SimpleNamespace(
               **{
                   k: v
                 if v != 254 else
-                  user.maxes.namemap[k]
+                  user.limits.namemap[k]
                 for k, v in
-                  self.maxes.namemap.items()
+                  self.limits.namemap.items()
                 }
               )
-        infinite = maxes.checkout_duration >= 255
+        infinite = limits.checkout_duration >= 255
         async with self.acquire() as conn:
             query = '''
             UPDATE members
@@ -200,7 +200,7 @@ class MediaItem(AsyncInit):
             # in which case Infinity (a value postgres allows in date fields, handily enough)
             params = [query, user.uid, self.mid]
             if not infinite:
-                params.append(7*maxes.checkout_duration)
+                params.append(7*limits.checkout_duration)
             await conn.execute(*params)
             query = '''
             DELETE FROM holds
@@ -209,7 +209,7 @@ class MediaItem(AsyncInit):
             '''
             await conn.execute(query, self.mid, user.uid)
         self.issued_to = user
-        self.due_date = 'never.' if infinite else dt.datetime.utcnow() + dt.timedelta(weeks=maxes.checkout_duration)
+        self.due_date = 'never.' if infinite else dt.datetime.utcnow() + dt.timedelta(weeks=limits.checkout_duration)
         self.fines = 0
         self.available = False
     
@@ -234,13 +234,13 @@ class MediaItem(AsyncInit):
         await self.location.remove_item(item=self)
     
     @property
-    def maxes(self):
+    def limits(self):
         """
-        Because item-specific maxes were again not implemented,
-        this just returns either the item's type's maxes or None
+        Because item-specific limits were again not implemented,
+        this just returns either the item's type's limits or None
         """
         if not self.type:
             return None
         if not self._maxnum:
-            return self.type.maxes
-        return {k: v if v != 254 else self.type.maxes[k] for k, v in Maxes(self._maxnum).namemap.items()}
+            return self.type.limits
+        return {k: v if v != 254 else self.type.limits[k] for k, v in Limits(self._maxnum).namemap.items()}
