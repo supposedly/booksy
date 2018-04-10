@@ -11,9 +11,9 @@ import { LocationService } from '../location.service';
 
 import { Globals } from '../globals';
 
-/* -------------------------------------- */
-//The media-type list component at /types //
-/* -------------------------------------- */
+  /* --------------------------------------- */
+ // The media-type list component at /types //
+/* --------------------------------------- */
 
 @Component({
   selector: 'app-mgmt-media-types',
@@ -83,7 +83,7 @@ export class MediaTypeDetailComponent implements OnInit {
   
   ngOnInit() {
     this.initialName = this.name = this.route.snapshot.paramMap.get('name');
-    if (this.initialName == 'new') {
+    if (this.initialName === 'new') {
       this.name = '';
       this.maxArr = null;
     } else {
@@ -102,10 +102,12 @@ export class MediaTypeDetailComponent implements OnInit {
   }
   
   submit() {
-    const maxArr = {}; // initialize to properly copy attrs to this:
-    for (const i in this.limits.arr.names) { maxArr[i] = this.limits.overrideArr.names[i] ? this.limits.overrideArr.names[i] : this.limits.arr.names[i]; }
+    const maxArr = {}; // initialize to properly copy attrs to:
+    for (const i of Object.keys(this.limits.arr.names)) {
+      maxArr[i] = this.limits.overrideArr.names[i] ? this.limits.overrideArr.names[i] : this.limits.arr.names[i];
+    }
     
-    if (this.initialName == 'new') {
+    if (this.initialName === 'new') {
       this.mTypeService.add(maxArr, this.name, this.unit)
         .subscribe(
           _ => {

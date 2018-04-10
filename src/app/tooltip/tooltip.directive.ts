@@ -8,17 +8,21 @@ import {
   HostListener,
   Injector,
   Input,
+  // FIXME: ReflectiveInjector is deprecated: from v5 - slow and brings in a lot of code, Use `Injector.create` instead.
+  // So maybe I can just switch out the below `ReflectiveInjector.resolveAndCreate` with `Injector.create`...?
   ReflectiveInjector,
   Renderer2,
   ViewContainerRef,
+  OnDestroy,
 } from '@angular/core';
 import { TooltipComponent } from './tooltip.component';
 
 @Directive({
+  // tslint:disable-next-line:directive-selector
   selector: '[tooltip]'
 })
 
-export class TooltipDirective {
+export class TooltipDirective implements OnDestroy {
 
   private componentRef: ComponentRef<TooltipComponent>;
   
@@ -56,7 +60,7 @@ export class TooltipDirective {
     let blur: boolean; // determine whether the tooltip or its native element are out of focus
     if (target.attributes['data-ident']) {
       // ...then we know we're clicking on a tooltip, so now check if it's `this` one
-      blur = target.attributes['data-ident'].value == this.el.nativeElement.attributes['ident'].value;
+      blur = target.attributes['data-ident'].value === this.el.nativeElement.attributes['ident'].value;
     } else {
       // ...we're just clicking anywhere on the document, so check if it's on the icon that launched this
       blur = this.el.nativeElement.contains(target);

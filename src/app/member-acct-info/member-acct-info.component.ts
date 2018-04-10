@@ -34,7 +34,7 @@ export class MemberAcctInfoComponent implements OnInit {
     this.locationService.getFilteredRoles()
       // sort by name
       .subscribe(res => this.roles = res.roles.sort((a, b) => a.name.localeCompare(b.name)));
-    if (this.uID == 'new') {
+    if (this.uID === 'new') {
       this.makeInfo();
     } else {
       this.getInfo();
@@ -45,14 +45,14 @@ export class MemberAcctInfoComponent implements OnInit {
     const m = this.member;
     // i do Not Understand why the below is necessary and chaining && doesn't work
     // (I guess this is a bit prettier than &&-chaining though)
-    return [m.username, m.name, m.rid, this.uID == 'new' ? m.password : true].every(n => n);
+    return [m.username, m.name, m.rid, this.uID === 'new' ? m.password : true].every(n => n);
   }
   
   getInfo() {
     this.locationService.getMemberInfo(this.uID)
       .subscribe(
         resp => {
-          this.showMediaLink = resp.member.user_id != this.globals.uID;
+          this.showMediaLink = resp.member.user_id !== this.globals.uID;
           this.member = resp.member;
         }
       );
@@ -75,7 +75,7 @@ export class MemberAcctInfoComponent implements OnInit {
   }
   
   submit() {
-    if (this.uID == 'new') {
+    if (this.uID === 'new') {
       this.locationService.createMember(this.member)
         .subscribe(resp => this.location.back(), err => this.msg = err.error ? err.error : 'Error.');
     } else {

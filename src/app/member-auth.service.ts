@@ -25,14 +25,14 @@ export class MemberAuthService {
   
   private locInfoURL = '/api/location/is-registered';
   
-  //we can cache all of these because they're not going to change
-  public isRegistered: boolean; //whether location IP is present in server db
-  public isCheckoutAccount: boolean; //whether user is logged in as a library checkout acct or as a user
+  // we can cache all of these because they're not going to change
+  public isRegistered: boolean; // whether location IP is present in server db
+  public isCheckoutAccount: boolean; // whether user is logged in as a library checkout acct or as a user
   public managesLocation: boolean;
   public uID: string;
   public lID: string;
   
-  //these are potentially subject to change but can still be cached until they do
+  // these are potentially subject to change but can still be cached until they do
   public username: string;
   public rID: string;
   public phone: string;

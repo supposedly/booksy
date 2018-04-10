@@ -28,12 +28,12 @@ export class ReportsComponent /* implements OnInit */ {
   ) {}
 
   onSortChange(item, value) {
-    if (item == 'on') {this.sortBy = value; }
+    if (item === 'on') {this.sortBy = value; }
   }
   
   onTypeChange(idx, event) {
-    for (const i in this.buttons) {
-      {this.buttons[i].value = i == idx; }
+    for (const i of Object.keys(this.buttons)) {
+      {this.buttons[i].value = i === idx; }
     }
   }
   

@@ -26,7 +26,7 @@ export class SetupService {
         this.globals.locMediaTypes = resp.types;
         this.globals.locGenres = resp.genres;
         // set up header colors... unimplemented though :(
-        let rawColor = resp.locColor || 0xf7f7f7;
+        const rawColor = resp.locColor || 0xf7f7f7;
         this.globals.locColor = this.toRGB(rawColor);
         this.globals.locActiveColor = this.toRGB(rawColor - 0x382f2b);
         this.globals.locDepressedColor = this.toRGB(rawColor - 0x6f6f6f);
@@ -34,6 +34,7 @@ export class SetupService {
   }
   
   toRGB(num): string {
+    // tslint:disable-next-line:no-bitwise
     return '#' + (num >>> 0).toString(16).slice(-6);
   }
   

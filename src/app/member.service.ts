@@ -32,14 +32,18 @@ export class MemberService {
   
   editSelf(fullName, newpass, curpass) {
     return this.http.post<any>(this.editSelfURL, {
-      fullname: fullName == this.globals.name ? null : fullName,
+      fullname: fullName === this.globals.name ? null : fullName,
       newpass: newpass ? newpass : null,
       curpass: curpass
     });
   }
   
   getNotifs(username?: string): Observable<any> {
-    return this.http.get<any>(this.notifURL, {params: {username: username ? username : this.globals.username, lid: this.globals.lID}}).shareReplay();
+    return this.http.get<any>(
+      this.notifURL,
+      {params: {username: username ? username : this.globals.username, lid: this.globals.lID}}
+    )
+    .shareReplay();
   }
   
   getSuggestions(): Observable<any> {

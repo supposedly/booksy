@@ -38,7 +38,7 @@ export class RoleDetailComponent implements OnInit {
   
   ngOnInit() {
     this.rID = this.route.snapshot.paramMap.get('rID');
-    if (this.rID == 'new') {
+    if (this.rID === 'new') {
       this.permArr = this.maxArr = this.lockArr = null;
     } else {
       this.getArrs();
@@ -51,7 +51,7 @@ export class RoleDetailComponent implements OnInit {
   
   checkView() {
     const gRaw = +this.globals.perms.raw;
-    return this.rID == 'new' || gRaw >= 127 || gRaw > +this.rawPermNum;
+    return this.rID === 'new' || gRaw >= 127 || gRaw > +this.rawPermNum;
   }
   
   getArrs() {
@@ -69,11 +69,19 @@ export class RoleDetailComponent implements OnInit {
   
   submit() {
     const sMaxArr = {}, sLockArr = {}; // initialize to properly copy attrs to this:
-    for (const i in this.limits.arr.names) { sMaxArr[i] = this.limits.overrideArr.names[i] ? this.limits.overrideArr.names[i] : this.limits.arr.names[i]; }
-    for (const i in this.locks.arr.names) { sLockArr[i] = this.locks.overrideArr.names[i] ? this.locks.overrideArr.names[i] : this.locks.arr.names[i]; }
-    if (this.rID == 'new') {
+    for (const i of Object.keys(this.limits.arr.names)) {
+      sMaxArr[i] = this.limits.overrideArr.names[i] ? this.limits.overrideArr.names[i] : this.limits.arr.names[i];
+    }
+    for (const i of Object.keys(this.locks.arr.names)) {
+      sLockArr[i] = this.locks.overrideArr.names[i] ? this.locks.overrideArr.names[i] : this.locks.arr.names[i];
+    }
+    if (this.rID === 'new') {
       this.roleService.create(this.roleName, this.perms.arr.names, sMaxArr, sLockArr)
-        .subscribe(resp => {this.rID = resp.rid; this.msg = 'Successfully created.'; }, err => this.msg = err.error ? err.error : 'Not allowed!');
+        .subscribe(resp => {
+          this.rID = resp.rid; this.msg = 'Successfully created.';
+        },
+        err => this.msg = err.error ? err.error : 'Not allowed!'
+      );
     } else {
       this.roleService.modify(this.rID, this.roleName, this.perms.arr.names, sMaxArr, sLockArr)
         .subscribe(_ => this.msg = 'Successfully edited.', err => this.msg = err.error ? err.error : 'Not allowed!');

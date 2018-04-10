@@ -38,14 +38,15 @@ export class LoginComponent implements OnInit {
     this.isLocationRegistered = this.memberAuthService.isRegistered;
     this.returnURL = this.route.snapshot.queryParams['returnURL'] || '/home';
     if (this.globals.isLoggedIn) {
-      //this.zone.run(() => window.location.href = this.returnURL);
-      //window.location.href = this.returnURL;
+      // this.zone.run(() => window.location.href = this.returnURL);
+      // window.location.href = this.returnURL;
       this.router.navigateByUrl(this.returnURL);
     }
   }
   
   send(): void {
-    this.memberAuthService.logIn(this.uID, this.password, this.lID)  // memberAuthService will now send this info, along with the location ID fetched from /auth/me
+    // memberAuthService will now send this info, along with the location ID fetched from /auth/me
+    this.memberAuthService.logIn(this.uID, this.password, this.lID)
       .subscribe(
         resp => {
           if (resp) {
