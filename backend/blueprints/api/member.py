@@ -46,9 +46,8 @@ async def get_user_items(rqst, user, *, member):
     Serves user's currently-checked-out items.
     """
     member = await User(member, rqst.app)
-    if not (user.uid == member.uid or user.perms.can_manage_accounts):
-        if user.perms.raw <= member.perms.raw:
-            sanic.exceptions.abort(403, "You aren't allowed to view this member's items.")
+    if not user.beats(member, and_has='manage_accounts'):
+        sanic.exceptions.abort(403, "You aren't allowed to view this member's items.")
     return sanic.response.json(await member.items(), status=200)
 
 @mbr.get('/held')
@@ -59,9 +58,8 @@ async def get_user_holds(rqst, user, *, member):
     Serves user's currently-active holds.
     """
     member = await User(member, rqst.app)
-    if not (user.uid == member.uid or user.perms.can_manage_accounts):
-        if user.perms.raw <= member.perms.raw:
-            sanic.exceptions.abort(403, "You aren't allowed to view this member's holds.")
+    if not user.beats(member, and_has='manage_accounts'):
+        sanic.exceptions.abort(403, "You aren't allowed to view this member's holds.")
     return sanic.response.json(await member.held(), status=200)
 
 @mbr.post('/clear-hold')
@@ -82,10 +80,8 @@ async def edit_member(rqst, user, *, member):
     """
     Edits user's information.
     """
-    if not user.perms.can_manage_accounts:
-        sanic.exceptions.abort(403, "You aren't allowed to modify member info.")
     changing = await User(member['user_id'], rqst.app)
-    if user.perms.raw <= changing.perms.raw:
+    if not user.beats(changing, and_has='manage_accounts'):
         sanic.exceptions.abort(403, "You aren't allowed to modify this member's info.")
     await changing.edit(username=member['username'], rid=member['rid'], fullname=member['name'])
     return sanic.response.raw(b'', status=204)

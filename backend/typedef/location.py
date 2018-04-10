@@ -112,11 +112,11 @@ class Location(AsyncInit):
         they verify.
         Also generates admin+checkout usernames based on the location name.
         """
-        # Some Guy's Name High School
+        # Some Person's Full Name High School
         # ->
-        # sgnhs
+        # spnfh
         # (initials up to the 5th word)
-        base = ''.join(i for i, *_ in locname.split(None, 4)).lower()
+        base = ''.join(word[0] for word in locname.split(None, 4)).lower()
         chk_usr, admin_usr = f'{base}-checkout', f'{base}-admin'
         token = uuid.uuid4().hex
         
@@ -192,7 +192,7 @@ class Location(AsyncInit):
     @classmethod
     async def from_ip(cls, rqst):
         """
-        Unused, but intended to help implement the 'no-lID-if-at-location'
+        Unused, but intended to help implement the 'no lID if at location'
         thing.
         """
         query = '''
@@ -220,8 +220,7 @@ class Location(AsyncInit):
             """
             Fix+reorder all necessary attributes to match DB in the user CSV dataframe.
             """
-            # XXX FIXME: I need a way to ensure the below salt is random and regenerated for EVERY row
-            df.password = df.password.apply(functools.partial(bcrypt.hashpw, salt=bcrypt.gensalt(12)))
+            df.password = df.password.apply(lambda pw: bcrypt.hashpw(pw, salt=bcrypt.gensalt(12)))
             # assign the given role ID to all members
             df['rid'] = int(rid)
             # Rearrange to remain compliant with asyncpg's copy_to_table
@@ -235,7 +234,7 @@ class Location(AsyncInit):
         # load the file as a Pandas dataframe
         df = await self._app.aexec(None, pandas.read_csv, file)
         # encode password column to make it usable for bcrypt
-        df.password = self._app.aexec(None, df.password.str.encode, 'utf-8')
+        df.password = await self._app.aexec(None, df.password.str.encode, 'utf-8')
         df = await self._app.aexec(None, fix, df)
         with io.BytesIO() as bIO:
             await self._app.aexec(None, df.to_csv, bIO)

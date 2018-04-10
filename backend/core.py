@@ -281,4 +281,3 @@ class PackedBigIntMixin(PackedField):
         self.namemap = {name: kwargs.get(name, self.namemap[name]) for name in filter(bool, self._names)}
         [self.raw] = struct.unpack('q', struct.pack('8B', *(self.namemap.get(i, self.seq[k]) for k, i in enumerate(self._names))))
         self.seq = struct.unpack('8B', struct.pack('<q', int(self.raw)))
-
