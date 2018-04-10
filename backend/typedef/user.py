@@ -83,6 +83,9 @@ class User(AsyncInit):
         self._locknum = lockbin
         self.is_checkout = bool(self._type)  # == 1
     
+    def __eq__(self, other):
+        return type(other) is type(self) and other.uid == self.uid
+    
     def to_dict(self) -> dict:
         props = ['user_id', 'username', 'name', 'lid', 'manages', 'rid', 'email', 'phone', 'is_checkout', 'perms', 'recent']
         rel = {i: getattr(self, i, None) for i in props}
@@ -90,6 +93,21 @@ class User(AsyncInit):
         rel['rolename'] = self.role.name
         return rel
     
+    def beats(self, other=None, *, perms=None, and_has=None):
+        if not hasattr(other, 'perms'):
+            raise TypeError(f"invalid type for comparison with '{type(self).__name__}': '{type(other).__name__}'")
+        if not (other or perms):
+            raise TypeError("expecting either 'perms' or 'other' user to compare against; got neither")
+        
+        if self.perms.raw == 127:
+            return True
+
+        if (self.perms.raw > perms.raw) if perms else (self.perms.raw > other.perms.raw or self == other):
+            if and_has is not None:
+                return self.perms.props[and_has]
+            return True
+        return False
+
     @property
     def cannot_check_out(self):
         """
@@ -153,7 +171,7 @@ class User(AsyncInit):
     def edit_perms_from_seq(self, *new):
         """Just shorthand"""
         self.perms.edit_from_seq(*new)
-    
+
     async def delete(self):
         """
         Get rid of & clean up after a member.

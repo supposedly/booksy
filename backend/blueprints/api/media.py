@@ -94,7 +94,7 @@ async def issue_item(rqst, location, username, *, item):
         user = await User.from_identifiers(username, location, app=rqst.app)
     except ValueError as err:
         sanic.exceptions.abort(404, err)
-    if user.cannot_check_out or not item.maxes.checkout_duration:
+    if user.cannot_check_out or not getattr(item.maxes, 'checkout_duration', """NO MAXES"""):
         sanic.exceptions.abort(403, "You aren't allowed to check this item out.")
     if not item.available and user.uid != item._issued_uid:
         # will never be triggered really unless I forget to query /check first
@@ -117,10 +117,10 @@ async def return_item(rqst, location, username, *, item):
         user = await User.from_identifiers(username, location, app=rqst.app)
     except ValueError as e:
         sanic.exceptions.abort(404, e)
-    if user.is_checkout or not user.perms.can_return_items:
-        sanic.exceptions.abort(403, "You aren't allowed to return items.")
+    if user.is_checkout or not user.beats(item.issued_to, and_has='return_items'):
+        sanic.exceptions.abort(403, "You aren't allowed to return this item.")
     if item.fines:
-        sanic.exceptions.abort(409, "This item's fines must be paid off before it is returned.")
+        sanic.exceptions.abort(409, "This item's fines must be paid off before it is returned!")
     await item.check_in()
     return sanic.response.raw(b'', status=204)
 

@@ -44,10 +44,8 @@ async def edit_role(rqst, role, user, *, name, seqs):
     perms, maxes, and locks, plus its modified name.
     """
     new = Role.attrs_from(kws=seqs) # new[0] == perms
-    if user.perms.raw <= new[0].raw or not user.perms.can_manage_roles:
-        # Users can only modify roles *below* them in perms hierarchy
-        if user.perms.raw < 127: # unless they're admins
-            sanic.exceptions.abort(403, "You aren't allowed to modify this role.")
+    if not user.beats(perms=new[0], and_has='manage_roles'):
+        sanic.exceptions.abort(403, "You aren't allowed to modify this role.")
     await role.set_attrs(*new, name=name)
     return sanic.response.raw(b'', status=204)
 
@@ -56,11 +54,11 @@ async def edit_role(rqst, role, user, *, name, seqs):
 @jwtdec.protected()
 async def delete_role(rqst, user, *, role):
     if await role.num_members():
-        sanic.exceptions.abort(403, "You can't delete a role with members assigned to it.")
+        sanic.exceptions.abort(403, "You can't delete a role that still has members.")
     if role.is_default:
         sanic.exceptions.abort("Default roles cannot be deleted.")
-    if user.perms.raw <= role.perms.raw or not user.perms.can_manage_roles:
-        sanic.exceptions.abort("You aren't allowed to delete this role.")
+    if not user.beats(role, and_has='manage_roles'):
+        sanic.exceptions.abort(403, "You aren't allowed to delete this role.")
     await role.delete()
     return sanic.response.raw('', status=204)
 
