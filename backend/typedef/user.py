@@ -14,7 +14,7 @@ except ModuleNotFoundError: # means I'm testing (can't access app.config.TESTING
     def __gensalt(*_, **__):
         return 0
     def __checkpw(*_, **__):
-        return True # blegh
+        return True
     bcrypt = types.SimpleNamespace(
       hashpw = __hashpw,
       gensalt = __gensalt,
@@ -44,8 +44,10 @@ class User(AsyncInit):
     """
     @staticmethod
     def do_imports():
-        global Location, Role, MediaItem, MediaType, User
-        from . import Location, Role, MediaItem, MediaType, User
+        global Location, Role, MediaItem, MediaType
+        from . import Location, Role, MediaItem, MediaType
+        global get_role, get_location, get_media_item, get_mtype
+        from . import get_role, get_location, get_media_item, get_mtype
     
     async def __init__(self, uid, app, *, location=None, role=None):
         self._app = app
@@ -68,8 +70,8 @@ class User(AsyncInit):
             holds = await conn.fetchval(query, self.uid)
             query = '''SELECT count(*) FROM items WHERE issued_to = $1::bigint'''
             self.num_checkouts = await conn.fetchval(query, self.uid)
-        self.location = location if isinstance(location, Location) else await Location(lid, self._app)
-        self.role = role if isinstance(role, Role) else await Role(rid, self._app, location=self.location)
+        self.location = location if isinstance(location, Location) else await get_location(lid, self._app)
+        self.role = role if isinstance(role, Role) else await get_role(rid, self._app, location=self.location)
         self.lid, self.rid = lid, rid
         self.holds = holds
         self.username = username
@@ -159,10 +161,10 @@ class User(AsyncInit):
         and, once found, passes it to __init__())
         """
         if lid and location is None:
-            location = await Location(int(lid), app)
+            location = await get_location(int(lid), app)
         query = '''SELECT uid FROM members WHERE username = $1::text AND lid = $2::bigint'''
         uid = await app.pg_pool.fetchval(query, username, location.lid)
-        return await cls(uid, app)
+        return await cls(uid, location=location, app=app)
     
     def edit_perms(self, **new):
         """Just shorthand"""

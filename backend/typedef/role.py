@@ -29,6 +29,8 @@ class Role(AsyncInit):
     def do_imports():
         global Location, MediaItem, MediaType, User
         from . import Location, MediaItem, MediaType, User
+        global get_user, get_location, get_media_item, get_mtype
+        from . import get_user, get_location, get_media_item, get_mtype
     
     async def __init__(self, rid, app, *, location=None):
         self._app = app
@@ -40,7 +42,7 @@ class Role(AsyncInit):
             lid, name, default, permbin, maxbin, lockbin = await self.pool.fetchrow(query, self.rid)
         except TypeError:
             raise TypeError('role') # to be fed back to application as '{role} does not exist!'
-        self.location = await Location(lid, self._app) if location is None else location
+        self.location = await get_location(lid, self._app) if location is None else location
         self.name = name
         self.is_default = default
         # Comments below pertain to these three lines

@@ -2,7 +2,8 @@ from functools import wraps
 
 import sanic
 
-from .typedef import Location, Role, MediaType, MediaItem, User
+from .typedef import get_location, get_role, get_mtype, get_media_item, get_user
+
 
 async def user_from_rqst(rqst):
     """
@@ -29,7 +30,7 @@ async def user_from_rqst(rqst):
     except KeyError:
         async with rqst.app.rd_pool.get() as conn:
             rqst.app.rtoken_cache[rtoken] = uid = await conn.execute('get', rtoken)
-    return await User(uid, rqst.app)
+    return await get_user(uid, rqst.app)
 
 
 def uid_get(*attrs, user=False):
@@ -78,7 +79,7 @@ def rqst_get(*attrs, user=False, form=False):
     def decorator(func):
         @wraps(func)
         async def wrapper(rqst, *args, **kwargs):
-            maps = {'item': (MediaItem, 'mid'), 'location': (Location, 'lid'), 'role': (Role, 'rid')}
+            maps = {'item': (get_media_item, 'mid'), 'location': (get_location, 'lid'), 'role': (get_role, 'rid')}
             container = rqst.raw_args if rqst.method == 'GET' else rqst.form if form else rqst.json
             try:
                 vals = {i: await maps[i][0](container[maps[i][1]], rqst.app) if i in maps else None if i == 'null' else container[i] for i in attrs}

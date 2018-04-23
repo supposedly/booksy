@@ -18,8 +18,8 @@ class MediaItem(AsyncInit):
     price       (Decimal):   How much item costs.
     available   (bool):      Whether item is not checked out to anybody.
     acquired    (date):      What day item was added to library.
-    published   (date):      Specifically a datetime.date object; what year item was published.
     due_date    (date):      Due date if item is checked out, or None otherwise.
+    published   (int):       The year item was published.
     mid         (int):       Item's unique ID, used on its barcode and when checking in/out.
     lid         (int):       Shorthand for item.location.lid.
     _issued_uid (int):       The raw uID of the member item is checked out to; not intended to be exposed elsewhere.
@@ -44,6 +44,8 @@ class MediaItem(AsyncInit):
     def do_imports():
         global Location, Role, MediaType, User
         from . import Location, Role, MediaType, User
+        global get_user, get_role, get_location, get_mtype
+        from . import get_user, get_role, get_location, get_mtype
     
     async def __init__(self, mid, app):
         try:
@@ -70,10 +72,10 @@ class MediaItem(AsyncInit):
             ) = await self.pool.fetchrow(query, self.mid)
         except TypeError:
             raise TypeError('item') # to be fed back to the client as "item does not exist!"
-        self.location = await Location(self.lid, self._app)
+        self.location = await get_location(self.lid, self._app)
         self.available = not self._issued_uid
-        self.issued_to = None if self._issued_uid is None else await User(self._issued_uid, self._app, location=self.location)
-        self.type = None if self._type is None else await MediaType(self._type, self.location, self._app)
+        self.issued_to = None if self._issued_uid is None else await get_user(self._issued_uid, self._app, location=self.location)
+        self.type = None if self._type is None else await get_mtype(self._type, self.location, self._app)
     
     def to_dict(self):
         retdir = {attr: str(getattr(self, attr, None)) for attr in self.props}
@@ -101,35 +103,6 @@ class MediaItem(AsyncInit):
         await self.pool.execute(query, newlimits.num, *([self.mid] if mid else [self.title, self.author, self.type]))
         self.limits = newlimits
     
-    async def status(self):
-        """
-        Unused, but returns an item's status:
-        
-        whom it's checked out to,
-        its due date,
-        how much in fines has accrued thus far on it,
-        
-        and None if it's not checked out at all.
-        """
-        query = '''
-        SELECT
-              CASE
-                WHEN issued_to IS NOT NULL
-                THEN (issued_to, due_date, fines)
-              END
-         FROM items
-        '''
-        check = await self.pool.fetchrow(query)
-        try:
-            issued_to, due_date, fines = check
-        except ValueError:
-            pass
-        else:
-            # hacky? probably. But it just updates, for instance,
-            # resp['issued_to'] to the local value of the `issued_to' variable
-            resp = {i: locals()[i] for i in ('issued_to', 'due_date', 'fines')}
-        return resp
-    
     async def pay_off(self):
         """
         Clears this item's fines.
@@ -139,7 +112,8 @@ class MediaItem(AsyncInit):
            SET fines = 0::numeric
          WHERE mid = $1::bigint
         '''
-        return await self.pool.execute(query, self.mid)
+        self.fines = 0
+        await self.pool.execute(query, self.mid)
     
     async def edit(self, title, author, genre, type_, price, length, published, isbn):
         """
@@ -158,7 +132,11 @@ class MediaItem(AsyncInit):
                isbn = $9::text
          WHERE mid = $1::bigint
         '''
-        await self.pool.execute(query, self.mid, title, author, genre, type_, round(Decimal(price), 2), int(length), int(published), isbn)
+        self.title = title; self.author = author; self.genre = genre
+        self._type = type_; self.length = int(length)
+        self.published = int(published); self.isbn = isbn
+        self.price = round(Decimal(price), 2)
+        await self.pool.execute(query, self.mid, title, author, genre, type_, self.price, self.length, self.published, isbn)
     
     async def issue_to(self, user):
         """
@@ -166,6 +144,8 @@ class MediaItem(AsyncInit):
         set item's issued_to to the user's ID,
         and clear the user's holds on the item
         """
+        self.issued_to = user
+        self.issued_to.recent = self.genre
         # Give priority to mediatype/mediaitem limits over user/role limits --
         # unless a max on the mediatype/mediaitem is 254, the 'null' code,
         # in which case refer to to user/role limits
@@ -198,17 +178,16 @@ class MediaItem(AsyncInit):
             '''.format("'Infinity'::date" if infinite else 'current_date + $3::int')
             # ^as many weeks as specified UNLESS there is no restriction on checkout duration
             # in which case Infinity (a value postgres allows in date fields, handily enough)
-            params = [query, user.uid, self.mid]
+            params = [user.uid, self.mid]
             if not infinite:
                 params.append(7*limits.checkout_duration)
-            await conn.execute(*params)
+            await conn.execute(query, *params)
             query = '''
             DELETE FROM holds
              WHERE mid = $1::bigint
                AND uid = $2::bigint
             '''
             await conn.execute(query, self.mid, user.uid)
-        self.issued_to = user
         self.due_date = 'never.' if infinite else dt.datetime.utcnow() + dt.timedelta(weeks=limits.checkout_duration)
         self.fines = 0
         self.available = False

@@ -13,17 +13,18 @@ class MediaType(AsyncInit):
     name     (str):      Media type's name
     unit     (str):      Media type's unit of length, e.g. "pages" or "minutes"
     """
-    
     @staticmethod
     def do_imports():
         global Location, Role, MediaItem, User
         from . import Location, Role, MediaItem, User
+        global get_user, get_role, get_location, get_media_item
+        from . import get_user, get_role, get_location, get_media_item
     
     async def __init__(self, name, location, app):
         self._app = app
         self.pool = app.pg_pool
         self.acquire = self.pool.acquire
-        self.location = location if isinstance(location, Location) else await Location(int(location), self._app)
+        self.location = location if isinstance(location, Location) else await get_location(int(location), self._app)
         self.name = name
         check = await self.pool.fetchval('''SELECT name FROM mtypes WHERE name = $1::text AND lid = $2::bigint''', self.name, self.location.lid)
         if not check:

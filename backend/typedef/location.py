@@ -15,7 +15,7 @@ from ..attributes import Perms, Limits, Locks
 # first two args map to each other; str.maketrans('ab', 'xy') turns a->x and b->y
 # third arg is chars to map to nothing (i.e. to delete)
 # so i'm just deleting (almost) all punctuation
-GBQUERY = str.maketrans('', '', """!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~""")
+GBQUERY = str.maketrans('', '', """!"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~""")
 NO_PUNC = str.maketrans('', '', string.punctuation)
 
 
@@ -57,11 +57,12 @@ class Location(AsyncInit):
       'fine_amt',
       'fine_interval'
       ]
-    
     @staticmethod
     def do_imports():
         global Role, MediaItem, MediaType, User
         from . import Role, MediaItem, MediaType, User
+        global get_user, get_role, get_media_item, get_mtype
+        from . import get_user, get_role, get_media_item, get_mtype
     
     async def __init__(self, lid, app, *, owner=None):
         self._app = app
@@ -73,7 +74,7 @@ class Location(AsyncInit):
             name, ip, fine_amt, fine_interval, color, image = await conn.fetchrow(query, self.lid)
             query = '''SELECT uid FROM members WHERE lid = $1 AND manages = true'''
             ouid = await conn.fetchval(query, self.lid)
-        self.owner = await User(ouid, self._app, location=self) if owner is None else owner # just for consistency; don't think the `else` will ever be used though
+        self.owner = await get_user(ouid, self._app, location=self) if owner is None else owner # just for consistency; don't think the `else` will ever be used though
         self.name = name
         self.ip = ip
         self.fine_amt = fine_amt
@@ -338,7 +339,7 @@ class Location(AsyncInit):
         """
         query = '''SELECT uid FROM members WHERE username = $1::text AND lid = $2::bigint AND type = 0'''
         uid = await self.pool.fetchval(query)
-        return await User(uid, self._app, location=self)
+        return await get_user(uid, self._app, location=self)
     
     async def members(self, by_role=True, *, limit=True, cont=0, max_results=15):
         """
@@ -399,7 +400,7 @@ class Location(AsyncInit):
         results = await self.pool.fetch(query, *filter(bool, search_terms))
         if where_taken is not None: # this means I'm calling it from in here and so I probably want an actual MediaItem or at least no junk
             if max_results == 1:
-                return await MediaItem(results[0]['mid'], app=self._app)
+                return await get_media_item(results[0]['mid'], app=self._app)
             return [i['mid'] for i in results]
         # I'd have liked to provide a full MediaItem for each result,
         # but that would take so so so so so unbearably long on Heroku's DB speeds,
@@ -450,7 +451,7 @@ class Location(AsyncInit):
             '''
             await conn.execute(query, self.lid, name, perms.raw, limits.raw, locks.raw)
             rid = await conn.fetchval('''SELECT currval(pg_get_serial_sequence('roles', 'rid'))''')
-        return await Role(rid, self._app, location=self)
+        return await get_role(rid, self._app, location=self)
     
     async def items(self, *, cont=0, max_results=5):
         """
@@ -518,13 +519,13 @@ class Location(AsyncInit):
         SELECT $1::text, $2::text, $3::bigint, $4::bigint
         '''
         await self.pool.execute(query, name.lower(), unit.lower(), Limits.from_kwargs(**limits).raw, self.lid)
-        return await MediaType(name.lower(), self, self._app)
+        return await get_mtype(name.lower(), self, self._app)
     
     async def edit_media_type(self, mtype, *, limits=None, name=None, unit=None):
         """
         Edit's a media type's limits, unit, and name.
         """
-        mtype = await MediaType(mtype.lower(), self, self._app)
+        mtype = await get_mtype(mtype.lower(), self, self._app)
         await mtype.edit(limits=limits and Limits.from_kwargs(**limits).raw, name=name.lower(), unit=unit)
     
     async def remove_media_type(self, name):
@@ -620,7 +621,7 @@ class Location(AsyncInit):
             '''
             await conn.execute(query, img, *args)
             mid = await conn.fetchval('''SELECT currval(pg_get_serial_sequence('items', 'mid'))''')
-        return await MediaItem(mid, self._app)
+        return await get_media_item(mid, self._app)
     
     async def remove_item(self, item):
         """
@@ -631,7 +632,7 @@ class Location(AsyncInit):
         This of course means that any fines on the item will be cleared
         without having to be paid off.
         """
-        item = item if isinstance(item, MediaItem) else await MediaItem(item, self._app)
+        item = item if isinstance(item, MediaItem) else await get_media_item(item, self._app)
         query = '''
         DELETE FROM items
         WHERE mid = $1::bigint
