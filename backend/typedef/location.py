@@ -71,7 +71,7 @@ class Location(AsyncInit):
         self.acquire = self.pool.acquire
         self.lid = int(lid)
         async with self.acquire() as conn:
-            query = '''SELECT name, ip, fine_amt, fine_interval, color, last_report FROM locations WHERE lid = $1::bigint'''
+            query = '''SELECT name, ip, fine_amt, fine_interval, color, last_report_date FROM locations WHERE lid = $1::bigint'''
             name, ip, fine_amt, fine_interval, color, last_report = await conn.fetchrow(query, self.lid)
             query = '''SELECT uid FROM members WHERE lid = $1 AND manages = true'''
             ouid = await conn.fetchval(query, self.lid)
@@ -272,7 +272,7 @@ class Location(AsyncInit):
             # 'rid' if sort_by == 'per_role' else 'username' if sort_by == 'per_user' else None
             param = (None, 'username', 'rid')[num]
             return to_search, key, param
-        live = True
+        
         items = 'items' if live else '''(SELECT * FROM weeklies WHERE type = 'item') AS items'''
         members = 'members' if live else '''(SELECT * FROM weeklies WHERE type = 'member') AS members'''
         holds = 'holds' if live else '''(SELECT * FROM weeklies WHERE type = 'hold') AS holds'''
