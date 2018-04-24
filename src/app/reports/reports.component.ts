@@ -30,7 +30,10 @@ export class ReportsComponent implements OnInit {
 
   ngOnInit() {
     this.reportsService.getLastReportDate()
-      .subscribe(resp => this.lastReportDate = resp.date);
+      .subscribe(resp => {
+        this.lastReportDate = resp.date;
+        this.globals.reportDate = resp.date || new Date().toLocaleDateString();  // current date
+      });
   }
 
   onSortChange(item, value) {

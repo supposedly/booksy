@@ -35,6 +35,7 @@ export class Globals {
   // report data received from server
   reportData = null;
   reportDataSortedBy = null;
+  reportDate = null;
   
   // genres and media types of user's location
   locMediaTypes;
