@@ -131,27 +131,6 @@ class User(AsyncInit):
         return ret + ('' if chk else ')')  # construct dynamic notif string
     
     @classmethod
-    async def create(cls, app, **kwargs):
-        """
-        Unused; was intended to work with letting users
-        sign up independently and then choose the location ID they
-        belonged to, but I decided not to impl that.
-        """
-        props = ['username', 'pwhash', 'lid', 'email', 'phone']
-        query = '''
-        INSERT INTO members (
-                      username, pwhash,
-                      lid,
-                      email, phone
-                      )
-             SELECT $1::text, $2::bytea,
-                    $3::bigint,
-                    $4::text, $5::text
-        '''
-        await app.pg_pool.execute(query, *(kwargs[i] for i in props))
-        return await cls(uid, app)
-    
-    @classmethod
     async def from_identifiers(cls, username=None, location=None, lid=None, *, app):
         """
         Returns a new User instance, given a username and location ID.
@@ -241,7 +220,7 @@ class User(AsyncInit):
         before allowing the hold.
         """
         if item is None:
-            item = await self.location.search(title=title, genre=genre, type_=str(type_), author=author, max_results=1, where_taken=True)
+            item = await self.location.search(title=title, genre=genre, type_=type_ and str(type_), author=author, max_results=1, where_taken=True)
         templ = '''
        SELECT count(*)
          FROM items
@@ -251,9 +230,9 @@ class User(AsyncInit):
           AND lower(genre) = lower($4::text)
         '''
         async with self.acquire() as conn:
-            if await conn.fetchval(templ + """AND issued_to IS NULL""", title, author, str(type_), genre):
+            if await conn.fetchval(templ + '''AND issued_to IS NULL''', title, author, str(type_), genre):
                 return 'Item is already available!'
-            if await conn.fetchval(templ + """AND issued_to = $5::bigint""", title, author, str(type_), genre, self.uid):
+            if await conn.fetchval(templ + '''AND issued_to = $5::bigint''', title, author, str(type_), genre, self.uid):
                 return 'You have this item checked out already!'
             query = '''
             INSERT INTO holds

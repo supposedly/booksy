@@ -12,14 +12,17 @@ import { Globals } from './globals';
 @Injectable()
 export class ReportsService {
   reportsURL = 'api/location/reports';
+  reportDateURL = 'api/location/reports/last';
+  
   constructor(
     private globals: Globals,
     private http: HttpClient
   ) {}
   
-  getReport(chks= false, ovds= false, fins= false, hlds= false, itms= false) {
+  getReport(liveReports: boolean, chks= false, ovds= false, fins= false, hlds= false, itms= false) {
     return this.http.put( // This is really just a GET request, but I need to be able to send it as json
       this.reportsURL, {
+        live: liveReports,
         get: {
           checkouts: chks,
           overdues: ovds,
@@ -27,5 +30,9 @@ export class ReportsService {
           holds: hlds,
           items: itms
         }});
+  }
+  
+  getLastReportDate() {
+    return this.http.get<any>(this.reportDateURL);
   }
 }

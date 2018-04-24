@@ -43,11 +43,13 @@ class Location(AsyncInit):
     owner         (User):     Admin account of location.
     image         (BytesIO):  (UNUSED) The location's "display picture".
     fine_amt      (Decimal):  How much a user is charged each interval for keeping an overdue item.
+    last_report   (date):     Date of last-recorded report or NULL.
+    report_day    (str)       The day of week report data is recorded on
     name          (str):      Location's name.
-    ip            (str):      (UNUSED) Location's IP address/block; intended to allow members to not enter location ID if signing in while physically at it.
-    fine_interval (int):      How often overdue fines are compounded.
-    _color        (int):      Raw number representing location's preferred color/scheme. Private variable.
+    ip            (str):      (UNUSED) Location's IP address/block; was meant to allow members to not enter location ID if signing in while physically at it.
     color         (str):      _color, but string-formatted to work as an input to ngx-color-picker.
+    _color        (int):      Raw number representing location's preferred color/scheme. Private variable.
+    fine_interval (int):      How often overdue fines are compounded.
     """
     props = [
       'lid',
@@ -69,8 +71,8 @@ class Location(AsyncInit):
         self.acquire = self.pool.acquire
         self.lid = int(lid)
         async with self.acquire() as conn:
-            query = '''SELECT name, ip, fine_amt, fine_interval, color, image FROM locations WHERE lid = $1::bigint'''
-            name, ip, fine_amt, fine_interval, color, image = await conn.fetchrow(query, self.lid)
+            query = '''SELECT name, ip, fine_amt, fine_interval, color, last_report FROM locations WHERE lid = $1::bigint'''
+            name, ip, fine_amt, fine_interval, color, last_report = await conn.fetchrow(query, self.lid)
             query = '''SELECT uid FROM members WHERE lid = $1 AND manages = true'''
             ouid = await conn.fetchval(query, self.lid)
         self.owner = await User(ouid, self._app, location=self) if owner is None else owner # just for consistency; don't think the `else` will ever be used though
@@ -80,7 +82,8 @@ class Location(AsyncInit):
         self.fine_interval = fine_interval
         self._color = color or 0xf7f7f7
         self.color = '#' + hex(color)[2:] if color else '#f7f7f7'
-        self.image = image
+        self.last_report_date = last_report
+        self.image = NotImplemented
     
     def to_dict(self):
         return {i: getattr(self, i, None) for i in self.props}
@@ -249,7 +252,7 @@ class Location(AsyncInit):
                   )
         # w amre la alla that it works
     
-    async def report(self, **do):
+    async def report(self, live: bool, **do):
         """
         `do` will be in the format:
         
@@ -257,76 +260,67 @@ class Location(AsyncInit):
         
         or something similar, with only one of the values being non-False. This will be the value to
         generate a report for.
-        """
-        def query_setup(name: str, var: object):
-            num = (var == 'per_user') or 2*(var == 'per_role')
-            
-            to_search = search_opts[num]
-            # all_roles if var == 'per_role' else all_users if var == 'per_user' else [{}]
-            key = (None, 'username', 'name')[num]
-            # 'name' if var == 'per_role' else 'username' if var == 'per_user' else None
-            param = (None, 'username', 'rid')[num]
-            # 'rid' if var == 'per_role' else 'username' if var == 'per_user' else None
-            return to_search, key, param
         
-        if do['checkouts']:
-            col = 'checkouts'
-            query = '''
-            SELECT DISTINCT ON (items.mid) items.title || ' (#' || items.mid || '; ' || items.due_date || ')' AS title
-              FROM members, items
+        `live` determines whether to serve a live report or one stored from the week prior.
+        """
+        def query_setup(name: str, sort_by):
+            num = (sort_by == 'per_user') or 2*(sort_by == 'per_role')
+            # all_roles if sort_by == 'per_role' else all_users if sort_by == 'per_user' else [{}]
+            to_search = search_opts[num]
+            # 'name' if sort_by == 'per_role' else 'username' if sort_by == 'per_user' else None
+            key = (None, 'username', 'name')[num]
+            # 'rid' if sort_by == 'per_role' else 'username' if sort_by == 'per_user' else None
+            param = (None, 'username', 'rid')[num]
+            return to_search, key, param
+        live = True
+        items = 'items' if live else '''(SELECT * FROM weeklies WHERE type = 'item') AS items'''
+        members = 'members' if live else '''(SELECT * FROM weeklies WHERE type = 'member') AS members'''
+        holds = 'holds' if live else '''(SELECT * FROM weeklies WHERE type = 'hold') AS holds'''
+        
+        if do['checkouts'] or do['overdues']:
+            col = 'checkouts' if do['checkouts'] else 'overdues'
+            query = f'''
+            SELECT DISTINCT ON (items.mid) items.title || ' (#' || items.mid || '; due date ' || items.due_date || ')' AS title
+              FROM {members} JOIN {items} ON items.issued_to = members.uid
              WHERE items.issued_to IS NOT NULL
-            '''
-        elif do['overdues']:
-            col = 'overdues'
-            query = '''
-            SELECT DISTINCT ON (items.mid) items.title || ' (#' || items.mid || '; ' || items.due_date || ')' AS title
-              FROM members, items
-             WHERE items.issued_to IS NOT NULL
-               AND items.due_date < current_date
-            '''
+            ''' + (
+              '''
+              AND items.due_date < current_date
+              ''' if do['overdues'] else ''
+              )
         elif do['fines']:
             col = 'fines'
-            query = '''
+            query = f'''
             SELECT '$' || items.fines AS fines
-              FROM members, items
-             WHERE items.issued_to IS NOT NULL
-               AND items.fines > 0
-               AND members.uid = items.issued_to
+              FROM {members} JOIN {items} ON items.issued_to = members.uid
+             WHERE items.fines > 0
             '''
         elif do['holds']:
             col = 'holds'
-            query = '''
+            query = f'''
             SELECT items.title
-              FROM items, holds
+              FROM {items}, {holds} JOIN {members} ON holds.uid = members.uid
              WHERE holds.mid = items.mid
             '''
         res = {col: []}
-        umn = do[col]
+        sort_by = do[col]
         query += ('''
-         AND (
-               SELECT username
-                 FROM members
-                WHERE uid = {}
-             ) = $1::text
-        ''' if umn == 'per_user' else '''
-         AND (
-               SELECT rid
-                 FROM members
-                WHERE uid = {}
-             ) = $1::bigint
-        ''' if umn == 'per_role' else '''
-         AND (
-               SELECT username
-                 FROM members
-                WHERE uid = {}
-             ) IS NOT NULL
-        ''').format('holds.uid' if col == 'holds' else 'items.issued_to')
-        search_opts = [{}], await self.members(by_role=False), await self.roles()
-        to_search, key, param = query_setup(col, umn)
+         AND members.username = $1::text
+        ''' if sort_by == 'per_user' else '''
+         AND members.rid = $1::bigint
+        ''' if sort_by == 'per_role' else '''
+         AND members.username IS NOT NULL
+        ''')
+        # Make sure to restrict location
+        query += f'''
+        AND items.lid = {self.lid}
+        '''
+        search_opts = ([{}], await self.members(by_role=False), await self.roles())
+        to_search, key, param = query_setup(col, sort_by)
         async with self.acquire() as conn:
             for obj in to_search:
                 search = (
-                  conn.fetch(query) if umn == 'all' else
+                  conn.fetch(query) if sort_by == 'all' else
                   conn.fetch(query, obj.get(param, None))
                 )
                 res[col].append({'ident': obj.get(key, 'All users'), 'res': await search})
@@ -396,6 +390,7 @@ class Location(AsyncInit):
               + ('''ORDER BY lower(title) ''') # just to establish a consistent order for `cont' param
             ).format(*range(1, 1+sum(map(bool, search_terms)))) \
             + ('''LIMIT {} OFFSET {} ''').format(max_results, cont) # these are ok not to parameterize because they're internal
+        print(query, list(filter(bool, search_terms)))
         results = await self.pool.fetch(query, *filter(bool, search_terms))
         if where_taken is not None: # this means I'm calling it from in here and so I probably want an actual MediaItem or at least no junk
             if max_results == 1:

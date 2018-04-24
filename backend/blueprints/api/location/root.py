@@ -82,11 +82,14 @@ async def is_location_registered(rqst):
     '''
 
 @root.put('/reports')
-@rqst_get('get')
+@rqst_get('get', 'live')
 @uid_get('location', 'perms')
 @jwtdec.protected()
-async def get_report(rqst, location, perms, *, get: 'type of report to get'):
+async def get_report(rqst, location, perms, *, get, live):
     """
+    get: type of report to get
+    live: whether to serve the cached weekly report or a live one
+    
     Serves a generated report on whatever activity is going on in the library.
     
     Due to the multi-library nature of the app, I cannot satisfy the "weekly"
@@ -96,7 +99,19 @@ async def get_report(rqst, location, perms, *, get: 'type of report to get'):
     """
     if not perms.can_generate_reports:
         sanic.exceptions.abort(403, "You aren't allowed to generate reports.")
-    return sanic.response.json(await location.report(**get))
+    return sanic.response.json(await location.report(live, **get))
+
+
+@root.get('/reports/last')
+@uid_get('location', 'perms')
+async def get_last_report_date(rqst, location, perms):
+    """
+    Serves the date of the last cached report.
+    """
+    if not perms.can_generate_reports:
+        sanic.exceptions.abort(403, "You aren't allowed to view reports.")
+    return sanic.response.json({'date': location.last_report_date})
+
 
 @root.get('/backups/<to_back_up:members|location|roles|holds|items>')
 @uid_get('location', 'perms', user=True)

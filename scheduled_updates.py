@@ -1,11 +1,12 @@
-import os
 import asyncio
+import os
+import datetime as dt
 
 import asyncpg
 
 # update fines and purge old signups
 
-query = '''
+update_fines = '''
 UPDATE items
    SET fines =
          CASE
@@ -19,15 +20,12 @@ UPDATE items
 DELETE FROM signups WHERE current_date - date >= 1;
 '''
 
-# I COULD do this synchronously and with a bit less boilerplate using
-# regular ol' psycopg2, but ... eh
-
-async def update_fines():
+async def update_all():
     conn = await asyncpg.connect(os.getenv('DATABASE_URL'))
     try:
-        await conn.execute(query)
+        await conn.execute(update_fines)
     finally:
         await conn.close()
 
 loop = asyncio.get_event_loop()
-loop.run_until_complete(update_fines())
+loop.run_until_complete(update_all())
