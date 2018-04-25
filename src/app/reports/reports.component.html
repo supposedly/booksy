@@ -19,15 +19,15 @@
   type="radio"
   name="sort-by"
   (change)="onSortChange(perMember.value, 'per_user')">
-Per user<br/>
+User<br/>
 <input #perRole
   type="radio"
   name="sort-by"
   (change)="onSortChange(perRole.value, 'per_role')">
-Per role<br/>
+Role<br/>
 <input #total
   type="radio"
   name="sort-by"
   (change)="onSortChange(total.value, 'all')">
-Total<br/>
+Total (no sorting)<br/>
 <button (click)="getReport()" [class.invalid]="!(any() && sortBy) || reportLive === null">Submit</button>

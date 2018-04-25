@@ -123,4 +123,4 @@ async def back_up_info(rqst):
     where info is stored remotely so I don't imagine it'd be as useful
     as in a local app to allow backing up of information
     """
-    return NotImplemented
+    raise NotImplementedError

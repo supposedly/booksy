@@ -4,7 +4,7 @@
 <p *ngIf="msg">{{msg}}</p>
 <form (ngSubmit)="submit(mID.value); mID.value=''; msg=null">
 <div *ngIf="isCheckoutAccount">
-   <input name="user-identifier" [(ngModel)]="username" [ngModelOptions]="{updateOn: 'submit'}" placeholder="Your ID (AKA username)" #uID><br/>
+   <input name="user-identifier" [(ngModel)]="username" [ngModelOptions]="{updateOn: 'submit'}" placeholder="Your username" #uID><br/>
 </div>
 <input name="item-id" [(ngModel)]="mid" [ngModelOptions]="{updateOn: 'submit'}" placeholder="Barcode" #mID>
 <button type="submit">Submit</button>&nbsp;&nbsp;<whatsthis [ident]="4"></whatsthis><br/>
