@@ -110,7 +110,8 @@ async def get_last_report_date(rqst, location, perms):
     """
     if not perms.can_generate_reports:
         sanic.exceptions.abort(403, "You aren't allowed to view reports.")
-    return sanic.response.json({'date': location.last_report_date})
+    r_date = location.last_report_date
+    return sanic.response.json({'date': r_date and str(r_date)})
 
 
 @root.get('/backups/<to_back_up:members|location|roles|holds|items>')
