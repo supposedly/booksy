@@ -3,7 +3,7 @@
 <b>View reports from:</b><br/>
 <input type="radio" name="from-when" (change)="reportLive = $event.target.checked">This instant
 <br/>
-<input type="radio" name="from-when" (change)="reportLive = !$event.target.checked" [attr.disabled]="!lastReportDate || null">{{lastReportDate}} (date of last-recorded weekly report)
+<input type="radio" name="from-when" (change)="reportLive = !$event.target.checked" [attr.disabled]="!lastReportDate || null">{{lastReportDate}} (date of last weekly report)
 <br/><br/>
 <b>View reports of:</b><br/>
 <label *ngFor="let btn of buttons; let i = index">
