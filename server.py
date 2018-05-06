@@ -136,7 +136,6 @@ async def set_up_dbs(app, loop):
     """
     app.session = aiohttp.ClientSession()
     app.sem = asyncio.Semaphore(4, loop=loop) # limit concurrency of aiohttp requests to Google Books
-    app.filesem = asyncio.Semaphore(255, loop=loop) # limit concurrency of file reads without forcing one at a time
     
     app.ppe = ProcessPoolExecutor(4)
     app.aexec = loop.run_in_executor
@@ -296,7 +295,7 @@ async def register_location(rqst, token, adminpw, checkoutpw):
         ║ else.                                                  ║<br/>
         ╚════════════════════════════════════════════════════════╝
         </strong></p>
-        ''').replace(' ', '&nbsp;') # otherwise the third line gets screwed with
+        ''').replace(' ', '&nbsp;') # otherwise the third line gets messed up
       + cleandoc(f'''
         <p style="font-family:sans-serif">
         Thanks! Your new library, <b>{locname}</b>, has been registered, with location ID <b>{lid}</b>.
@@ -312,5 +311,5 @@ async def register_location(rqst, token, adminpw, checkoutpw):
     status=200)
 
 if __name__ == '__main__':
-    # more than 1 worker and you get too many DB connections :((
+    # more than 1 worker and I get too many DB connections for heroku :((
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)), debug=False, access_log=False, workers=1)

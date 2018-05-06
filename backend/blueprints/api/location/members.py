@@ -71,7 +71,7 @@ async def add_members_from_csv(rqst, location, *, perms):
     data = rqst.files.get(data, None)
     if data is None: # using conditional instead of try/except bc the data itself might also be null instead of just not present
         sanic.exceptions.abort(422, "No file given!")
-    rqst.app.add_task(location.members_from_csv(data))
+    rqst.app.add_task(location.add_members_from_csv(data))
     return sanic.response.json('', status=202) # (accepted for further processing)
 
 @mbrs.post('/remove')

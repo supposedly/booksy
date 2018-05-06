@@ -27,7 +27,7 @@ except ModuleNotFoundError: # means I'm testing (can't access app.config.TESTING
     def __hashpw(pw: bytes, *_, **__):
         return pw
     def __gensalt(*_, **__):
-        return 0
+        pass
     bcrypt = types.SimpleNamespace(
       hashpw=__hashpw,
       gensalt=__gensalt
@@ -208,7 +208,7 @@ class Location(AsyncInit):
             return await cls(result, rqst.app)
         return None
     
-    async def members_from_csv(self, file, rid):
+    async def add_members_from_csv(self, file, rid):
         """
         Batch addition of members.
         
@@ -216,39 +216,33 @@ class Location(AsyncInit):
         CSV file WITH a header, and columns in this order:
         
         fullname,username,password
-        
-        (NOT IMPLEMENTED)
         """
         def fix(df):
             """
             Fix+reorder all necessary attributes to match DB in the user CSV dataframe.
             """
+            df.password = df.password.str.encode('utf-8')
             df.password = df.password.apply(lambda pw: bcrypt.hashpw(pw, salt=bcrypt.gensalt(12)))
             # assign the given role ID to all members
-            df['rid'] = int(rid)
+            df['rid'], df['lid'], df['type'] = int(rid), self.lid, 0
             # Rearrange to remain compliant with asyncpg's copy_to_table
             # (that is, to fit with my table setup, because this method
             # accepts no 'ordering' argument)
             # Unfortunately this means that it needs to be returned, because
             # while attributes can be modified 'in-place', the entire object
             # cannot
-            return df[['rid', 'fullname', 'username', 'password']]
+            return df[['rid', 'lid', 'type', 'fullname', 'username', 'password']].applymap(lambda b: b.decode() if isinstance(b, bytes) else b)
         
         # load the file as a Pandas dataframe
         df = await self._app.aexec(None, pandas.read_csv, file)
-        # encode password column to make it usable for bcrypt
-        df.password = await self._app.aexec(None, df.password.str.encode, 'utf-8')
         df = await self._app.aexec(None, fix, df)
-        with io.BytesIO() as bIO:
-            await self._app.aexec(None, df.to_csv, bIO)
-            bIO.seek(0)
-            async with self.acquire() as conn:
-                return await conn.copy_to_table(
-                  'members',
-                  source=bIO,
-                  columns=['rid', 'fullname', 'username', 'pwhash'],
-                  format='csv',
-                  header=True
+        async with self.acquire() as conn:
+            return await conn.copy_to_table(
+                'members',
+                source=io.BytesIO(df.to_csv(index=None).encode()),
+                columns=['rid', 'lid', 'type', 'fullname', 'username', 'pwhash'],
+                format='csv',
+                header=True
                   )
         # w amre la alla that it works
     
