@@ -1,10 +1,10 @@
 import asyncio
 import datetime as dt
 import os
-now = dt.datetime.now
 
 import asyncpg
 
+now = dt.datetime.now
 
 # update fines and purge old signups
 # then record weekly report data
@@ -43,12 +43,14 @@ SELECT 'hold', holds.mid, holds.uid, locations.lid, locations.report_day
 UPDATE locations SET last_report_date = current_date WHERE report_day = '{0}';
 '''
 
+
 async def update_all():
     conn = await asyncpg.connect(os.getenv('DATABASE_URL'))
     try:
         await conn.execute(update_query.format(now().strftime('%A').lower()))
     finally:
         await conn.close()
+
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(update_all())

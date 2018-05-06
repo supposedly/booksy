@@ -1,5 +1,16 @@
+from types import ModuleType
+
 from ..core import AsyncInit
 from ..attributes import Limits
+
+
+# These are 'variable annotations', used in python 3.6 for introducing
+# a variable before actually assigning to it. I'm just using them here
+# so pylint stops complaining about my do_imports() method using global
+Location: ModuleType
+MediaItem: ModuleType
+Role: ModuleType
+User: ModuleType
 
 
 class MediaType(AsyncInit):

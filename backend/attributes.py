@@ -2,13 +2,12 @@
 These are just data classes, essentially, but they're the only 'outlet'
 between the rest of the backend and their core.py base classes.
 
-(that is, nowhere else will you see the term 'PackedByteFieldMixin';
-just 'Perms')
+(that is, nowhere else will you see the term 'PackedByteField'; just 'Perms')
 """
-from .core import PackedByteFieldMixin, PackedBigIntMixin
+from .core import PackedByteField, PackedBigInt
 
 
-class Perms(PackedByteFieldMixin):
+class Perms(PackedByteField):
     _names = [
       'manage_location',
       'manage_accounts',
@@ -20,7 +19,7 @@ class Perms(PackedByteFieldMixin):
       ]
 
 
-class Limits(PackedBigIntMixin):
+class Limits(PackedBigInt):
     _names = [
       'checkout_duration',
       'renewals',
@@ -33,10 +32,10 @@ class Limits(PackedBigIntMixin):
       ]
 
 
-class Locks(PackedBigIntMixin):
+class Locks(PackedBigInt):
     _names = [
-      'checkouts', # checkout threshold
-      'fines', # fine threshold
+      'checkouts',  # checkout threshold
+      'fines',  # fine threshold
       False,
       False,
       False,
@@ -44,4 +43,3 @@ class Locks(PackedBigIntMixin):
       False,
       None
       ]
-

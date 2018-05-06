@@ -1,4 +1,5 @@
 import asyncpg
+from types import ModuleType, SimpleNamespace
 
 from ..core import AsyncInit
 from ..attributes import Perms, Limits, Locks
@@ -7,20 +8,28 @@ from ..attributes import Perms, Limits, Locks
 #################################################
 try:
     import bcrypt
-except ModuleNotFoundError: # means I'm testing (can't access app.config.TESTING from here) (don't have libffi/bcrypt on home PC)
-    import types
+except ModuleNotFoundError:  # means I'm testing (can't access app.config.TESTING from here) (don't have libffi/bcrypt on home PC)
     def __hashpw(pw, *_, **__):
         return pw.encode() if isinstance(pw, str) else pw
     def __gensalt(*_, **__):
         return 0
     def __checkpw(*_, **__):
-        return True # blegh
-    bcrypt = types.SimpleNamespace(
-      hashpw = __hashpw,
-      gensalt = __gensalt,
-      checkpw = __checkpw
-    )
+        return True
+    bcrypt = SimpleNamespace(
+      hashpw=__hashpw,
+      gensalt=__gensalt,
+      checkpw=__checkpw
+      )
 #################################################
+
+
+# These are 'variable annotations', used in python 3.6 for introducing
+# a variable before actually assigning to it. I'm just using them here
+# so pylint stops complaining about my do_imports() method using global
+MediaItem: ModuleType
+MediaType: ModuleType
+Location: ModuleType
+Role: ModuleType
 
 
 class User(AsyncInit):
@@ -44,8 +53,8 @@ class User(AsyncInit):
     """
     @staticmethod
     def do_imports():
-        global Location, Role, MediaItem, MediaType, User
-        from . import Location, Role, MediaItem, MediaType, User
+        global Location, Role, MediaItem, MediaType
+        from . import Location, Role, MediaItem, MediaType
     
     async def __init__(self, uid, app, *, location=None, role=None):
         self._app = app
@@ -124,7 +133,7 @@ class User(AsyncInit):
           + (
             '' if chk else
             ' (currently using {} of {} allowed concurrent checkouts'
-              .format(self.num_checkouts, self.locks.checkouts)
+            .format(self.num_checkouts, self.locks.checkouts)
             )
           + ('' if dur else '; allowed to check out for 0 weeks')
           )
@@ -200,6 +209,7 @@ class User(AsyncInit):
                ''', self.uid)
            
         response = []
+        
         def add(type_, message):
             response.append({"type": type_, "text": message})
         

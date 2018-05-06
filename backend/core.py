@@ -2,35 +2,8 @@
 Base classes & core functions for the rest to inherit or inherit from.
 """
 import abc
-import asyncio
-import contextlib
 import struct
 from abc import abstractmethod
-from functools import wraps
-from asyncio import iscoroutinefunction as is_coro
-
-
-class LazyProperty:
-    """
-    Allows definition of properties calculated once and once only.
-    From user Cyclone on StackOverflow; modified slightly to look more
-    coherent for my own benefit and to work with asyncio's coroutines.
-    
-    UNUSED as of 4 January 2018. May reintroduce in the future... dunno.
-    """
-    def __init__(self, method):
-        self.method = method
-        self.method_name = method.__name__
-    
-    async def __get__(self, obj, cls):
-        if not obj:
-            return None
-        if is_coro(self.method):
-            ret_value = await self.method(obj)
-        else:
-            ret_value = self.method(obj)
-        setattr(obj, self.method_name, ret_value)
-        return ret_value
 
 
 class AsyncInit:
@@ -44,6 +17,7 @@ class AsyncInit:
         obj = super().__new__(cls)
         await obj.__init__(*args, **kwargs)
         return obj
+    
     async def __init__(self):
         pass
 
@@ -64,6 +38,10 @@ class PackedField(metaclass=abc.ABCMeta):
     be handy to define an abstract base class for them.
     """
     __slots__ = 'raw', 'seq', 'namemap', '_names',
+    _names: list
+    namemap: dict
+    seq: list
+    raw: int
     
     @classmethod
     @abstractmethod
@@ -93,7 +71,7 @@ class PackedField(metaclass=abc.ABCMeta):
         raise NotImplementedError
     
 
-class PackedByteFieldMixin(PackedField):
+class PackedByteField(PackedField):
     """
     Representation of a 'packed field': a single byte, each of whose
     bits acts as an on/off flag for some elsewhere-defined value.
@@ -113,7 +91,7 @@ class PackedByteFieldMixin(PackedField):
     def __init__(self, num, *, maxlen=7):
         """
         >>> Perms(65)
-        <Perms-type PackedByteFieldMixin raw=65 bin='1000001' seq=(1, 0, 0, 0, 0, 0, 1)>
+        <Perms-type PackedByteField-type PackedField raw=65 bin='1000001' seq=(1, 0, 0, 0, 0, 0, 1)>
         """
         # Regarding 'maxlen=7':
         # It's just the length of a byte minus 1, AKA the max amount of
@@ -122,14 +100,14 @@ class PackedByteFieldMixin(PackedField):
         self.bin = format(self.raw, f'0{maxlen}b')
         self.seq = tuple(map(int, tuple(self.bin)))
         self.namemap = {name: bool(value) for name, value in zip(self._names, self.seq)}
-        # Allow, for example, obj.can_manage_location instead of obj.props['manage_location']
         for k, v in self.namemap.items():
+            # This allows, for example, `obj.can_manage_location` instead of `obj.namemap['manage_location']`
             setattr(self, f'can_{k}', v)
     
     def __repr__(self):
         """
         The genexp at the beginning is to generate a string resembling:
-        <Perms-type PackedByteFieldMixin-type PackedField ... >
+        <Perms-type PackedByteField-type PackedField ... >
         """
         return f'<{"-type ".join(i.__name__ for i in type(self).__mro__[:-1])}, raw={self.raw!r}, bin={self.bin}, seq={self.seq!r}>'
     
@@ -137,7 +115,7 @@ class PackedByteFieldMixin(PackedField):
     def from_kwargs(cls, **kwargs):
         """
         >>> Perms.from_kwargs(manage_location=True, return_items=True)
-        <Perms-type PackedByteFieldMixin raw=65 bin='1000001' seq=(1, 0, 0, 0, 0, 0, 1)>
+        <Perms-type PackedByteField-type PackedField raw=65 bin='1000001' seq=(1, 0, 0, 0, 0, 0, 1)>
         """
         return cls(int(''.join(str(i) for i in map(int, (kwargs.get(name, False) for name in cls._names))), 2))
     
@@ -145,9 +123,9 @@ class PackedByteFieldMixin(PackedField):
     def from_seq(cls, seq):
         """
         >>> Perms.from_seq('1000001')
-        <Perms-type PackedByteFieldMixin raw=65 bin='1000001' seq=(1, 0, 0, 0, 0, 0, 1)>
+        <Perms-type PackedByteField-type PackedField, raw=65, bin=1000001, seq=(1, 0, 0, 0, 0, 0, 1)>
         >>> Perms.from_seq([1, 0, 0, 0, 0, 0, 1])
-        <Perms-type PackedByteFieldMixin raw=65 bin='1000001' seq=(1, 0, 0, 0, 0, 0, 1)>
+        <Perms-type PackedByteField-type PackedField, raw=65, bin=1000001, seq=(1, 0, 0, 0, 0, 0, 1)>
         >>> # etc...
         """
         return cls(int(''.join(seq), 2))
@@ -188,7 +166,7 @@ class PackedByteFieldMixin(PackedField):
         self.namemap = {name: bool(value) for name, value in zip(self._names, self.seq)}
 
 
-class PackedBigIntMixin(PackedField):
+class PackedBigInt(PackedField):
     """
     # SPECIAL VALUES:
     #   255: Infinity
@@ -214,13 +192,13 @@ class PackedBigIntMixin(PackedField):
         likely be used instead.
         
         >>> Limits(-144680345691944444)
-        <Limits-type PackedBigIntMixin-type PackedField raw=-14468034569
+        <Limits-type PackedBigInt-type PackedField raw=-14468034569
         2141052 seq=(4, 10, 10, 253, 253, 253, 253, 253) namemap={'chec
         kout_duration': 4, 'renewals': 10, 'holds': 10}>
         >>>
         >>>
         >>> Locks(-144680345676215804)
-        <Locks-type PackedBigIntMixin-type PackedField raw=-14468034567
+        <Locks-type PackedBigInt-type PackedField raw=-14468034567
         6215804 seq=(4, 10, 253, 253, 253, 253, 253, 253) namemap={'che
         ckouts': 4, 'fines': 10}>
         
@@ -236,7 +214,7 @@ class PackedBigIntMixin(PackedField):
     def __repr__(self):
         """
         The genexp at the beginning is to generate a string resembling:
-        <Limits-type PackedBigIntMixin-type PackedField ... >
+        <Limits-type PackedBigInt-type PackedField ... >
         """
         return f'<{"-type ".join(i.__name__ for i in type(self).__mro__[:-1])}, raw={self.raw!r}, seq={self.seq!r}, namemap={self.namemap!r}>'
     
@@ -244,13 +222,13 @@ class PackedBigIntMixin(PackedField):
     def from_kwargs(cls, filler=253, **kwargs):
         """
         >>> Limits.from_kwargs(checkout_duration=4, renewals=10, holds=10)
-        <Limits-type PackedBigIntMixin-type PackedField raw=-14468034569
+        <Limits-type PackedBigInt-type PackedField raw=-14468034569
         2141052 seq=(4, 10, 10, 253, 253, 253, 253, 253) namemap={'chec
         kout_duration': 4, 'renewals': 10, 'holds': 10}>
         >>>
         >>>
         >>> Locks.from_kwargs(checkouts=4, fines=10)
-        <Locks-type PackedBigIntMixin-type PackedField raw=-14468034567
+        <Locks-type PackedBigInt-type PackedField raw=-14468034567
         6215804 seq=(4, 10, 253, 253, 253, 253, 253, 253) namemap={'che
         ckouts': 4, 'fines': 10}>
         """
@@ -260,17 +238,17 @@ class PackedBigIntMixin(PackedField):
     def from_seq(cls, seq, *, filler=253):
         """
         >>> Limits.from_seq([4, 10, 10])
-        <Limits-type PackedBigIntMixin-type PackedField raw=-14468034569
+        <Limits-type PackedBigInt-type PackedField raw=-14468034569
         2141052 seq=(4, 10, 10, 253, 253, 253, 253, 253) namemap={'chec
         kout_duration': 4, 'renewals': 10, 'holds': 10}>
         >>>
         >>>
         >>> Locks.from_seq([4, 10])
-        <Locks-type PackedBigIntMixin-type PackedField raw=-14468034567
+        <Locks-type PackedBigInt-type PackedField raw=-14468034567
         6215804 seq=(4, 10, 253, 253, 253, 253, 253, 253) namemap={'che
         ckouts': 4, 'fines': 10}>
         """
-        fill = [filler] * (8 - len(seq)) # expand sequence to 8 bytes
+        fill = [filler] * (8 - len(seq))  # expand sequence to 8 bytes
         return cls(*struct.unpack('q', struct.pack('8B', *seq, *fill)))
     
     @property

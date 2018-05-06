@@ -15,10 +15,10 @@ import { Globals } from '../globals';
 export class CheckoutComponent {
   isCheckoutAccount: boolean;
   msg: string = null;
+  username: string = null;
   name: string;
   mid: string;
   _mid: string;
-  username: string = null;
   
   constructor(
     private checkoutService: CheckoutService,
@@ -47,7 +47,7 @@ export class CheckoutComponent {
           if (status.available) {
             this.checkoutService.checkOut(mID, this.username).subscribe(
               resp => {
-                this.msg = 'Checked out! Due ' + resp.due;
+                this.msg = `Checked out! Due ${resp.due}.`;
                 this._mid = this.mid;
               },
               err => this.msg = err.error ? err.error : 'Error checking out'
@@ -70,7 +70,7 @@ export class CheckoutComponent {
           } else if (status.issued_to && status.issued_to.uid === this.globals.uID) {
             this.msg = 'Error: You don\'t have permission to check in your own items! Hand it in to a library operator instead.';
           } else {
-            this.msg = 'Error: Item is checked out to ' + status.issued_to.name.toString() + '.';
+            this.msg = `Error: Item is checked out to ${status.issued_to.name}.`;
           }
         },
         err => this.msg = err.error ? err.error : 'Error checking out'

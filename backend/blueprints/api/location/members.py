@@ -3,13 +3,13 @@ import asyncpg
 import io
 
 import sanic
-import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
 
 from . import uid_get, rqst_get
-from . import Location, Role, MediaType, MediaItem, User
+from . import User
 
 mbrs = sanic.Blueprint('location_members_api', url_prefix='/members')
+
 
 @mbrs.get('/')
 @rqst_get('cont')
@@ -21,6 +21,7 @@ async def serve_location_members(rqst, location, *, cont: 'where to continue sea
     (Output is not paginated in the actual application)
     """
     return sanic.response.json(await location.members(cont=int(cont)))
+
 
 @mbrs.get('/info')
 @uid_get('perms')
@@ -35,11 +36,12 @@ async def serve_specific_member(rqst, perms, *, check: 'member to check'):
     user = await User(check, rqst.app)
     return sanic.response.json({'member': user.to_dict()}, status=200)
 
+
 @mbrs.post('/add')
 @uid_get('location', 'perms')
-@rqst_get('member') # member to create
+@rqst_get('member')  # member to create
 @jwtdec.protected()
-async def add_member_to_location(rqst, location, perms, *, member: 'to create'):
+async def add_member_to_location(rqst, location, perms, *, member):
     """
     Addition of a given member.
     Creates an account for them with the chosen default password and
@@ -57,6 +59,7 @@ async def add_member_to_location(rqst, location, perms, *, member: 'to create'):
         sanic.exceptions.abort(409, 'This username is already taken.')
     return new
 
+
 @mbrs.post('/add/batch')
 @uid_get('location', 'perms')
 @rqst_get('rid', files=['csv'], form=True)
@@ -68,13 +71,14 @@ async def add_members_from_csv(rqst, location, *, perms, rid, csv):
     """
     if not perms.can_manage_accounts:
         sanic.exceptions.abort(401, "You aren't allowed to add members.")
-    if csv is None: # using conditional instead of try/except bc the data itself might also be null instead of just not present
+    if csv is None:  # using conditional instead of try/except bc the data itself might also be null instead of just not present
         sanic.exceptions.abort(422, "No file given!")
     try:
         await location.add_members_batch(io.BytesIO(csv.body), rid)
     except Exception as e:
         sanic.exceptions.abort(422, str(e))
     return sanic.response.json('Added members.', status=201)
+
 
 @mbrs.post('/remove')
 @uid_get('location', 'role', 'perms')

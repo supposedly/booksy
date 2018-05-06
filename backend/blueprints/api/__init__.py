@@ -8,8 +8,8 @@ from .help import help
 from .location import location
 from .media import media
 from .member import mbr as member
-from .signup import signup
+# from .signup import signup
 from .roles import roles
 from .root import root
 
-api = Blueprint.group(help, location, media, member, signup, roles, root, url_prefix='/api')
+api = Blueprint.group(help, location, media, member, roles, root, url_prefix='/api')

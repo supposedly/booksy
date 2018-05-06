@@ -1,12 +1,12 @@
 """/api/media"""
 import sanic
-import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
 
-from . import uid_get, rqst_get
-from . import Location, Role, MediaType, MediaItem, User
+from . import rqst_get
+from . import User
 
 media = sanic.Blueprint('media_api', url_prefix='/media')
+
 
 @media.post('/hold')
 @rqst_get('user', 'item')
@@ -22,12 +22,13 @@ async def put_item_on_hold(rqst, user, *, item):
     if not item._issued_uid:
         sanic.exceptions.abort(409, "This item is already available.")
     err = await user.hold(title=item.title, author=item.author, type_=item.type, genre=item.genre)
-    if err: # if it the user's not allowed to do this err will be a truthy str, otherwise None
+    if err:  # if the user's not allowed to do this then `err` will be a truthy str, otherwise None
         sanic.exceptions.abort(403, err)
     return sanic.response.raw(b'', status=204)
 
+
 @media.post('/clear-fines')
-@rqst_get('user', 'item') # user making the request (NOT the user with the fines), and then the item to be paid off
+@rqst_get('user', 'item')  # ('user making the request (NOT the one with fines)', 'item to be paid off')
 @jwtdec.protected()
 async def pay_item_off(rqst, user, *, item):
     """
@@ -38,6 +39,7 @@ async def pay_item_off(rqst, user, *, item):
         sanic.exceptions.abort(403, "You aren't allowed to mark fines paid.")
     await item.pay_off()
     return sanic.response.raw(b'', 204)
+
 
 @media.post('/edit')
 @rqst_get('user', 'item', 'title', 'author', 'genre', 'type_', 'price', 'length', 'published', 'isbn')
@@ -51,6 +53,7 @@ async def edit_item(rqst, user, *, item, title, author, genre, type_, price, len
     await item.edit(title, author, genre, type_ if isinstance(type_, str) else type_['name'], price, length, published, isbn)
     return sanic.response.json(item.to_dict(), status=200)
 
+
 @media.post('/delete')
 @rqst_get('item', 'user')
 async def del_item(rqst, user, *, item):
@@ -61,6 +64,7 @@ async def del_item(rqst, user, *, item):
     if not user.perms.can_manage_media:
         sanic.exceptions.abort(403, "You aren't allowed to delete media.")
     await item.delete()
+
 
 @media.get('/check')
 @rqst_get('item')
@@ -79,6 +83,7 @@ async def get_item_available(rqst, *, item):
     except AttributeError:
         sanic.exceptions.abort(422, "User does not exist.")
 
+
 @media.post('/check/out')
 @rqst_get('item', 'username', 'location')
 @jwtdec.protected()
@@ -94,13 +99,11 @@ async def issue_item(rqst, location, username, *, item):
         user = await User.from_identifiers(username, location, app=rqst.app)
     except ValueError as err:
         sanic.exceptions.abort(404, err)
-    if user.cannot_check_out or not getattr(item.limits, 'checkout_duration', """NO MAXES"""):
+    if user.cannot_check_out or not getattr(item.limits, 'checkout_duration', '''NO LIMITS!'''):
         sanic.exceptions.abort(403, "You aren't allowed to check this item out.")
-    if not item.available and user.uid != item._issued_uid:
-        # will never be triggered really unless I forget to query /check first
-        sanic.exceptions.abort(409, f'Item is checked out to {issued_to}.')
     await item.issue_to(user=user)
     return sanic.response.json({'checked': 'out', 'title': item.title, 'author': item.author, 'image': item.image, 'due': str(item.due_date)}, status=200)
+
 
 @media.post('/check/in')
 @rqst_get('item', 'username', 'location')
@@ -124,14 +127,6 @@ async def return_item(rqst, location, username, *, item):
     await item.check_in()
     return sanic.response.raw(b'', status=204)
 
-@media.get('/check/verbose')
-@rqst_get('item')
-async def get_media_full_status(rqst, *, item):
-    """
-    I thought I might implement a status page, but never found a need to.
-    """
-    return NotImplemented
-  # return sanic.response.json(item.status, status=200)
 
 @media.get('/info')
 @rqst_get('item')

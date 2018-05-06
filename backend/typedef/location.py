@@ -1,39 +1,43 @@
 import aiofiles
-import functools
 import io
-import random
 import uuid
 import string
 from decimal import Decimal
+from types import ModuleType, SimpleNamespace
 
 import pandas
 
 from ..core import AsyncInit
 from ..attributes import Perms, Limits, Locks
 
-
-# first two args map to each other; str.maketrans('ab', 'xy') turns a->x and b->y
-# third arg is chars to map to nothing (i.e. to delete)
-# so i'm just deleting (almost) all punctuation
-GBQUERY = str.maketrans('', '', """!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~""")
-NO_PUNC = str.maketrans('', '', string.punctuation)
-
-
 #################################################
 try:
     import bcrypt
-except ModuleNotFoundError: # means I'm testing (can't access app.config.TESTING from here) (don't have libffi/bcrypt on home PC)
-    import types
+except ModuleNotFoundError:  # means I'm testing (can't access app.config.TESTING from here) (don't have libffi/bcrypt on home PC)
     def __hashpw(pw: bytes, *_, **__):
         return pw
     def __gensalt(*_, **__):
         pass
-    bcrypt = types.SimpleNamespace(
+    bcrypt = SimpleNamespace(
       hashpw=__hashpw,
       gensalt=__gensalt
-    )
+      )
 #################################################
 
+
+# These are 'variable annotations', used in python 3.6 for introducing
+# a variable before actually assigning to it. I'm just using them here
+# so pylint stops complaining about my do_imports() method using global
+MediaItem: ModuleType
+MediaType: ModuleType
+Role: ModuleType
+User: ModuleType
+
+# first two args map to each other; str.maketrans('ab', 'xy') turns a->x and b->y
+# third arg is chars to map to nothing (i.e. to delete)
+# so i'm just deleting (almost) all punctuation
+GBQUERY = str.maketrans('', '', r"""!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~""")
+NO_PUNC = str.maketrans('', '', string.punctuation)
 
 
 class Location(AsyncInit):
@@ -75,7 +79,7 @@ class Location(AsyncInit):
             name, ip, fine_amt, fine_interval, color, last_report = await conn.fetchrow(query, self.lid)
             query = '''SELECT uid FROM members WHERE lid = $1 AND manages = true'''
             ouid = await conn.fetchval(query, self.lid)
-        self.owner = await User(ouid, self._app, location=self) if owner is None else owner # just for consistency; don't think the `else` will ever be used though
+        self.owner = await User(ouid, self._app, location=self) if owner is None else owner  # just for consistency; don't think the `else` will ever be used though
         self.name = name
         self.ip = ip
         self.fine_amt = fine_amt
@@ -102,7 +106,7 @@ class Location(AsyncInit):
         if not all((title, author)) and not isbn:
             return None
         if isbn:
-            isbn = ''.join(isbn.split('-')[:2]) # get rid of trailing number and remove hyphens
+            isbn = ''.join(isbn.split('-')[:2])  # get rid of trailing number and remove hyphens
             query += f'isbn:{isbn}'
         else:
             query += f'intitle:"{title.replace(" ", "+")}"+inauthor:"{author.replace(" ", "+")}"'
@@ -153,9 +157,9 @@ class Location(AsyncInit):
         # args in this order:
         props = [
           'name', 'ip', 'color',
-          'adminuser', 'adminpwhash',         # these are for admin account
-          'adminname', 'email', 'adminphone', # these aren't used, especially adminphone
-          'username', 'pwhash'                # these are for the checkout account
+          'adminuser', 'adminpwhash',          # these are for admin account
+          'adminname', 'email', 'adminphone',  # these aren't used, especially adminphone
+          'username', 'pwhash'                 # these are for the checkout account
           ]
         fetch = dict(
           await rqst.app.pg_pool.fetchrow('''
@@ -185,7 +189,7 @@ class Location(AsyncInit):
                     numparams = len(stmt.get_parameters())
                     # Then execute it with that many parameters from
                     # the beginning of the arguments list:
-                    lid = await stmt.fetchval(*args[:numparams]) # returns lID at end because run with fetchval
+                    lid = await stmt.fetchval(*args[:numparams])  # returns lID at end because run with fetchval
                     # ...and, finally, strip the params we just used
                     args = args[numparams:]
         return fetch['name'], lid, fetch['username'], fetch['adminuser']
@@ -240,12 +244,12 @@ class Location(AsyncInit):
         df = await self._app.aexec(None, self._fix, df, rid)
         async with self.acquire() as conn:
             return await conn.copy_to_table(
-                'members',
-                source=io.BytesIO(df.to_csv(index=None).encode()),
-                columns=['rid', 'lid', 'type', 'fullname', 'username', 'pwhash'],
-                format='csv',
-                header=True
-                  )
+              'members',
+              source=io.BytesIO(df.to_csv(index=None).encode()),
+              columns=['rid', 'lid', 'type', 'fullname', 'username', 'pwhash'],
+              format='csv',
+              header=True
+              )
         # w amre la alla that it works
     
     async def report(self, live: bool, **do):
@@ -260,7 +264,7 @@ class Location(AsyncInit):
         `live` determines whether to serve a live report or one stored from the week prior.
         """
         def query_setup(name: str, sort_by):
-            num = (sort_by == 'per_user') or 2*(sort_by == 'per_role')
+            num = (sort_by == 'per_user') or 2 * (sort_by == 'per_role')
             # all_roles if sort_by == 'per_role' else all_users if sort_by == 'per_user' else [{}]
             to_search = search_opts[num]
             # 'name' if sort_by == 'per_role' else 'username' if sort_by == 'per_user' else None
@@ -318,7 +322,7 @@ class Location(AsyncInit):
                 search = (
                   conn.fetch(query) if sort_by == 'all' else
                   conn.fetch(query, obj.get(param, None))
-                )
+                  )
                 res[col].append({'ident': obj.get(key, 'All users'), 'res': await search})
         return res
     
@@ -376,19 +380,18 @@ class Location(AsyncInit):
         """
         search_terms = title, genre, author, type_
         query = (
-              '''SELECT DISTINCT ON (lower(title)) title, mid, author, genre, type, issued_to, image FROM items WHERE true ''' # stupid hack coming up
-              + ('''AND title ILIKE '%' || ${}::text || '%' ''' if title else '')
-              + ('''AND genre ILIKE '%' || ${}::text || '%' ''' if genre else '')
-              + ('''AND author ILIKE '%' || ${}::text || '%' ''' if author else '')
-              + ('''AND type ILIKE '%' || ${}::text || '%' ''' if type_ else '')
-              + ('''AND false ''' if not any(search_terms) else '') # because 'WHERE true' otherwise returns everything if not any(search_terms)
-              + ('''AND issued_to IS {} NULL '''.format(('', 'NOT')[where_taken]) if where_taken is not None else '')
-              + ('''ORDER BY lower(title) ''') # just to establish a consistent order for `cont' param
-            ).format(*range(1, 1+sum(map(bool, search_terms)))) \
-            + ('''LIMIT {} OFFSET {} ''').format(max_results, cont) # these are ok not to parameterize because they're internal
-        print(query, list(filter(bool, search_terms)))
+          '''SELECT DISTINCT ON (lower(title)) title, mid, author, genre, type, issued_to, image FROM items WHERE true '''  # stupid hack coming up
+          + ('''AND title ILIKE '%' || ${}::text || '%' ''' if title else '')
+          + ('''AND genre ILIKE '%' || ${}::text || '%' ''' if genre else '')
+          + ('''AND author ILIKE '%' || ${}::text || '%' ''' if author else '')
+          + ('''AND type ILIKE '%' || ${}::text || '%' ''' if type_ else '')
+          + ('''AND false ''' if not any(search_terms) else '')  # because 'WHERE true' otherwise returns everything if not any(search_terms)
+          + ('''AND issued_to IS {} NULL '''.format(('', 'NOT')[where_taken]) if where_taken is not None else '')
+          + ('''ORDER BY lower(title) ''')  # just to establish a consistent order for `cont' param
+          ).format(*range(1, 1+sum(map(bool, search_terms)))) \
+          + ('''LIMIT {} OFFSET {} ''').format(max_results, cont)  # these are ok not to parameterize because they're internal
         results = await self.pool.fetch(query, *filter(bool, search_terms))
-        if where_taken is not None: # this means I'm calling it from in here and so I probably want an actual MediaItem or at least no junk
+        if where_taken is not None:  # this means I'm calling it from in here and so I probably want an actual MediaItem or at least no junk
             if max_results == 1:
                 return await MediaItem(results[0]['mid'], app=self._app)
             return [i['mid'] for i in results]
@@ -413,7 +416,7 @@ class Location(AsyncInit):
             '''
             sums = '''SELECT count(*) FROM members WHERE rid = $1::bigint'''
             res = [{j: i[j] for j in ('rid', 'name', 'isdefault', 'perms', 'limits', 'locks')} for i in await conn.fetch(query, self.lid)]
-            if lower_than and lower_than < 127: # if it isn't an admin role
+            if lower_than and lower_than < 127:  # if it isn't an admin role
                 res = [i for i in res if i['perms'] < lower_than]
             for i in res:
                 i['perms'] = Perms(i['perms']).props
@@ -487,10 +490,6 @@ class Location(AsyncInit):
            AND type = 1
         '''
         await self.pool.execute(query, self.lid, checkout_pwhash)
-    
-    async def image(self):
-        raise NotImplementedError
-        # and may never be ...
     
     async def media_types(self):
         """
@@ -596,7 +595,7 @@ class Location(AsyncInit):
             query = '''
             INSERT INTO items (
                           type, genre,
-                          isbn, lid, 
+                          isbn, lid,
                           title, author, published,
                           price, length,
                           acquired, limits,

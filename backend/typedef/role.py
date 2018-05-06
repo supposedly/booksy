@@ -1,16 +1,16 @@
-import asyncio
-import functools
-import io
-import datetime as dt
-from decimal import Decimal
-from asyncio import iscoroutinefunction as is_coro
-
-import asyncpg
-import pandas
-
+from types import ModuleType
 
 from ..core import AsyncInit
 from ..attributes import Perms, Limits, Locks
+
+
+# These are 'variable annotations', used in python 3.6 for introducing
+# a variable before actually assigning to it. I'm just using them here
+# so pylint stops complaining about my do_imports() method using global
+MediaItem: ModuleType
+MediaType: ModuleType
+Location: ModuleType
+User: ModuleType
 
 
 class Role(AsyncInit):
@@ -39,7 +39,7 @@ class Role(AsyncInit):
         try:
             lid, name, default, permbin, limbin, lockbin = await self.pool.fetchrow(query, self.rid)
         except TypeError:
-            raise TypeError('role') # to be fed back to application as '{role} does not exist!'
+            raise TypeError('role')  # to be fed back to application as 'role does not exist!'
         self.location = await Location(lid, self._app) if location is None else location
         self.name = name
         self.is_default = default
@@ -49,7 +49,7 @@ class Role(AsyncInit):
         self._lockbin = lockbin
         # Straightforward, convert the perms number to binary string
         # e.g. 45 --> '1011010'.
-        # 
+        #
         # Then, split the signed limits/locks into their
         # constituent bytes
         # e.g. 200449 --> (1, 15, 3, 0, 0, 0, 0, 0)
@@ -104,7 +104,6 @@ class Role(AsyncInit):
          WHERE rid = $1::bigint
         '''
         await self.pool.execute(query, self.rid, name, perms.raw, limits.raw, locks.raw)
-    
     
     async def delete(self):
         """Deletes this role."""

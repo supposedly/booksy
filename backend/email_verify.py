@@ -29,16 +29,16 @@ async def send_email(recipient, fullname, locname, token, *, loop):
     
     try:
         # TODO: Could this sequence be better implemented as a
-        # one-off async context manager? Along the lines of
+        # one-off async context manager? Along the lines of:
         '''
         async with custom_thing.login(SENDER, os.getenv('GMAIL_PASSWORD')) as client:
             await client.send_message(msg, SENDER, recipient)
         '''
-        await client.connect()  # Connect to gsmtp
-        await client.ehlo()     # ensure gsmtp server availability
-        await client.starttls() # wait until server is ready to start TLS
-        await client.ehlo()     # ensure return availability
-        await client.login(SENDER, os.getenv('GMAIL_PASSWORD')) # log in / authenticate
-        await client.send_message(msg, SENDER, recipient)       # send the email obj
+        await client.connect()   # Connect to gsmtp
+        await client.ehlo()      # ensure gsmtp server availability
+        await client.starttls()  # wait until server is ready to start TLS
+        await client.ehlo()      # ensure return availability
+        await client.login(SENDER, os.getenv('GMAIL_PASSWORD'))  # log in / authenticate
+        await client.send_message(msg, SENDER, recipient)        # send the email obj
     finally:
         await client.quit()

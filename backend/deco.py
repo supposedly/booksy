@@ -2,7 +2,8 @@ from functools import wraps
 
 import sanic
 
-from .typedef import Location, Role, MediaType, MediaItem, User
+from .typedef import Location, Role, MediaItem, User
+
 
 async def user_from_rqst(rqst):
     """
@@ -40,6 +41,7 @@ def uid_get(*attrs, user=False):
     if 'user' in attrs:
         attrs = tuple(i for i in attrs if i != 'user')
         user = True
+    
     def decorator(func):
         @wraps(func)
         async def wrapper(rqst, *args, **kwargs):
@@ -51,6 +53,7 @@ def uid_get(*attrs, user=False):
             vals.update({i: getattr(user_obj, i) for i in attrs})
             return await func(rqst, *args, **vals, **kwargs)
         return wrapper
+    
     return decorator
 
 
@@ -75,6 +78,7 @@ def rqst_get(*attrs, user=False, form=False, files=None):
     if 'user' in attrs:
         attrs = tuple(i for i in attrs if i != 'user')
         user = True
+    
     def decorator(func):
         @wraps(func)
         async def wrapper(rqst, *args, **kwargs):
@@ -95,4 +99,5 @@ def rqst_get(*attrs, user=False, form=False, files=None):
                     vals[name] = rqst.files.get(name, None)
             return await func(rqst, *args, **vals, **kwargs)
         return wrapper
+    
     return decorator

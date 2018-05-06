@@ -1,17 +1,15 @@
 """/api/location"""
-import random
-
 import sanic
-import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
 from aiosmtplib.errors import SMTPRecipientsRefused
 from asyncpg.exceptions import UniqueViolationError
 
-from . import Location, Role, MediaType, MediaItem, User
+from . import Location
 from . import uid_get, rqst_get
 from . import email_verify as verif
 
 root = sanic.Blueprint('location_api', url_prefix='')
+
 
 @root.get('/')
 @uid_get('location')
@@ -20,10 +18,11 @@ async def give_location_repr(rqst, location):
     Serves all of a location's important attributes.
     """
     return sanic.response.json({'loc': location.to_dict()}, status=200)
-    
+
+
 @root.post('/signup')
 @rqst_get('locname', 'color', 'adminname', 'email')
-async def register_location(rqst, *, locname, color,  adminname, email):
+async def register_location(rqst, *, locname, color, adminname, email):
     """
     Handles the pre-preliminary information-gathering for the registration
     of a new library. Once this endpoint is activated, this information is
@@ -41,6 +40,7 @@ async def register_location(rqst, *, locname, color,  adminname, email):
         sanic.exceptions.abort(422, "That isn't a valid email.")
     return sanic.response.raw(b'', status=204)
 
+
 @root.post('/edit')
 @uid_get('location', 'perms')
 @rqst_get('locname', 'color', 'checkoutpw', 'fine_amt', 'fine_interval')
@@ -54,11 +54,6 @@ async def edit_location(rqst, location, perms, *, locname, color, checkoutpw, fi
     await location.edit(locname, color, checkoutpw, fine_amt, fine_interval)
     return sanic.response.raw(b'', status=204)
 
-@root.get('/<attr:(name|image|color)>')
-@uid_get('location')
-async def return_location_attr(rqst, user, *, attr):
-    # unused
-    return sanic.response.json({attr: getattr(location, attr)}, status=200)
 
 @root.get('/is-registered')
 async def is_location_registered(rqst):
@@ -80,6 +75,7 @@ async def is_location_registered(rqst):
     else:
         return sanic.response.json({'registered': False, 'reason': 'Not found in DB'})
     '''
+
 
 @root.put('/reports')
 @rqst_get('get', 'live')
@@ -119,8 +115,8 @@ async def get_last_report_date(rqst, location, perms):
 @jwtdec.protected()
 async def back_up_info(rqst):
     """
-    'Data storage includes dynamic backup' -- again, multi-location app
-    where info is stored remotely so I don't imagine it'd be as useful
-    as in a local app to allow backing up of information
+    'Data storage includes dynamic backup' -- again, a multi-location app
+    where info is stored remotely... so I don't imagine it'd be as useful
+    as in a native program to allow backing up of information
     """
     raise NotImplementedError

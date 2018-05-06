@@ -1,15 +1,13 @@
 """/api/signup"""
 import asyncio
-#import bcrypt
+import bcrypt
 
 import sanic
-import sanic_jwt as jwt
-from sanic_jwt import decorators as jwtdec
 
-from . import uid_get, rqst_get
-from . import Location, Role, MediaType, MediaItem, User
+from . import Location
 
 signup = sanic.Blueprint('signup_api', url_prefix='/signup')
+
 
 @signup.post('/library')
 async def create_location(rqst):
@@ -32,8 +30,8 @@ async def create_location(rqst):
     sanic.exceptions.abort(501, "Left unimplemented for FBLA demo.")
     kwargs = rqst.json
     app_loop = asyncio.get_event_loop()
-    kwargs['pwhash'] = await app_loop.run_in_executor(app.ppe, bcrypt.hashpw, kwargs['password'], bcrypt.gensalt(15))
-    await Location.instate(rqst, **kwargs) # just gonna have Angular do the stuff here
+    kwargs['pwhash'] = await app_loop.run_in_executor(rqst.app.ppe, bcrypt.hashpw, kwargs['password'], bcrypt.gensalt(15))
+    await Location.instate(rqst, **kwargs)  # just gonna have Angular get kwargs in order here
     return sanic.response.raw(status=200)
     
 

@@ -1,9 +1,18 @@
 import datetime as dt
-import types
 from decimal import Decimal
+from types import SimpleNamespace, ModuleType
 
 from ..core import AsyncInit
-from ..attributes import Perms, Limits, Locks
+from ..attributes import Limits
+
+
+# These are 'variable annotations', used in python 3.6 for introducing
+# a variable before actually assigning to it. I'm just using them here
+# so pylint stops complaining about my do_imports() method using global
+Location: ModuleType
+MediaType: ModuleType
+Role: ModuleType
+User: ModuleType
 
 
 class MediaItem(AsyncInit):
@@ -17,9 +26,9 @@ class MediaItem(AsyncInit):
     length      (Decimal):   How 'long' item is, though the unit of length ('minutes', 'pages'...) is defined on its media type.
     price       (Decimal):   How much item costs.
     available   (bool):      Whether item is not checked out to anybody.
+    due_date    (date):      Due date if item is checked out, or None otherwise.
     acquired    (date):      What day item was added to library.
     published   (date):      Specifically a datetime.date object; what year item was published.
-    due_date    (date):      Due date if item is checked out, or None otherwise.
     mid         (int):       Item's unique ID, used on its barcode and when checking in/out.
     lid         (int):       Shorthand for item.location.lid.
     _issued_uid (int):       The raw uID of the member item is checked out to; not intended to be exposed elsewhere.
@@ -49,7 +58,7 @@ class MediaItem(AsyncInit):
         try:
             self.mid = int(mid)
         except (ValueError, TypeError):
-            raise TypeError('item with this ID') # passed to frontend as 'Item with this ID does not exist'
+            raise TypeError('item with this ID')  # passed to frontend as 'Item with this ID does not exist'
         self._app = app
         self.pool = app.pg_pool
         self.acquire = self.pool.acquire
@@ -60,16 +69,16 @@ class MediaItem(AsyncInit):
         '''
         try:
             (
-             self._type, self.isbn, self.lid,
-             self.author, self.title,
-             self.published, self.genre,
-             self._issued_uid, self.due_date,
-             self.fines, self.acquired,
-             self._limnum, self.image,
-             self.length, self.price
+              self._type, self.isbn, self.lid,
+              self.author, self.title,
+              self.published, self.genre,
+              self._issued_uid, self.due_date,
+              self.fines, self.acquired,
+              self._limnum, self.image,
+              self.length, self.price
             ) = await self.pool.fetchrow(query, self.mid)
         except TypeError:
-            raise TypeError('item') # to be fed back to the client as "item does not exist!"
+            raise TypeError('item')  # to be fed back to the client as "item does not exist!"
         self.location = await Location(self.lid, self._app)
         self.available = not self._issued_uid
         self.issued_to = None if self._issued_uid is None else await User(self._issued_uid, self._app, location=self.location)
@@ -122,12 +131,10 @@ class MediaItem(AsyncInit):
         check = await self.pool.fetchrow(query)
         try:
             issued_to, due_date, fines = check
-        except ValueError:
+        except ValueError:  # if check is None
             pass
         else:
-            # hacky? probably. But it just updates, for instance,
-            # resp['issued_to'] to the local value of the `issued_to' variable
-            resp = {i: locals()[i] for i in ('issued_to', 'due_date', 'fines')}
+            resp = {'issued_to': issued_to, 'due_date': due_date, 'fines': fines}
         return resp
     
     async def pay_off(self):
@@ -172,7 +179,7 @@ class MediaItem(AsyncInit):
         if self.limits is None:
             limits = user.limits
         else:
-            limits = types.SimpleNamespace(
+            limits = SimpleNamespace(
               **{
                   k: v
                 if v != 254 else
@@ -209,7 +216,7 @@ class MediaItem(AsyncInit):
             '''
             await conn.execute(query, self.mid, user.uid)
         self.issued_to = user
-        self.due_date = 'never.' if infinite else dt.datetime.utcnow() + dt.timedelta(weeks=limits.checkout_duration)
+        self.due_date = 'never.' if infinite else dt.date.today() + dt.timedelta(weeks=limits.checkout_duration)
         self.fines = 0
         self.available = False
     
@@ -225,6 +232,7 @@ class MediaItem(AsyncInit):
          WHERE mid = $1::bigint;
         '''
         await self.pool.execute(query, self.mid)
+        self.due_date = None
         self.available = True
     
     async def remove(self):
