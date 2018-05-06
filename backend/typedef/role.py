@@ -21,9 +21,9 @@ class Role(AsyncInit):
     name       (str):      Role's given name
     is_default (bool):     Whether this is one of the 3 roles created by default
     rid        (int):      Role's unique ID
-    _permnum,
-    _maxnum,               Shorthand for role.perms/limits/locks.raw, but
-    _locknum   (int):      not intended to be exposed outside this class
+    _permnbin,
+    _limnbin,               Shorthand for role.perms/limits/locks.raw, but
+    _locknbin   (int):      not intended to be exposed outside this class
     """
     @staticmethod
     def do_imports():
@@ -37,7 +37,7 @@ class Role(AsyncInit):
         self.rid = int(rid)
         query = '''SELECT lid, name, isdefault, permissions, limits, locks FROM roles WHERE rid = $1::bigint'''
         try:
-            lid, name, default, permbin, maxbin, lockbin = await self.pool.fetchrow(query, self.rid)
+            lid, name, default, permbin, limbin, lockbin = await self.pool.fetchrow(query, self.rid)
         except TypeError:
             raise TypeError('role') # to be fed back to application as '{role} does not exist!'
         self.location = await Location(lid, self._app) if location is None else location
@@ -45,7 +45,7 @@ class Role(AsyncInit):
         self.is_default = default
         # Comments below pertain to these three lines
         self._permbin = permbin
-        self._maxbin = maxbin
+        self._limbin = limbin
         self._lockbin = lockbin
         # Straightforward, convert the perms number to binary string
         # e.g. 45 --> '1011010'.
@@ -122,7 +122,7 @@ class Role(AsyncInit):
     
     @property
     def limits(self):
-        return Limits(self._maxbin)
+        return Limits(self._limbin)
     
     @property
     def locks(self):

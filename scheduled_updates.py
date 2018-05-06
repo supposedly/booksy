@@ -18,7 +18,7 @@ UPDATE items
          END
   FROM locations
  WHERE items.lid = locations.lid;
- 
+
 DELETE FROM signups WHERE current_date - date >= 1;
 
 -----
@@ -30,14 +30,14 @@ SELECT 'item', items.mid, items.lid, items.title, items.issued_to, items.due_dat
   FROM items JOIN locations ON locations.lid = items.lid
  WHERE locations.report_day = '{0}';
 
-INSERT INTO weeklies (type, uid, rid, username, report_day)
-SELECT 'member', members.uid, members.rid, members.username, locations.report_day
+INSERT INTO weeklies (type, uid, rid, lid, username, report_day)
+SELECT 'member', members.uid, members.rid, locations.lid, members.username, locations.report_day
   FROM members JOIN locations ON locations.lid = members.lid
  WHERE locations.report_day = '{0}';
 
-INSERT INTO weeklies (type, mid, uid, report_day)
-SELECT 'hold', holds.mid, holds.uid, locations.report_day
-  FROM holds JOIN items ON holds.mid = items.mid JOIN locations ON locations.lid = items.lid
+INSERT INTO weeklies (type, mid, uid, lid, report_day)
+SELECT 'hold', holds.mid, holds.uid, locations.lid, locations.report_day
+  FROM holds JOIN members ON holds.uid = members.uid JOIN locations ON locations.lid = members.lid
  WHERE locations.report_day = '{0}';
 
 UPDATE locations SET last_report_date = current_date WHERE report_day = '{0}';

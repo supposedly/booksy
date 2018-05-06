@@ -215,12 +215,11 @@ class Location(AsyncInit):
         df.password = df.password.apply(lambda pw: bcrypt.hashpw(pw, salt=bcrypt.gensalt(12)))
         # assign the given role ID to all members
         df['rid'], df['lid'], df['type'] = int(rid), self.lid, 0
-        # Rearrange to remain compliant with asyncpg's copy_to_table
-        # (that is, to fit with my table setup, because this method
-        # accepts no 'ordering' argument)
-        # Unfortunately this means that it needs to be returned, because
-        # while attributes can be modified 'in-place', the entire object
-        # cannot
+        # Rearrange columns to have a defined ordering for copy_to_table
+        # from asyncpg. We also have to applymap() to get bcrypt's bytes
+        # into a normal string, or else the output of df.to_csv includes
+        # the b'' string prefix syntax from Python (because it just does
+        # str(), I'm pretty sure)
         return df[['rid', 'lid', 'type', 'fullname', 'username', 'password']].applymap(lambda b: b.decode() if isinstance(b, bytes) else b)
     
     async def add_members_batch(self, file, rid):
@@ -231,9 +230,13 @@ class Location(AsyncInit):
         CSV file WITH a header, and columns in this order:
         
         fullname,username,password
+        
+        `rid` is the ID of the role that is to be assigned
+        to each added member.
         """
         # load the file as a Pandas dataframe
         df = await self._app.aexec(None, pandas.read_csv, file)
+        # Rearrange columns & add necessary info
         df = await self._app.aexec(None, self._fix, df, rid)
         async with self.acquire() as conn:
             return await conn.copy_to_table(
@@ -247,7 +250,7 @@ class Location(AsyncInit):
     
     async def report(self, live: bool, **do):
         """
-        `do` will be in the format:
+        `do` is in the format:
         
         {'checkouts': 'per_user', 'overdues': False, 'fines': False, 'holds': False, 'items': False}
         
@@ -266,9 +269,9 @@ class Location(AsyncInit):
             param = (None, 'username', 'rid')[num]
             return to_search, key, param
         
-        items = 'items' if live else '''(SELECT * FROM weeklies WHERE type = 'item') AS items'''
-        members = 'members' if live else '''(SELECT * FROM weeklies WHERE type = 'member') AS members'''
-        holds = 'holds' if live else '''(SELECT * FROM weeklies WHERE type = 'hold') AS holds'''
+        items = 'items' if live else f'''(SELECT * FROM weeklies WHERE type = 'item' AND lid = {self.lid}) AS items'''
+        members = 'members' if live else f'''(SELECT * FROM weeklies WHERE type = 'member' AND lid = {self.lid}) AS members'''
+        holds = 'holds' if live else f'''(SELECT * FROM weeklies WHERE type = 'hold' AND lid = {self.lid}) AS holds'''
         
         if do['checkouts'] or do['overdues']:
             col = 'checkouts' if do['checkouts'] else 'overdues'
@@ -499,7 +502,7 @@ class Location(AsyncInit):
     async def add_media_type(self, name, unit, limits: Limits.props):
         """
         Adds a new media type to the location from its name,
-        unit of length, and max overrides.
+        unit of length, and limit overrides.
         """
         query = '''
         INSERT INTO mtypes (name, unit, limits, lid)

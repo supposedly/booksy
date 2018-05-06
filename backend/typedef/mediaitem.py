@@ -23,7 +23,7 @@ class MediaItem(AsyncInit):
     mid         (int):       Item's unique ID, used on its barcode and when checking in/out.
     lid         (int):       Shorthand for item.location.lid.
     _issued_uid (int):       The raw uID of the member item is checked out to; not intended to be exposed elsewhere.
-    _maxnum     (int):       (UNUSED) contains the raw number of item's max overrides (was implemented on media *types* in the final project).
+    _limnum     (int):       (UNUSED) contains the raw number of item's limit overrides (was implemented on media *types* in the final project).
     genre       (str):       Name of item's genre.
     image       (str):       A link to Google Books' image for item (really only works on books and maybe audio recordings of books).
     author      (str):       Name of item's author or creator.
@@ -65,7 +65,7 @@ class MediaItem(AsyncInit):
              self.published, self.genre,
              self._issued_uid, self.due_date,
              self.fines, self.acquired,
-             self._maxnum, self.image,
+             self._limnum, self.image,
              self.length, self.price
             ) = await self.pool.fetchrow(query, self.mid)
         except TypeError:
@@ -167,7 +167,7 @@ class MediaItem(AsyncInit):
         and clear the user's holds on the item
         """
         # Give priority to mediatype/mediaitem limits over user/role limits --
-        # unless a max on the mediatype/mediaitem is 254, the 'null' code,
+        # unless a limit on the mediatype/mediaitem is 254, the 'null' code,
         # in which case refer to to user/role limits
         if self.limits is None:
             limits = user.limits
@@ -241,6 +241,6 @@ class MediaItem(AsyncInit):
         """
         if not self.type:
             return None
-        if not self._maxnum:
+        if not self._limnum:
             return self.type.limits
-        return {k: v if v != 254 else self.type.limits[k] for k, v in Limits(self._maxnum).namemap.items()}
+        return {k: v if v != 254 else self.type.limits[k] for k, v in Limits(self._limnum).namemap.items()}

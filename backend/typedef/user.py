@@ -39,7 +39,7 @@ class User(AsyncInit):
     holds       (int):      Quantity of items the user has on hold
     lid, rid    (int):      Shorthand for user.location.lid and user.role.rid
     _permnum,
-    _maxnum,                Shorthand for user.perms/limits/locks.raw, but
+    _limnum,               Shorthand for user.perms/limits/locks.raw, but
     _locknum    (int):      not intended to be exposed outside this class
     """
     @staticmethod
@@ -61,7 +61,7 @@ class User(AsyncInit):
               username, name, lid,
               rid, manages, email,
               phone, self._type, recent,
-              permbin, maxbin, lockbin,
+              permbin, limbin, lockbin,
               self._pwhash
             ) = await conn.fetchrow(query, self.uid)
             query = '''SELECT count(*) FROM holds WHERE uid = $1::bigint'''
@@ -79,7 +79,7 @@ class User(AsyncInit):
         self.manages = manages
         self.recent = recent
         self._permnum = permbin
-        self._maxnum = maxbin
+        self._limnum = limbin
         self._locknum = lockbin
         self.is_checkout = bool(self._type)  # == 1
     
@@ -94,17 +94,17 @@ class User(AsyncInit):
         return rel
     
     def beats(self, other=None, *, perms=None, and_has=None):
-        if not hasattr(other, 'perms'):
+        if perms is None and not hasattr(other, 'perms'):
             raise TypeError(f"invalid type for comparison with '{type(self).__name__}': '{type(other).__name__}'")
         if not (other or perms):
-            raise TypeError("expecting either 'perms' or 'other' user to compare against; got neither")
+            raise TypeError("expecting either `perms' or an `other' user to compare against; got neither")
         
-        if self.perms.raw == 127:
+        if self.perms.raw == 127 or self == other:
             return True
-
-        if (self.perms.raw > perms.raw) if perms else (self.perms.raw > other.perms.raw or self == other):
+        
+        if self.perms.raw > (perms.raw if perms else other.perms.raw):
             if and_has is not None:
-                return self.perms.props[and_has]
+                return self.perms.namemap[and_has]
             return True
         return False
 
@@ -117,7 +117,7 @@ class User(AsyncInit):
         that their checkout duration is restricted to 0)
         """
         chk, dur = self.locks.checkouts, self.limits.checkout_duration
-        if chk and dur:  # user is able to check out, that is unless the item's type's limits won't allow it
+        if chk and dur:  # user is able to check out -- that is, unless the item's type's limits won't allow it
             return False
         ret = (
           "You can't check anything out at the moment"
@@ -169,7 +169,8 @@ class User(AsyncInit):
          WHERE issued_to = $1::bigint
         '''
         async with self.acquire() as conn:
-            [await conn.execute(query, self.uid) for query in queries]
+            async with conn.transaction():
+                [await conn.execute(query, self.uid) for query in queries]
     
     async def notifs(self):
         """
@@ -327,9 +328,9 @@ class User(AsyncInit):
     
     @property
     def limits(self):
-        if self._maxnum is None:
+        if self._limnum is None:
             return self.role.limits
-        return Limits(self._maxnum)
+        return Limits(self._limnum)
     
     @property
     def locks(self):

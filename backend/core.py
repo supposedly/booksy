@@ -131,7 +131,7 @@ class PackedByteFieldMixin(PackedField):
         The genexp at the beginning is to generate a string resembling:
         <Perms-type PackedByteFieldMixin-type PackedField ... >
         """
-        return f'<{"-type ".join(i.__name__ for i in type(self).__mro__[:-1])} raw={self.raw!r} bin={self.bin!r} seq={self.seq!r}>'
+        return f'<{"-type ".join(i.__name__ for i in type(self).__mro__[:-1])}, raw={self.raw!r}, bin={self.bin}, seq={self.seq!r}>'
     
     @classmethod
     def from_kwargs(cls, **kwargs):
@@ -238,7 +238,7 @@ class PackedBigIntMixin(PackedField):
         The genexp at the beginning is to generate a string resembling:
         <Limits-type PackedBigIntMixin-type PackedField ... >
         """
-        return f'<{"-type ".join(i.__name__ for i in type(self).__mro__[:-1])} raw={self.raw!r} seq={self.seq!r} namemap={self.namemap!r}>'
+        return f'<{"-type ".join(i.__name__ for i in type(self).__mro__[:-1])}, raw={self.raw!r}, seq={self.seq!r}, namemap={self.namemap!r}>'
     
     @classmethod
     def from_kwargs(cls, filler=253, **kwargs):
