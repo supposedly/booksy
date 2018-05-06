@@ -17,7 +17,7 @@ import { AppComponent } from './app.component';
 import { CheckoutComponent } from './checkout/checkout.component';
 import { CheckoutSessionComponent } from './checkout-session/checkout-session.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { FileUploadComponent} from './file-upload.component';
+import { CSVUploadComponent} from './csv-upload.component';
 import { GenericHeaderComponent } from './generic-header/generic-header.component';
 import { HeaderComponent } from './header/header.component';
 import { HelpComponent } from './help/help.component';
@@ -115,7 +115,7 @@ import { SetupService } from './setup.service';
     LimitsComponent,
     LocksComponent,
     GenericHeaderComponent,
-    FileUploadComponent,
+    CSVUploadComponent,
   ],
   entryComponents: [
     TooltipComponent

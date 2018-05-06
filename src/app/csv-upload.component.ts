@@ -7,14 +7,14 @@ import { asElementData } from '@angular/core/src/view';
 
 @Component({
     // tslint:disable-next-line:component-selector
-    selector: 'file-upload',
+    selector: 'member-csv-upload',
     template: `
-      <input type="file" (change)="upload()" [multiple]="multiple" #fileInput>
+      <input type="file" (change)="upload()" #fileInput>
       <whatsthis ident=12></whatsthis><label>{{msg}}</label>
     `
 })
-export class FileUploadComponent {
-    @Input() multiple = false;
+export class CSVUploadComponent {
+    @Input() rID;  // int? string?
     @Input('url') fileUploadURL: string;
     @ViewChild('fileInput') inputEl: ElementRef;
     msg: string;
@@ -23,14 +23,11 @@ export class FileUploadComponent {
     
     upload() {
         const inputEl: HTMLInputElement = this.inputEl.nativeElement;
-        const fileCount: number = inputEl.files.length;
         const formData = new FormData();
-        if (fileCount > 0) { // a file was selected
-            for (let i = 0; i < fileCount; i++) {
-                formData.append('file[]', inputEl.files.item(i));
-            }
-            this.http.post(this.fileUploadURL, formData)
-              .subscribe(resp => this.msg = 'Uploaded successfully.', err => this.msg = err.error ? err.error : 'Error.');
-        }
+        formData.append('csv', inputEl.files[0]);
+        formData.append('rid', this.rID);
+        this.http.post(this.fileUploadURL, formData)
+          .subscribe(resp => this.msg = 'Members added successfully.', err => this.msg = err.error ? err.error : 'Error.');
+        this.msg = 'Uploading...';
     }
 }

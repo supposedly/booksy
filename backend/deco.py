@@ -54,7 +54,7 @@ def uid_get(*attrs, user=False):
     return decorator
 
 
-def rqst_get(*attrs, user=False, form=False):
+def rqst_get(*attrs, user=False, form=False, files=None):
     """
     Grabs the pertinent key from a request, and, if matching
     an object name, converts its value; else just returns its
@@ -86,8 +86,13 @@ def rqst_get(*attrs, user=False, form=False):
                 sanic.exceptions.abort(422, 'Missing required attributes.')
             except TypeError as obj:
                 sanic.exceptions.abort(404, f'{str(obj)[0].upper()+str(obj)[1:]} does not exist.')
+            if form:
+                vals = {k: v[0] if isinstance(v, list) and len(v) == 1 else v for k, v in vals.items()}
             if user:
                 vals['user'] = await user_from_rqst(rqst)
+            if files:
+                for name in files:
+                    vals[name] = rqst.files.get(name, None)
             return await func(rqst, *args, **vals, **kwargs)
         return wrapper
     return decorator

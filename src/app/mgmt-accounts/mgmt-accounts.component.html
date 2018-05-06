@@ -1,5 +1,11 @@
 <button routerLink="../../members/new">Add member</button> <whatsthis [ident]="10"></whatsthis><br/>
-Add members (batch):<br/><file-upload url="/api/location/members/add/batch"></file-upload>
+Add members (batch):<br/><member-csv-upload url="/api/location/members/add/batch" [rID]="batchRoleID"></member-csv-upload>
+<select name="rid" [(ngModel)]="batchRoleID">
+  <option [ngValue]="null" disabled>Role</option>
+  <option *ngFor="let role of roles" [ngValue]="role.rid">
+    {{role.name}}
+  </option>
+</select>
 <ul>
   <label *ngFor="let role of roles">
     <li>
