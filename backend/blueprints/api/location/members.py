@@ -63,12 +63,11 @@ async def add_members_from_csv(rqst, location, *, perms):
     """
     Batch addition of members.
     Really hope I can implement this but probably not.
-    
-    UPDATE: not :(
     """
-    if not perms.can_manage_members:
+    if not perms.can_manage_accounts:
         sanic.exceptions.abort(401, "You aren't allowed to add members.")
-    data = rqst.files.get(data, None)
+    data = rqst.files['file[]'][0]
+    print(data, dir(data))
     if data is None: # using conditional instead of try/except bc the data itself might also be null instead of just not present
         sanic.exceptions.abort(422, "No file given!")
     rqst.app.add_task(location.add_members_from_csv(data))

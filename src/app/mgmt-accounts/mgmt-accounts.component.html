@@ -1,4 +1,5 @@
-<button routerLink="../../members/new">Add member</button> <whatsthis [ident]="10"></whatsthis>
+<button routerLink="../../members/new">Add member</button> <whatsthis [ident]="10"></whatsthis><br/>
+Add members (batch):<br/><file-upload url="/api/location/members/add/batch"></file-upload>
 <ul>
   <label *ngFor="let role of roles">
     <li>

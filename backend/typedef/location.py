@@ -187,7 +187,6 @@ class Location(AsyncInit):
                     # the beginning of the arguments list:
                     lid = await stmt.fetchval(*args[:numparams]) # returns lID at end because run with fetchval
                     # ...and, finally, strip the params we just used
-                    # from it.
                     args = args[numparams:]
         return fetch['name'], lid, fetch['username'], fetch['adminuser']
         # return cls(lid, rqst.app)
