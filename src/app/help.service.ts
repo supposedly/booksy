@@ -8,6 +8,7 @@ import { of } from 'rxjs/observable/of';
 import { HttpOptions } from './classes';
 const httpOptions = HttpOptions;
 
+// Handles content-serving/-fetching on help articles.
 @Injectable()
 export class HelpService {
   private titlesURL = 'api/help/titles';

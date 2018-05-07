@@ -9,6 +9,7 @@ const httpOptions = HttpOptions;
 
 import { Globals } from './globals';
 
+// Everything related to media items (but not media types).
 @Injectable()
 export class MediaService {
   private infoURL = 'api/media/info';
@@ -37,10 +38,13 @@ export class MediaService {
   */
   
   getStatus(mID: string): Observable<any> {
+    // Return the media item's availability/checkout status.
     return this.http.get<any>(this.statusURL, {params: {mid: mID}});
   }
   
   getInfo(mID: string): Observable<MediaItemProxy> {
+    // Return everything about the media item -- author, title, publication
+    // date, type, cover image URL, etc.
     return this.http.get<MediaItemProxy>(this.infoURL, {params: {mid: mID}});
   }
   
@@ -59,6 +63,7 @@ export class MediaService {
   }
   
   markFinesPaid(mID): Observable<any> {
+    // Reset an item's fines to 0. Mandatory to do this before checking out.
     return this.http.post<any>(this.payFinesURL, {mid: mID}, httpOptions);
   }
   

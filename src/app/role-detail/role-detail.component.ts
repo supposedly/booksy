@@ -24,6 +24,8 @@ export class RoleDetailComponent implements OnInit {
   msg: string = null;
   rID: string;
   
+  // ViewChild allows us to look into what's being input in the Perms/Limits/Locks
+  // components, and use those values from here.
   @ViewChild(PermsComponent) private perms: PermsComponent;
   @ViewChild(LimitsComponent) private limits: LimitsComponent;
   @ViewChild(LocksComponent) private locks: LocksComponent;
@@ -68,7 +70,7 @@ export class RoleDetailComponent implements OnInit {
   }
   
   submit() {
-    const sMaxArr = {}, sLockArr = {}; // initialize to properly copy attrs to this:
+    const sMaxArr = {}, sLockArr = {}; // initialize this to properly copy attrs to it:
     for (const i of Object.keys(this.limits.arr.names)) {
       sMaxArr[i] = this.limits.overrideArr.names[i] ? this.limits.overrideArr.names[i] : this.limits.arr.names[i];
     }

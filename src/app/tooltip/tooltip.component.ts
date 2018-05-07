@@ -10,12 +10,13 @@ import {
 } from '@angular/core';
 
 @Directive({
-  // TODO: Figure out what this rule means and how it applies
+  // TODO: Figure out what this TSLint rule means and how it's relevant...
   // tslint:disable-next-line:directive-selector
   selector: '.tooltip-container'
 })
 export class TooltipContainerDirective {}
 
+// The tooltip box that appears w/ help blurb.
 @Component({
   template: `
     <div

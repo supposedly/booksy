@@ -15,6 +15,7 @@ import 'rxjs/add/operator/do';
 
 const httpOptions = HttpOptions;
 
+// Handles things related to authentication & login-session verification.
 @Injectable()
 export class MemberAuthService {
   private authURL = '/auth';
@@ -52,35 +53,40 @@ export class MemberAuthService {
   }
   
   isLocationRegistered(): Observable<any> {
+    // Unused feature. Returns whether the logger-in's IP address is 'registered',
+    // which was meant to allow users to not have to fill the 'location ID' box
+    // when logging in at a computer physically in their library.
     return this.http.get<any>(this.locInfoURL);
   }
   
   getInfo(): Observable<any> {
-    return this.http.get<Observable<any>>(this.infoURL, {params: {uid: this.uID}})
-      .shareReplay();
+    return this.http.get<any>(this.infoURL, {params: {uid: this.uID}})
+    .shareReplay();
   }
   
-  saveToGlobals(dts): void {
-    this.uID = dts.user_id;
+  saveToGlobals(details): void {
+    this.uID = details.user_id;
     
-    this.globals.uID = dts.user_id;
-    this.globals.rID = dts.rid;
-    this.globals.lID = dts.lid;
-    this.globals.isCheckoutAccount = dts.is_checkout;
-    this.globals.username = dts.username;
-    this.globals.name = dts.name;
-    this.globals.managesLocation = dts.manages;
-    this.globals.locname = dts.locname;
-    this.globals.email = dts.email;
-    this.globals.phone = dts.phone;
+    this.globals.uID = details.user_id;
+    this.globals.rID = details.rid;
+    this.globals.lID = details.lid;
+    this.globals.isCheckoutAccount = details.is_checkout;
+    this.globals.username = details.username;
+    this.globals.name = details.name;
+    this.globals.managesLocation = details.manages;
+    this.globals.locname = details.locname;
+    this.globals.email = details.email;
+    this.globals.phone = details.phone;
     
-    if (dts.user_id) {
-      this.setupService.getAttrs(dts.user_id);
-      this.setupService.getPerms(dts.user_id);
+    if (details.user_id) {
+      this.setupService.getAttrs(details.user_id);
+      this.setupService.getPerms(details.user_id);
     }
   }
   
-  storeMeInfo(): void { // store info about currently-logged-in user on login
+  storeMeInfo(): void {
+    // On signin, globally store info pertaining to member
+    // (so other components can access it).
     this.getInfo()
       .subscribe(res => {
         this.saveToGlobals(res.me);
@@ -98,14 +104,21 @@ export class MemberAuthService {
   }
   
   verify(): any {
+    // Return whether the current user's session has expired (or whether they're
+    // otherwise not supposed to be logged in) by sending the current access
+    // token/refresh token to the server for JWT verification.
     return this.http.get<any>(this.verifyURL);
   }
   
   refresh(): any {
+    // Fetch a new JWT "refresh token", which is a string of text that will be sent to
+    // the server to let it know who we're logged in as. Occasionally this token expires,
+    // so this endpoint "refresh"es the session by having the server create a new one.
     return this.http.post<any>(this.refreshURL, httpOptions);
   }
   
   logOut() {
+    // Clear token data & login session.
     this.globals.isLoggedIn = false;
     return this.http.post(this.logoutURL, httpOptions)
       .subscribe(resp => this.globals.isLoggedIn = false, err => console.log(err));

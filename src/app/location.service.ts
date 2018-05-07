@@ -10,7 +10,7 @@ const httpOptions = HttpOptions;
 
 import { Globals } from './globals';
 
-
+// Handles everything related to the current user's library.
 @Injectable()
 export class LocationService {
   private loc = 'api/location';
@@ -43,6 +43,7 @@ export class LocationService {
   ) {}
   
   register(email, locname, color, adminname) {
+    // Post a request to register a new library & get out a verification email.
     return this.http.post<any>(this.locSignupURL, {
       email: email,
       locname: locname,
@@ -52,6 +53,7 @@ export class LocationService {
   }
   
   edit(locname, color, fine_amt, fine_interval, checkoutpw) {
+    // color is unused
     return this.http.post<any>(this.locEditURL, {
       locname: locname,
       color: color,
@@ -62,10 +64,12 @@ export class LocationService {
   }
   
   getLocInfo() {
+    // Return library's ID, name, $$ in fines per compounding, frequency of fine compounding, and chosen color.
     return this.http.get<any>(this.loc);
   }
   
   getMemberInfo(uID): Observable<any> {
+    // See User.to_dict() in typedef/user.py for return value.
     return this.http.get(this.memberInfoURL, {params: {check: uID}});
   }
   
@@ -86,6 +90,8 @@ export class LocationService {
   }
   
   searchMedia(cont= 0, title= null, author= null, genre= null, type_= null): Observable<any> {
+    // Sends a request to Location.search() and returns all pertinent media items.
+    // Must have at least one non-null value passed.
     return this.http.get<any>(this.searchURL, {
       params: {
         cont: cont.toString(),

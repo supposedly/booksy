@@ -9,6 +9,7 @@ const httpOptions = HttpOptions;
 
 import { Globals } from './globals';
 
+// Everything related to media items.
 @Injectable()
 export class MediaTypeService {
   private loc = '/api/location/media/types';
@@ -23,10 +24,13 @@ export class MediaTypeService {
   ) {}
   
   all(): Observable<any> {
+    // Returns an array of every media type present in the library.
     return this.http.get<any>(this.loc);
   }
   
   info(name): Observable<any> {
+    // Grabs a the return value of MediaType.to_dict() -- that is, the type's
+    // name, unit of length, and override limits.
     return this.http.get<any>(this.infoURL, {params: {name: name}});
   }
   
@@ -35,6 +39,7 @@ export class MediaTypeService {
   }
   
   add(limits, name, unit): Observable<any> {
+    // Create a new media type in this location. Does not assign it to any media items.
     return this.http.post<any>(this.typeAddURL, {add: {limits: limits, name: name, unit: unit}});
   }
   

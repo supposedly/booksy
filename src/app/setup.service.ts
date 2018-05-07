@@ -9,6 +9,7 @@ const httpOptions = HttpOptions;
 
 import { Globals } from './globals';
 
+// Handles grabbing relevant member info on signin
 @Injectable()
 export class SetupService {
   private attrsURL = 'api/attrs';

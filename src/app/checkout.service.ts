@@ -9,6 +9,7 @@ import { of } from 'rxjs/observable/of';
 
 const httpOptions = HttpOptions;
 
+// Controls what happens on the checkout homescreen
 @Injectable()
 export class CheckoutService {
   private checkoutURL = '/api/media/check/out';

@@ -8,7 +8,7 @@ import {
   HostListener,
   Injector,
   Input,
-  // FIXME: ReflectiveInjector is deprecated: from v5 - slow and brings in a lot of code, Use `Injector.create` instead.
+  // FIXME: "ReflectiveInjector is deprecated: from v5 - slow and brings in a lot of code, Use `Injector.create` instead."
   // So maybe I can just switch out the below `ReflectiveInjector.resolveAndCreate` with `Injector.create`...?
   ReflectiveInjector,
   Renderer2,
@@ -23,7 +23,6 @@ import { TooltipComponent } from './tooltip.component';
 })
 
 export class TooltipDirective implements OnDestroy {
-
   private componentRef: ComponentRef<TooltipComponent>;
   
   constructor (
@@ -36,9 +35,7 @@ export class TooltipDirective implements OnDestroy {
   
   @Input() relative: boolean;
   @Input() content: string; // Content to display
-  @Input('ident') id: string; // Identifier, used partially for checking whether the tooltip is being clicked on
-  // This system works nicely for my specific setup because I only have to (and will always) supply the ident
-  // and the content will be grabbed by the help icon
+  @Input('ident') id: string; // Identifier, used for grabbing blurb & for checking whether the tooltip is being clicked on
   
   @HostListener('click')
   clickInside() {
@@ -59,10 +56,10 @@ export class TooltipDirective implements OnDestroy {
   clickOutside(target) {
     let blur: boolean; // determine whether the tooltip or its native element are out of focus
     if (target.attributes['data-ident']) {
-      // ...then we know we're clicking on a tooltip, so now check if it's `this` one
+      // ...then we know we're clicking on a tooltip, so now check if it's `this' one using the ID
       blur = target.attributes['data-ident'].value === this.el.nativeElement.attributes['ident'].value;
     } else {
-      // ...we're just clicking anywhere on the document, so check if it's on the icon that launched this
+      // ...we're just clicking anywhere on the document, so check if it's on the icon that launched this tooltip
       blur = this.el.nativeElement.contains(target);
     }
     if (!blur) {

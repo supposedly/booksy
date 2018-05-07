@@ -4,7 +4,6 @@ import { asElementData } from '@angular/core/src/view';
 
 // Modified slightly from https://stackoverflow.com/a/39862337/
 // by user "Brother Woodrow".
-
 @Component({
     // tslint:disable-next-line:component-selector
     selector: 'member-csv-upload',

@@ -162,13 +162,14 @@ async def set_up_dbs(app, loop):
 @app.listener('before_server_stop')
 async def close_dbs(app, loop):
     """
-    Gracefully close all acquired connections before shutting off.
+    Cleanly close all acquired connections before shutting off.
     """
     print('Shutting down.')
+    await app.session.close()
     await app.pg_pool.close()
+    # & aioredis is really strange
     app.rd_pool.close()
     await app.rd_pool.wait_closed()
-    await app.session.close()
 
 
 @app.middleware('request')
@@ -190,9 +191,9 @@ async def force_angular(rqst):
 async def force_no_cache(rqst, resp):
     """
     This is ABSOLUTELY necessary because browsers will otherwise cache
-    the sidebar buttons(which, of course, are supposed to be delivered
-    by calculating the CURRENT user's permissions, not whomever an
-    IP logged in as previously)
+    the sidebar buttons (which, of course, are *supposed* to be served
+    according to the CURRENT user's permissions, not whomsever a given
+    IP was logged in as previously)
     """
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnChanges, Input } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
 import { ButtonService } from '../button.service';
@@ -11,7 +11,7 @@ import { Globals } from '../globals';
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css']
 })
-export class SidebarComponent /*implements OnInit*/ {
+export class SidebarComponent implements OnChanges {
   public san;
   buttons: SideButton[] = null;
   
@@ -28,12 +28,6 @@ export class SidebarComponent /*implements OnInit*/ {
   ngOnChanges() {
     this.getButtons();
   }
-  
-  /*
-  ngOnInit() {
-    this.getButtons();
-  }
-  */
   
   getButtons(): void {
     this.buttonService.getSidebarButtons(this.uID)

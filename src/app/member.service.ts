@@ -27,11 +27,18 @@ export class MemberService {
   ) {}
   
   edit(member): Observable<any> {
+    // "member" is actually a dict/object containing all the attributes to edit --
+    // -- said attributes being 'username', 'name' (full name), and 'rid' (member's role's ID).
+    // This is used when an operator is editing one of their library's other members, not when
+    // a member is editing theirself.
     return this.http.post<any>(this.editMemberURL, {member: member});
   }
   
   editSelf(fullName, newpass, curpass) {
+    // Like edit() above, but members are allowed to change their own name & password
     return this.http.post<any>(this.editSelfURL, {
+      // if fullName didn't change at all (i.e. if it's still equal to
+      // the name that was stored globally on signin), then send null in its place
       fullname: fullName === this.globals.name ? null : fullName,
       newpass: newpass ? newpass : null,
       curpass: curpass

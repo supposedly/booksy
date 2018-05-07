@@ -1,5 +1,8 @@
 import { HttpHeaders } from '@angular/common/http';
 
+// Just a bunch of object-type declarations.
+// Got lazy as time went on and started using T<any> instead of making specific classes, lol.
+// (Makes it quicker to add stuff)
 export const HttpOptions = {
   headers: new HttpHeaders({'Content-Type': 'application/json'}),
 };

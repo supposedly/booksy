@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 
+
+// Info for currently-logged-in user.
 @Injectable()
 export class Globals {
-  // info regarding currently-logged-in user
   uID: string; // user ID
   lID: string; // location ID
   rID: string; // role ID
