@@ -27,14 +27,14 @@ except ModuleNotFoundError:  # means I'm testing (can't access app.config.TESTIN
 
 # These are 'variable annotations', used in python 3.6 for introducing
 # a variable before actually assigning to it. I'm just using them here
-# so pylint stops complaining about my do_imports() method using global
+# so pylint stops whinging about my do_imports() method using `global`
 MediaItem: ModuleType
 MediaType: ModuleType
 Role: ModuleType
 User: ModuleType
 
-# first two args map to each other; str.maketrans('ab', 'xy') turns a->x and b->y
-# third arg is chars to map to nothing (i.e. to delete)
+# first two args map to each other; str.maketrans('ab', 'xy') turns 'a'->'x' and 'b'-'>y'
+# third arg is what chars to map to nothing (i.e. to delete)
 # so i'm just deleting (almost) all punctuation
 GBQUERY = str.maketrans('', '', r"""!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~""")
 NO_PUNC = str.maketrans('', '', string.punctuation)

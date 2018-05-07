@@ -286,8 +286,7 @@ async def finalize_registration(rqst, token):
 @app.post('/register')
 @deco.rqst_get('token', 'adminpw', 'checkoutpw', form=True)
 async def register_location(rqst, token, adminpw, checkoutpw):
-    """Have to *unpack these attrs because rqst.form returns single-item lists."""
-    locname, lid, chk_usr, admin_usr = await Location.instate(rqst, *token, *adminpw, *checkoutpw)
+    locname, lid, chk_usr, admin_usr = await Location.instate(rqst, token, adminpw, checkoutpw)
     return sanic.response.html(cleandoc('''
       <html><head></head><body>
       <p style="font-family:monospace;font-size:20px"><strong>

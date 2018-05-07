@@ -25,7 +25,7 @@ except ModuleNotFoundError:  # means I'm testing (can't access app.config.TESTIN
 
 # These are 'variable annotations', used in python 3.6 for introducing
 # a variable before actually assigning to it. I'm just using them here
-# so pylint stops complaining about my do_imports() method using global
+# so pylint stops whinging about my do_imports() method using `global`
 MediaItem: ModuleType
 MediaType: ModuleType
 Location: ModuleType
