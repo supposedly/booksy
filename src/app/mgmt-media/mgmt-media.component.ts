@@ -104,7 +104,7 @@ export class MgmtMediaGenresComponent {
         err => this.msg = err.error ? err.error : 'Error.'
       );
   }
-    
+  
   rm(i) {
     this.locationService.removeGenre(this.globals.locGenres[i])
       .subscribe(
@@ -112,5 +112,5 @@ export class MgmtMediaGenresComponent {
         err => this.msg = err.error ? err.error : 'Error.'
       );
   }
-  
+
 }

@@ -123,5 +123,5 @@ export class MemberAuthService {
     return this.http.post(this.logoutURL, httpOptions)
       .subscribe(resp => this.globals.isLoggedIn = false, err => console.log(err));
   }
-  
+
 }

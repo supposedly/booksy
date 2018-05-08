@@ -15,13 +15,13 @@ export class PersonalHoldsComponent implements OnInit {
   items: any[] = [];
   cont = 0;
   uID: string;
-
+  
   constructor(
     public globals: Globals,
     private memberService: MemberService,
     private route: ActivatedRoute
   ) {}
-
+  
   ngOnInit() {
     this.uID = this.route.snapshot.paramMap.get('uID');
     this.getHolds(this.uID || this.globals.uID);

@@ -69,5 +69,5 @@ export class MemberService {
   clearHold(mID): Observable<any> {
     return this.http.post<any>(this.clearHoldURL, {mid: mID}, httpOptions);
   }
-  
+
 }

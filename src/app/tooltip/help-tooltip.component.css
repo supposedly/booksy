@@ -24,19 +24,19 @@ div {
 .link {
   display: inline-block;
   position: absolute;
-
+  
   overflow: hidden;
   white-space: nowrap;
   text-align: center;
   line-height: 35px;
   background-color: #eee;
-
+  
   top: 2px;
   left: 10px;
   max-width: 0;
   height: 35px;
   border-radius: 8px;
-
+  
   z-index: 0;
   transition: padding 100ms, max-width 1s;
 }

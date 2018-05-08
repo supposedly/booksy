@@ -18,7 +18,7 @@ export class MediaService {
   private editItemURL = 'api/media/edit';
   private deleteItemURL = 'api/media/delete';
   private payFinesURL = 'api/media/clear-fines';
-
+  
   constructor(
     private globals: Globals,
     private http: HttpClient
@@ -66,5 +66,5 @@ export class MediaService {
     // Reset an item's fines to 0. Mandatory to do this before checking out.
     return this.http.post<any>(this.payFinesURL, {mid: mID}, httpOptions);
   }
-  
+
 }

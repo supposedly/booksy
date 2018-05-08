@@ -38,7 +38,7 @@ export class CheckoutComponent {
         this.name = globals.locname + ' Patron';
       }
   }
-
+  
   submit(mID): void {
     this._mid = null;
     this.mediaService.getStatus(mID)

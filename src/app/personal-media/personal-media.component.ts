@@ -21,7 +21,7 @@ export class PersonalMediaComponent implements OnInit {
     private memberService: MemberService,
     private route: ActivatedRoute
   ) {}
-
+  
   ngOnInit() {
     this.uID = this.route.snapshot.paramMap.get('uID');
     this.getItems(this.uID || this.globals.uID);

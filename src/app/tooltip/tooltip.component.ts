@@ -49,13 +49,13 @@ export class TooltipComponent implements OnInit {
   left: string;
   ident: string;
   @ViewChild(TooltipContainerDirective, {read: ElementRef}) private tooltipContainer;
-
+  
   constructor(@Inject('tooltipConfig') private config) {}
-
+  
   ngOnInit() {
     const {left, top} = this.config.host.getBoundingClientRect();
     const {height} = this.tooltipContainer.nativeElement.getBoundingClientRect();
-
+    
     const enclosedBy = this.config.host.attributes['relative'] ? 'relative' : 'absolute';
     if (enclosedBy === 'absolute') {
       this.top = `${top - height}px`;

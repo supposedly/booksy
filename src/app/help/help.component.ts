@@ -14,7 +14,7 @@ export class HelpComponent implements OnInit {
     public globals: Globals,
     private helpService: HelpService
   ) {}
-
+  
   ngOnInit() {
     this.getArticles();
   }

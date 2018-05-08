@@ -18,7 +18,7 @@ export class ReportViewComponent implements OnInit {
     public location: Location,
     private globals: Globals
   ) {}
-
+  
   ngOnInit() {
     this.sort = this.globals.reportDataSortedBy;
     this.key = Object.keys(this.globals.reportData)[0];
@@ -30,7 +30,7 @@ export class ReportViewComponent implements OnInit {
     // yikes. Just a bunch of edge cases
     return res.length && (res.length === 1 ? res[0][0] && !(res[0] in ['0', 'null']) : true);
   }
-
+  
   printReport() {
     const contents = document.getElementById('printable-report').innerHTML;
     const popup = window.open('', '_blank', 'top=0,left=0,height=100%,width=auto');

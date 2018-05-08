@@ -10,7 +10,7 @@ import { MediaTypeService } from '../media-type.service';
 import { LocationService } from '../location.service';
 
 import { Globals } from '../globals';
-
+  
   /* --------------------------------------- */
  // The media-type list component at /types //
 /* --------------------------------------- */

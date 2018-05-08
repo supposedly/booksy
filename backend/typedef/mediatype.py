@@ -48,7 +48,7 @@ class MediaType(AsyncInit):
     
     def to_dict(self):
         return {'name': self.name, 'unit': self.unit, 'limits': self.limits.props}
-
+    
     async def edit(self, *, limits: int = None, name=None, unit=None):
         """
         Edits all of this media type's info.

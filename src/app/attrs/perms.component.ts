@@ -37,5 +37,5 @@ export class PermsComponent implements OnChanges {
     // to make Object.keys usable by the template without it saying Object is undefined
     if (obj) { return Object.keys(obj); }
   }
-  
+
 }

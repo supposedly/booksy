@@ -12,13 +12,13 @@ import { HelpService } from '../help.service';
 export class HelpViewComponent implements OnInit {
   id: string;
   article: string;
-
+  
   constructor(
     public location: Location,
     private helpService: HelpService,
     private route: ActivatedRoute
   ) {}
-
+  
   ngOnInit() {
     this.id = this.route.snapshot.paramMap.get('id');
     this.getArticle();

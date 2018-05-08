@@ -128,5 +128,5 @@ export class LocationService {
   removeGenre(genre): Observable<any> {
     return this.http.post<any>(this.delGenreURL, {genre: genre});
   }
-  
+
 }

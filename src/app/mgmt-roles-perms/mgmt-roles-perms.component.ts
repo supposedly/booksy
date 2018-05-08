@@ -25,7 +25,7 @@ export class MgmtRolesPermsComponent implements OnInit {
     public roleService: RoleService,
     private locationService: LocationService
   ) {}
-
+  
   ngOnInit() {
     this.locationService.getAllRoles()
       .subscribe(
@@ -47,5 +47,5 @@ export class MgmtRolesPermsComponent implements OnInit {
     // my due date.
     setTimeout(() => this.deleteDown = false, .01);
   }
-  
+
 }

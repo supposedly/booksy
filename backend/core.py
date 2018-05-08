@@ -69,7 +69,7 @@ class PackedField(metaclass=abc.ABCMeta):
     def edit(self):
         """Edits a certain attr or certain attrs of self via kwargs."""
         raise NotImplementedError
-    
+
 
 class PackedByteField(PackedField):
     """

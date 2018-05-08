@@ -28,7 +28,7 @@ export class MemberAcctInfoComponent implements OnInit {
     private memberService: MemberService,
     private locationService: LocationService
   ) {}
-
+  
   ngOnInit() {
     this.uID = this.route.snapshot.paramMap.get('uID');
     this.locationService.getFilteredRoles()

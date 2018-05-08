@@ -15,12 +15,12 @@ export class PersonalInfoComponent {
   curpass = '';
   newpass = '';
   conf = '';
-
+  
   constructor(
     public globals: Globals,
     private memberService: MemberService
   ) { this.fullName = globals.name; }
-
+  
   submit() {
     this.memberService.editSelf(this.fullName, this.newpass, this.curpass)
       .subscribe(resp => this.msg = 'Edited successfully.', err => this.msg = err.error ? err.error : 'Error.');

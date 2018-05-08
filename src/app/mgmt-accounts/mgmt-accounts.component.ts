@@ -21,7 +21,7 @@ export class MgmtAccountsComponent implements OnInit {
     private route: ActivatedRoute,
     private locationService: LocationService
   ) {}
-
+  
   ngOnInit() {
     this.getMembers();
   }
@@ -31,5 +31,5 @@ export class MgmtAccountsComponent implements OnInit {
     this.locationService.getAllMembers(this.cont)
       .subscribe(resp => this.roles = resp.sort((a, b) => a.name.localeCompare(b.name)));
   }
-  
+
 }

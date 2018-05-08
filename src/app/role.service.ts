@@ -42,5 +42,5 @@ export class RoleService {
     // Delete a role entirely.
     return this.http.put(this.roleDelURL, {rid: rID});
   }
-  
+
 }

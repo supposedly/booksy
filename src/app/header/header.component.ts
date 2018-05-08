@@ -26,7 +26,7 @@ export class HeaderComponent implements OnInit {
       '--depressed-color': globals.locDepressedColor
     }; // attempting to get header color scheme working...
   }
-
+  
   ngOnInit() {
     this.getButtons();
   }
@@ -35,5 +35,5 @@ export class HeaderComponent implements OnInit {
     this.buttonService.getMainHeaderButtons()
       .subscribe(resp => this.buttons = resp.buttons);
   }
-  
+
 }

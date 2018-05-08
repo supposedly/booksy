@@ -23,7 +23,7 @@ export class MediaSearchBarComponent implements OnInit {
   author: string;
   genre: string;
   type_: string;
-
+  
   _title: string; // 'pseudo'-versions of the above vars for displaying
   _author: string;
   _genre: string;
@@ -42,7 +42,7 @@ export class MediaSearchBarComponent implements OnInit {
     private locationService: LocationService,
     private memberService: MemberService
   ) {}
-
+  
   ngOnInit() {
     this.breadcrumbs = this.level <= 1 ? '.'.repeat(this.level) : '../'.repeat(this.level - 1);
     if (this.default === 'all') {

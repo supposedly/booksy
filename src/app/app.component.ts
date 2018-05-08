@@ -11,13 +11,13 @@ import { SetupService } from './setup.service';
 })
 export class AppComponent implements OnInit {
   title = 'app';
-
+  
   constructor(
     private setupService: SetupService,
     private helpService: HelpService,
     private memberAuthService: MemberAuthService
   ) {}
-
+  
   ngOnInit() {
     this.memberAuthService.verify();
   }

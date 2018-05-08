@@ -116,7 +116,7 @@ class User(AsyncInit):
                 return self.perms.namemap[and_has]
             return True
         return False
-
+    
     @property
     def cannot_check_out(self):
         """
@@ -159,7 +159,7 @@ class User(AsyncInit):
     def edit_perms_from_seq(self, *new):
         """Just shorthand"""
         self.perms.edit_from_seq(*new)
-
+    
     async def delete(self):
         """
         Get rid of & clean up after a member.
@@ -200,14 +200,14 @@ class User(AsyncInit):
                 FROM items
                WHERE issued_to = $1::bigint
              ''', self.uid)
-             
+            
             overdue = await conn.fetchval('''
               SELECT count(*) AS overdue
                 FROM items
                WHERE due_date < current_date
                  AND issued_to = $1::bigint
                ''', self.uid)
-           
+        
         response = []
         
         def add(type_, message):

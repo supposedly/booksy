@@ -46,12 +46,12 @@ export class HelpTooltipComponent implements OnInit {
     linkText: string;
     linkUrl: string;
     content: string;
-
+  
   constructor(
     private elementRef: ElementRef,
     private helpService: HelpService
   ) {}
-
+  
   ngOnInit() {
     this.linkUrl = `/help/${this.ident}`;
     this.helpService.getBrief(this.ident)
