@@ -8,9 +8,13 @@ import { asElementData } from '@angular/core/src/view';
     // tslint:disable-next-line:component-selector
     selector: 'member-csv-upload',
     template: `
-      <input type="file" (change)="upload()" #fileInput>
-      <whatsthis ident=12></whatsthis><label>{{msg}}</label>
-    `
+      <input type="file" class="csv-upload-browse" (change)="upload()" #fileInput><label>{{msg}}</label>
+    `,
+    styles: [`
+    .csv-upload-browse {
+        border-color: #e3e3e3;
+        background-color: #f0f0f0;
+      }`]
 })
 export class CSVUploadComponent {
     @Input() rID;  // int? string?

@@ -95,10 +95,10 @@ export class LocationService {
     return this.http.get<any>(this.searchURL, {
       params: {
         cont: cont.toString(),
-        title:  title || null,     // doesn't produce the expected result if I don't do the ternary, hmm.
-        author:  author || null,  // It may also be that I had another error that I fixed at the same time
-        genre:  genre || null,     // as I was messing with the ternary, and so I myself am erroneously
-        media_type:  type_ || null // ascribing the error's cause to something to do with the ternary...
+        title:  title || null,     // doesn't produce expected result if I don't do the ||, hmm.
+        author:  author || null,   // It may also be that I had another error that I fixed at the same time
+        genre:  genre || null,     // as I was messing with the ||, and so I myself am erroneously
+        media_type:  type_ || null // ascribing the error's cause to something to do with the ||...
       }
     });
   }

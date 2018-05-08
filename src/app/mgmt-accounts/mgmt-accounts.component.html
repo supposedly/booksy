@@ -1,11 +1,20 @@
-<button routerLink="../../members/new">Add member</button> <whatsthis [ident]="10"></whatsthis><br/>
-Add members (batch):<br/><member-csv-upload url="/api/location/members/add/batch" [rID]="batchRoleID"></member-csv-upload>
-<select name="rid" [(ngModel)]="batchRoleID">
-  <option [ngValue]="null" disabled>Role</option>
-  <option *ngFor="let role of roles" [ngValue]="role.rid">
-    {{role.name}}
-  </option>
-</select>
+<button routerLink="../../members/new">Add member</button> <whatsthis [ident]="14"></whatsthis>
+<br/><br/>
+<div id="csv-upload-container">
+  <span>Add members (batch):</span>
+  <br/>
+  <select name="rid" [(ngModel)]="batchRoleID">
+    <option [ngValue]="null" disabled>Role</option>
+    <option *ngFor="let role of roles" [ngValue]="role.rid">
+      {{role.name}}
+    </option>
+  </select>
+  <member-csv-upload *ngIf="batchRoleID; else no_browse" url="/api/location/members/add/batch" [rID]="batchRoleID"></member-csv-upload>
+  <ng-template #no_browse>
+    <input _ngcontent-c14="" class="csv-upload-browse" type="text" value="(Pick a default role first!)" style="color:gray" disabled>
+  </ng-template>
+</div>
+<div><h3>Library members</h3> <whatsthis [ident]="10"></whatsthis></div>
 <ul>
   <label *ngFor="let role of roles">
     <li>
