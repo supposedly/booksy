@@ -23,9 +23,11 @@ export class ReroutingComponent implements OnInit {
         this.router.navigate(['/']);
       },
     500);
-    // Guess this counts as a 'stupid hack' -- its purpose is just to delay the redirection
-    // so that the requisite setup stuff can happen (because without that 500ms delay, this
-    // will try to do its thing first and end up with a blank sidebar amid other fun things)
+    // stupid hack
+    // its purpose is just to delay the redirection by 500ms so that the requisite
+    // setup stuff can happen in the meantime
+    // (without this delay, a logged-in user will end up with amid other things a
+    // totally-blank sidebar & a non-personalized checkout screen)
     
     this.router.navigateByUrl(this.route.snapshot.queryParams['redirect'] || '/login', {});
     // TODO: See if you can figure out how to make it redirect to the right page like it should...

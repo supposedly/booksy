@@ -44,7 +44,7 @@ class MediaItem(AsyncInit):
     props = [
       'mid', 'genre', 'type',
       'isbn', 'lid', 'fines',
-      'title', 'author', 'published', 
+      'title', 'author', 'published',
       'image', 'price', 'length',
       'available', 'due_date'
       ]

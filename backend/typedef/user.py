@@ -169,7 +169,7 @@ class User(AsyncInit):
          WHERE uid = $1::bigint
         ''', '''
         DELETE FROM holds
-         WHERE uid = $1::bigint  
+         WHERE uid = $1::bigint
         ''', '''
         UPDATE items
            SET issued_to = NULL,

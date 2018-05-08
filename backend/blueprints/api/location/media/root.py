@@ -1,11 +1,11 @@
 import sanic
-import sanic_jwt as jwt
 from sanic_jwt import decorators as jwtdec
 
 from . import uid_get, rqst_get
-from . import Location, Role, MediaType, MediaItem, User
+from . import MediaType
 
 root = sanic.Blueprint('location_media_api', url_prefix='')
+
 
 @root.get('/')
 @uid_get('location')
@@ -17,6 +17,7 @@ async def all_location_items(rqst, location, *, cont):
     page to continue from).
     """
     return sanic.response.json({'items': await location.items(cont=int(cont))}, status=200)
+
 
 @root.get('/search')
 @rqst_get('title', 'genre', 'media_type', 'author', 'cont')
@@ -30,13 +31,14 @@ async def search_location_media(rqst, location, *, title, genre, media_type, aut
     """
     return sanic.response.json(
       await location.search(
-        title = None if title == 'null' else title,
-        genre = None if genre == 'null' else genre,
-        type_ = None if media_type == 'null' else media_type,
-        author = None if author == 'null' else author,
-        cont = cont
+        title=None if title == 'null' else title,
+        genre=None if genre == 'null' else genre,
+        type_=None if media_type == 'null' else media_type,
+        author=None if author == 'null' else author,
+        cont=cont
         ),
       status=200)
+
 
 @root.post('/add')
 @rqst_get('user', 'title', 'author', 'published', 'media_type', 'genre', 'isbn', 'price', 'length')
@@ -53,6 +55,7 @@ async def add_media_item_to_db(rqst, user, *, title, author, published, media_ty
         type_ = await user.location.add_media_type(**type_)
     item = await user.location.add_media(title, author, published, type_, genre, isbn, price, length)
     return sanic.response.json({'mid': item.mid, 'image': item.image}, status=200)
+
 
 @root.post('/remove')
 @rqst_get('item', 'user')

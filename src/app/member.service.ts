@@ -40,7 +40,7 @@ export class MemberService {
       // if fullName didn't change at all (i.e. if it's still equal to
       // the name that was stored globally on signin), then send null in its place
       fullname: fullName === this.globals.name ? null : fullName,
-      newpass: newpass ? newpass : null,
+      newpass:  newpass || null,
       curpass: curpass
     });
   }
@@ -48,7 +48,7 @@ export class MemberService {
   getNotifs(username?: string): Observable<any> {
     return this.http.get<any>(
       this.notifURL,
-      {params: {username: username ? username : this.globals.username, lid: this.globals.lID}}
+      {params: {username:  username || this.globals.username, lid: this.globals.lID}}
     )
     .shareReplay();
   }

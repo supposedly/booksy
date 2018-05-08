@@ -25,7 +25,7 @@ export class RoleDetailComponent implements OnInit {
   rID: string;
   
   // ViewChild allows us to look into what's being input in the Perms/Limits/Locks
-  // components, and use those values from here.
+  // components, and use those values in here.
   @ViewChild(PermsComponent) private perms: PermsComponent;
   @ViewChild(LimitsComponent) private limits: LimitsComponent;
   @ViewChild(LocksComponent) private locks: LocksComponent;

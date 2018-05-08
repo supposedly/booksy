@@ -27,7 +27,7 @@ export class ReportsComponent implements OnInit {
     private reportsService: ReportsService,
     private globals: Globals
   ) {}
-
+  
   ngOnInit() {
     this.reportsService.getLastReportDate()
       .subscribe(resp => {
@@ -35,8 +35,10 @@ export class ReportsComponent implements OnInit {
         this.globals.reportDate = resp.date || new Date().toLocaleDateString();  // current date
       });
   }
-
+  
   onSortChange(item, value) {
+    // Run when the user selects a new 'sort
+    // by' value from the radio buttons
     if (item === 'on') {this.sortBy = value; }
   }
   
@@ -50,7 +52,7 @@ export class ReportsComponent implements OnInit {
   
   any(): boolean {
     // because I can't do this from HTML for some reason
-    return this.buttons.some(n => n);
+    return this.buttons.some(n => n.value);
   }
   
   getReport() {
