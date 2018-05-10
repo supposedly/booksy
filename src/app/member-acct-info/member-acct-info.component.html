@@ -23,7 +23,7 @@
         {{member.rolename}}
       </ng-template>
     </p>
-    <p *ngIf="member.recent">Recently checked out: {{member.recent | titlecase}}</p>
+    <p *ngIf="member.recent">Recently checked out: {{member.recent | titlespace}}</p>
     <p *ngIf="uID=='new'"><input type="text" name="password" [(ngModel)]="member.password" placeholder="Default password"/>
     <br/>
     Note that you will <strong>not</strong> be able to change this password on their behalf later</p> 
@@ -34,6 +34,6 @@
     <p class="low">{{member.name}}</p>
     <p *ngIf="member.manages" style="color: red">Owns this location</p>
     <p>Role: {{member.rolename}}</p>
-    <p *ngIf="member.recent">Recently checked out: {{member.recent | titlecase}}</p>
+    <p *ngIf="member.recent">Recently checked out: {{member.recent | titlespace}}</p>
   </ng-template>
 </div>

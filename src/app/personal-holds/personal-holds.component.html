@@ -7,12 +7,12 @@
       <span class="link" *ngIf="globals.canEditMedia" routerLink="../../media/edit/{{item.mid}}"> (edit)</span>
       <span class="link bad" (click)="clearHold(item.mid); items.splice(i, 1)">(clear hold)</span>
       <br/>
-      <span class="author">{{item.author | titlecase}}</span>
+      <span class="author">{{item.author | titlespace}}</span>
       <br/>
-      <span class="genre">{{item.genre | titlecase}}</span>
+      <span class="genre">{{item.genre | titlespace}}</span>
       <br/>
       <br/>
-      <aside class="type">{{item.type | titlecase}}</aside>
+      <aside class="type">{{item.type | titlespace}}</aside>
       <aside class="barcode">{{item.mid}}</aside>
     </div>
       <img *ngIf="item.image && item.image != 'None'" [src]="item.image" [alt]="item.title">

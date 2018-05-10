@@ -1,4 +1,4 @@
-<button routerLink="../../members/new">Add member</button> <whatsthis [ident]="14"></whatsthis>
+<button routerLink="../../members/new">Add member</button>
 <br/><br/>
 <div id="csv-upload-container">
   <span>Add members (batch):</span>
@@ -13,8 +13,9 @@
   <ng-template #no_browse>
     <input _ngcontent-c14="" class="csv-upload-browse" type="text" value="(Pick a default role first!)" style="color:gray" disabled>
   </ng-template>
+  <whatsthis [ident]="14"></whatsthis>
 </div>
-<div><h3>Library members</h3> <whatsthis [ident]="10"></whatsthis></div>
+<div><h3>All members</h3> <whatsthis [ident]="10"></whatsthis></div>
 <ul>
   <label *ngFor="let role of roles">
     <li>

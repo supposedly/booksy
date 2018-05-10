@@ -7,8 +7,8 @@
   <p class="author">{{item.author}}</p>
   <img *ngIf="item.image && item.image != 'None'" [src]="item.image"/>
   <p>Published in {{item.published}}</p>
-  <p><b>Type:</b> {{item.type.name | titlecase}}</p>
-  <p><b>Genre:</b> {{item.genre | titlecase }}</p>
+  <p><b>Type:</b> {{item.type.name | titlespace}}</p>
+  <p><b>Genre:</b> {{item.genre | titlespace }}</p>
   <p><b>Barcode:</b> {{item.mid}}</p>
   <p><b>ISBN:</b> {{item.isbn}}</p>
   <br/>

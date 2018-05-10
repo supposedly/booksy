@@ -18,7 +18,7 @@
   <p>Genre:
       <select name="genre" [(ngModel)]="item.genre">
         <option *ngFor="let genre of globals.locGenres" [ngValue]="genre">
-          {{genre | titlecase}}
+          {{genre | titlespace}}
         </option>
       </select>
       <input type="text" [(ngModel)]="genre_" placeholder="Or a new genre?"/>

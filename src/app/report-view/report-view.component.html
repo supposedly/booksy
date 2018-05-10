@@ -1,7 +1,7 @@
 <button (click)="location.back()">Go back</button>&nbsp;<button class="new" (click)="printReport()">Print</button>
 <div id="printable-report">
-  <h1>{{key | titlecase}}: {{date}}</h1>
-  <h3>{{sort.replace('_', ' ') | titlecase}}</h3>
+  <h1>{{key | titlespace}}: {{date}}</h1>
+  <h3>{{sort.replace('_', ' ') | titlespace}}</h3>
   <ul>
     <span *ngFor="let dtm of data">
       <li *ngIf="check(dtm.res)">

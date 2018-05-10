@@ -57,6 +57,7 @@ import {
 import { MgmtMediaTypesComponent, MediaTypeDetailComponent } from './mgmt-media/mgmt-media-types.component';
 
 import { TooltipDirective } from './tooltip/tooltip.directive';
+import {SpaceOnlyTitleCasePipe} from './titlespace.pipe';
 
 import { ButtonService } from './button.service';
 import { CheckoutService } from './checkout.service';
@@ -116,6 +117,7 @@ import { SetupService } from './setup.service';
     LocksComponent,
     GenericHeaderComponent,
     CSVUploadComponent,
+    SpaceOnlyTitleCasePipe,
   ],
   entryComponents: [
     TooltipComponent
