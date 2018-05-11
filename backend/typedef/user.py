@@ -1,26 +1,10 @@
 import asyncpg
-from types import ModuleType, SimpleNamespace
+from types import ModuleType
+
+import bcrypt
 
 from ..core import AsyncInit
 from ..attributes import Perms, Limits, Locks
-
-
-#################################################
-try:
-    import bcrypt
-except ModuleNotFoundError:  # means I'm testing (can't access app.config.TESTING from here) (don't have libffi/bcrypt on home PC)
-    def __hashpw(pw, *_, **__):
-        return pw.encode() if isinstance(pw, str) else pw
-    def __gensalt(*_, **__):
-        return 0
-    def __checkpw(*_, **__):
-        return True
-    bcrypt = SimpleNamespace(
-      hashpw=__hashpw,
-      gensalt=__gensalt,
-      checkpw=__checkpw
-      )
-#################################################
 
 
 # These are 'variable annotations', used in python 3.6 for introducing

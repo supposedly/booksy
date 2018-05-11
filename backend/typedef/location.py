@@ -3,26 +3,13 @@ import io
 import uuid
 import string
 from decimal import Decimal
-from types import ModuleType, SimpleNamespace
+from types import ModuleType
 
+import bcrypt
 import pandas
 
 from ..core import AsyncInit
 from ..attributes import Perms, Limits, Locks
-
-#################################################
-try:
-    import bcrypt
-except ModuleNotFoundError:  # means I'm testing (can't access app.config.TESTING from here) (don't have libffi/bcrypt on home PC)
-    def __hashpw(pw: bytes, *_, **__):
-        return pw
-    def __gensalt(*_, **__):
-        pass
-    bcrypt = SimpleNamespace(
-      hashpw=__hashpw,
-      gensalt=__gensalt
-      )
-#################################################
 
 
 # These are 'variable annotations', used in python 3.6 for introducing
