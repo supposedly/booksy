@@ -99,6 +99,8 @@ async def issue_item(rqst, location, username, *, item):
         user = await User.from_identifiers(username, location, app=rqst.app)
     except ValueError as err:
         sanic.exceptions.abort(404, err)
+    if user.lid != item.lid:
+        sanic.exceptions.abort(404, 'Item does not exist.')
     if user.cannot_check_out or not getattr(item.limits, 'checkout_duration', '''NO LIMITS!'''):
         sanic.exceptions.abort(403, "You aren't allowed to check this item out.")
     await item.issue_to(user=user)
@@ -120,6 +122,8 @@ async def return_item(rqst, location, username, *, item):
         user = await User.from_identifiers(username, location, app=rqst.app)
     except ValueError as e:
         sanic.exceptions.abort(404, e)
+    if user.lid != item.lid:
+        sanic.exceptions.abort(404, 'Item does not exist.')
     if user.is_checkout or not user.beats(item.issued_to, and_has='return_items'):
         sanic.exceptions.abort(403, "You aren't allowed to return this item.")
     if item.fines:
