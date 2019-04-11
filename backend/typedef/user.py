@@ -20,20 +20,21 @@ class User(AsyncInit):
     """
     Defines any user of the app.
     
-    location    (Location): User's location (their library)
-    role        (Role):     User's role
-    is_checkout (bool):     Whether the user is actually a self-checkout patron account
-    manages     (bool):     Whether the user owns their location
-    username    (str):      User's username
-    name        (str):      User's full name
-    email       (str):      User's email (unused here)
-    phone       (str):      User's phone number (entirely unused)
-    recent      (int):      Genre of user's most-recent checkout
-    holds       (int):      Quantity of items the user has on hold
-    lid, rid    (int):      Shorthand for user.location.lid and user.role.rid
+    location     (Location): User's location (their library)
+    role         (Role):     User's role
+    is_checkout  (bool):     Whether the user is actually a self-checkout patron account
+    manages      (bool):     Whether the user owns their location
+    username     (str):      User's username
+    name         (str):      User's full name
+    email        (str):      User's email (unused here)
+    phone        (str):      User's phone number (entirely unused)
+    recent       (int):      Genre of user's most-recent checkout
+    holds        (int):      Quantity of items the user has on hold
+    lid, rid     (int):      Shorthand for user.location.lid and user.role.rid
+    uid, user_id (int):      User's user ID. Synonymous and both used for some reason.
     _permnum,
-    _limnum,               Shorthand for user.perms/limits/locks.raw, but
-    _locknum    (int):      not intended to be exposed outside this class
+    _limnum,                 All shorthand for user.perms/limits/locks.raw, but
+    _locknum     (int):      not intended to be exposed outside this class
     """
     @staticmethod
     def do_imports():
@@ -263,7 +264,7 @@ class User(AsyncInit):
         '''
         await self.pool.execute(query, self.uid, username, rid, fullname)
     
-    async def edit_self(self, name, pw):
+    async def edit_self(self, name=None, pw=None):
         """
         Differs from above edit(): this method allows user to
         change their own password.
@@ -274,8 +275,18 @@ class User(AsyncInit):
                pwhash = COALESCE($3::bytea, pwhash)
          WHERE uid = $1::bigint
         '''
-        pwhash = await self._app.aexec(self._app.ppe, bcrypt.hashpw, pw.encode(), bcrypt.gensalt(12))
-        await self.pool.execute(query, self.uid, name, pwhash)
+        pwhash = self._pwhash
+        if pw is not None:
+            pwhash = await self._app.aexec(self._app.ppe, bcrypt.hashpw, pw.encode(), bcrypt.gensalt(12))
+        try:
+            await self.pool.execute(query, self.uid, name, pwhash)
+        except Exception:
+            pass
+        else:
+            self._pwhash = pwhash
+    
+    async def verify_pw(self, pw):
+        return await self._app.aexec(self._app.ppe, bcrypt.checkpw, pw.encode(), self._pwhash)
     
     async def items(self):
         """

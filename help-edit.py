@@ -88,14 +88,14 @@ async def do(items: list, conn: asyncpg.Connection, *, loop: asyncio.AbstractEve
         print('', msg, sep='\n')
         inp = await loop.run_in_executor(None, input, '\n> ')
         try:
-            ID, column, *new = inp.split(None, 3)
+            ID, column, *new = inp.split(None, 2)
         except ValueError:
             if not inp.startswith('new'):
                 if inp in ('exit', 'quit', 'q'):
                     break
                 if inp.isdigit():
                     msg = f"{inp}: {getattr(items.get(int(inp)), 'title', '')}"
-                os.system('clear')
+                clear_screen()
                 continue
             # Create new help item
             await conn.execute('''INSERT INTO help SELECT''')
@@ -116,19 +116,26 @@ async def do(items: list, conn: asyncpg.Connection, *, loop: asyncio.AbstractEve
                 msg = await conn.fetch(' '.join((column, *new)))
             except Exception as e:
                 msg = f'{type(e).__name__}: {e}'
-            os.system('clear')
+            clear_screen()
             continue
         try:
             meth = getattr(items[int(ID)], 'edit_' + column.lower())
         except (KeyError, AttributeError) as e:
             msg = str(e)
-            os.system('clear')
+            clear_screen()
             continue
         except ValueError:
             break
         msg = f"{ID} ({column}): {items[int(ID)].title}"
-        await (meth() if column == 'content' else meth(*new))
-        os.system('clear')
+        try:
+            await (meth() if column == 'content' else meth(*new))
+        except Exception as e:
+            msg = f'{type(e).__name__}: {e}'
+        clear_screen()
+
+
+def clear_screen():
+    os.system('cls || clear')
 
 
 async def main(pg_url: str, ssl_ctx: ssl.SSLContext, *, loop: asyncio.AbstractEventLoop):
@@ -142,7 +149,7 @@ async def main(pg_url: str, ssl_ctx: ssl.SSLContext, *, loop: asyncio.AbstractEv
 
 
 if __name__ == '__main__':
-    os.system('clear')
+    clear_screen()
     
     pg_url = subprocess.run(
         'heroku pg:credentials:url -a booksy-db'.split(),
