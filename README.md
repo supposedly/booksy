@@ -14,8 +14,8 @@ followed by a series of solidly uninformed decisions, led me to use
 [sanic](https://github.com/channelcat/sanic) for a backend framework and Angular 5 up front... I'd *probably* choose a
 different stack if I were to start over this instant, although Angular's Tour of Heroes tutorial is still pretty fantastic.
 
-That was at the start of my junior year. I ended up working twelve hours a day on this over winter break (my presentation
-judge at nationals did *not* believe that), mostly because I was hustling to finish in time for my FBLA-regionals
+That was at the start of my junior year of high school. I ended up working twelve hours a day on this over winter break (my
+presentation judge at nationals did *not* believe that), mostly because I was hustling to finish in time for my FBLA-regionals
 conference -- nobody had told me that the submission deadline was actually being put off for eight weeks! This was also my first
 'real' development project, taking me from novice to intermediate-advanced-ish in Python over the course of a few months, and
 I've put down some beginner's thoughts about the whole process below.
